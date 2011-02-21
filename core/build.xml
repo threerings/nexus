@@ -1,0 +1,41 @@
+<project name="nexus" default="compile" basedir=".">
+
+  <property name="src.dir" value="src/main/java"/>
+  <property name="deploy.dir" value="dist"/>
+
+  <path id="clazzpath">
+    <fileset dir="${deploy.dir}/lib" includes="**/*.jar"/>
+    <pathelement location="${deploy.dir}/classes"/>
+  </path>
+
+  <target name="clean">
+    <delete dir="${deploy.dir}"/>
+  </target>
+
+  <target name="prepare">
+    <mkdir dir="${deploy.dir}"/>
+    <mkdir dir="${deploy.dir}/classes"/>
+    <mkdir dir="${deploy.dir}/lib"/>
+<!--
+    <copy todir="${deploy.dir}/lib" flatten="true">
+      <fileset dir="lib" includes="*.jar"/>
+    </copy>
+-->
+  </target>
+
+  <target name="compile" depends="prepare">
+    <javac srcdir="${src.dir}" destdir="${deploy.dir}/classes" debug="on"
+           optimize="off" deprecation="on" includeAntRuntime="no" source="1.6" target="1.6">
+      <classpath>
+        <path refid="clazzpath"/>
+      </classpath>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile">
+    <jar destfile="${deploy.dir}/${ant.project.name}.jar" basedir="${deploy.dir}/classes"/>
+  </target>
+
+</project>
