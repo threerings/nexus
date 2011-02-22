@@ -6,16 +6,21 @@
 
 package com.samskivert.nexus.distrib;
 
-import java.io.IOException;
-
 import com.samskivert.nexus.io.Streamable;
 
 /**
  * An int value attribute for a Nexus object. Contains a single int value, which may be updated.
  */
-public class DIntValue
-    implements Streamable
+public class DIntValue extends DAttribute
 {
+    /**
+     * Creates a value attribute with the supplied initial integer value.
+     */
+    public static DIntValue create (int value)
+    {
+        return new DIntValue(value);
+    }
+
     /**
      * Returns the current value.
      */
@@ -39,15 +44,20 @@ public class DIntValue
     }
 
     // from interface Streamable
-    public void readObject (Input in) throws IOException
+    public void readObject (Input in)
     {
         _value = in.readInt();
     }
 
     // from interface Streamable
-    public void writeObject (Output out) throws IOException
+    public void writeObject (Output out)
     {
         out.writeInt(_value);
+    }
+
+    protected DIntValue (int value)
+    {
+        _value = value;
     }
 
     protected int _value;

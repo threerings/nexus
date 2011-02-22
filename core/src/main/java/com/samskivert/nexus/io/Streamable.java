@@ -6,8 +6,6 @@
 
 package com.samskivert.nexus.io;
 
-import java.io.IOException;
-
 /**
  * An interface implemented by objects that can be streamed over the network.
  */
@@ -18,16 +16,16 @@ public interface Streamable
      */
     public interface Input
     {
-        boolean readBoolean () throws IOException;
-        byte readByte () throws IOException;
-        short readShort () throws IOException;
-        char readChar () throws IOException;
-        int readInt () throws IOException;
-        long readLong () throws IOException;
-        float readFloat () throws IOException;
-        double readDouble () throws IOException;
-        String readString () throws IOException;
-        Streamable readStreamable () throws IOException;
+        boolean readBoolean ();
+        byte readByte ();
+        short readShort ();
+        char readChar ();
+        int readInt ();
+        long readLong ();
+        float readFloat ();
+        double readDouble ();
+        String readString ();
+        <T extends Streamable> T readStreamable ();
         // TODO: readList, readSet, readMap?
     }
 
@@ -36,26 +34,30 @@ public interface Streamable
      */
     public interface Output
     {
-        void writeBoolean (boolean value) throws IOException;
-        void writeByte (byte value) throws IOException;
-        void writeShort (short value) throws IOException;
-        void writeChar (char value) throws IOException;
-        void writeInt (int value) throws IOException;
-        void writeLong (long value) throws IOException;
-        void writeFloat (float value) throws IOException;
-        void writeDouble (double value) throws IOException;
-        void writeString (String value) throws IOException;
-        void writeStreamable (Streamable value) throws IOException;
+        void writeBoolean (boolean value);
+        void writeByte (byte value);
+        void writeShort (short value);
+        void writeChar (char value);
+        void writeInt (int value);
+        void writeLong (long value);
+        void writeFloat (float value);
+        void writeDouble (double value);
+        void writeString (String value);
+        <T extends Streamable> void writeStreamable (T value);
         // TODO: writeList, writeSet, writeMap?
     }
 
     /**
      * Reads the contents of this streamable instance from the supplied input stream.
+     *
+     * @exception StreamException thrown if an error occurs while reading.
      */
-    void readObject (Input in) throws IOException;
+    void readObject (Input in);
 
     /**
      * Writes the contents of this streamable instance to the supplied output stream.
+     *
+     * @exception StreamException thrown if an error occurs while writing.
      */
-    void writeObject (Output out) throws IOException;
+    void writeObject (Output out);
 }
