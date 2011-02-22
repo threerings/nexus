@@ -11,7 +11,7 @@ import com.samskivert.nexus.io.Streamable;
 /**
  * An int value attribute for a Nexus object. Contains a single int value, which may be updated.
  */
-public class DIntValue extends DAttribute
+public class DIntValue extends AbstractValue<Integer>
 {
     /**
      * Creates a value attribute with the supplied initial integer value.
@@ -60,6 +60,12 @@ public class DIntValue extends DAttribute
         _value = value;
     }
 
+    protected void applyChanged (IntChangedEvent event)
+    {
+        _value = event._newValue;
+        notifyListeners(event);
+    }
+
     protected int _value;
 
     /** Notifies listeners of a change of an int value. */
@@ -74,7 +80,7 @@ public class DIntValue extends DAttribute
         }
 
         @Override public void applyTo (NexusObject target) {
-            ((DIntValue)target.getAttribute(_index))._value = _newValue;
+            ((DIntValue)target.getAttribute(_index)).applyChanged(this);
         }
 
         @Override public void readObject (Input in) {

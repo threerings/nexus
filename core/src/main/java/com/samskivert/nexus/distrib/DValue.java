@@ -11,18 +11,8 @@ import com.samskivert.nexus.io.Streamable;
 /**
  * A value attribute for a Nexus object. Contains a single value, which may be updated.
  */
-public class DValue<T extends Streamable> extends DAttribute
+public class DValue<T extends Streamable> extends AbstractValue<T>
 {
-    /** An event emitted when a value changes. */
-    public static abstract class ChangedEvent<T> extends DAttribute.Event
-    {
-        /** Returns the new value of the attribute. */
-        public abstract T getValue ();
-
-        /** Returns the value of the attribute prior to the change. */
-        public abstract T getOldValue ();
-    }
-
     /**
      * Creates a value attribute with the supplied initial value.
      */
@@ -70,6 +60,12 @@ public class DValue<T extends Streamable> extends DAttribute
         _value = value;
     }
 
+    protected void applyChanged (StreamableChangedEvent<T> event)
+    {
+        _value = event.getValue();
+        notifyListeners(event);
+    }
+
     /** The current value. */
     protected T _value;
 
@@ -86,7 +82,7 @@ public class DValue<T extends Streamable> extends DAttribute
 
         @Override public void applyTo (NexusObject target) {
             @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
-            attr._value = _newValue;
+            attr.applyChanged(this);
         }
 
         @Override public void readObject (Input in) {
