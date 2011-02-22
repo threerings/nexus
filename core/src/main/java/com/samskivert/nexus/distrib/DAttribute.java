@@ -26,4 +26,19 @@ public abstract class DAttribute
 
     /** The index of this attribute in its containing object. */
     protected short _index;
+
+    protected static abstract class Event extends NexusEvent
+    {
+        @Override public void readObject (Input in) {
+            super.readObject(in);
+            _index = in.readShort();
+        }
+
+        @Override public void writeObject (Output out) {
+            super.writeObject(out);
+            out.writeShort(_index);
+        }
+
+        protected short _index;
+    }
 }

@@ -14,7 +14,7 @@ import com.samskivert.nexus.io.Streamable;
 public class DValue<T extends Streamable> extends DAttribute
 {
     /** An event emitted when a value changes. */
-    public static abstract class ChangedEvent<T> extends NexusEvent
+    public static abstract class ChangedEvent<T> extends DAttribute.Event
     {
         /** Returns the new value of the attribute. */
         public abstract T getValue ();
@@ -49,7 +49,7 @@ public class DValue<T extends Streamable> extends DAttribute
     {
         T ovalue = _value;
         _value = value;
-        // TODO: generate ValueChangedEvent
+        _owner.postEvent(new StreamableChangedEvent<T>().init(_index, value, ovalue));
         return ovalue;
     }
 
@@ -73,34 +73,38 @@ public class DValue<T extends Streamable> extends DAttribute
     /** The current value. */
     protected T _value;
 
-    /** A change event that operates on {@link Streamable} values. */
+    /** Notifies listeners of a change of a {@link Streamable} value. */
     protected static class StreamableChangedEvent<T extends Streamable> extends ChangedEvent<T>
     {
-        public StreamableChangedEvent (T newValue, T oldValue) {
-            _newValue = newValue;
-            _oldValue = oldValue;
-        }
-
-        @Override // from ChangedEvent<T>
-        public T getValue () {
+        @Override public T getValue () {
             return _newValue;
         }
 
-        @Override // from ChangedEvent<T>
-        public T getOldValue () {
+        @Override public T getOldValue () {
             return _oldValue;
         }
 
-        // from interface Streamable
-        public void readObject (Input in) {
+        @Override public void applyTo (NexusObject target) {
+            @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
+            attr._value = _newValue;
+        }
+
+        @Override public void readObject (Input in) {
             _newValue = in.<T>readStreamable();
             _oldValue = in.<T>readStreamable();
         }
 
-        // from interface Streamable
-        public void writeObject (Output out) {
+        @Override public void writeObject (Output out) {
             out.writeStreamable(_newValue);
             out.writeStreamable(_oldValue);
+        }
+
+        /** Used in lieu of a constructor. */
+        protected StreamableChangedEvent<T> init (short index, T newValue, T oldValue) {
+            _index = index;
+            _newValue = newValue;
+            _oldValue = oldValue;
+            return this;
         }
 
         protected T _newValue, _oldValue;

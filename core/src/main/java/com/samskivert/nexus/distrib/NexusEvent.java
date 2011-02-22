@@ -15,11 +15,28 @@ public abstract class NexusEvent
     implements Streamable
 {
     /**
+     * Applies this event to the supplied target object.
+     */
+    public abstract void applyTo (NexusObject object);
+
+    /**
      * Returns the id of the Nexus object on which this event was generated.
      */
     public int getTargetId ()
     {
         return _targetId;
+    }
+
+    // from interface Streamable
+    public void readObject (Input in)
+    {
+        _targetId = in.readInt();
+    }
+
+    // from interface Streamable
+    public void writeObject (Output out)
+    {
+        out.writeInt(_targetId);
     }
 
     /**

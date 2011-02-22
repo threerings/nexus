@@ -39,7 +39,7 @@ public class DIntValue extends DAttribute
     {
         int ovalue = _value;
         _value = value;
-        // TODO: generate ValueChangedEvent
+        _owner.postEvent(new IntChangedEvent().init(_index, value, ovalue));
         return ovalue;
     }
 
@@ -61,4 +61,40 @@ public class DIntValue extends DAttribute
     }
 
     protected int _value;
+
+    /** Notifies listeners of a change of an int value. */
+    protected static class IntChangedEvent extends DValue.ChangedEvent<Integer>
+    {
+        @Override public Integer getValue () {
+            return _newValue;
+        }
+
+        @Override public Integer getOldValue () {
+            return _oldValue;
+        }
+
+        @Override public void applyTo (NexusObject target) {
+            ((DIntValue)target.getAttribute(_index))._value = _newValue;
+        }
+
+        @Override public void readObject (Input in) {
+            _newValue = in.readInt();
+            _oldValue = in.readInt();
+        }
+
+        @Override public void writeObject (Output out) {
+            out.writeInt(_newValue);
+            out.writeInt(_oldValue);
+        }
+
+        /** Used in lieu of a constructor. */
+        protected IntChangedEvent init (short index, int newValue, int oldValue) {
+            _index = index;
+            _newValue = newValue;
+            _oldValue = oldValue;
+            return this;
+        }
+
+        protected int _newValue, _oldValue;
+    }
 }
