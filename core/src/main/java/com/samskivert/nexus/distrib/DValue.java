@@ -81,6 +81,35 @@ public abstract class DValue<T> extends DAttribute
     /**
      * Creates a value attribute with the supplied initial value.
      */
+    public static DValue<String> create (String value)
+    {
+        return new DValue<String>(value) {
+            @Override public void readObject (Input in) {
+                _value = in.readString();
+            }
+            @Override public void writeObject (Output out) {
+                out.writeString(_value);
+            }
+            @Override protected ChangedEvent<String> createChangedEvent () {
+                return new ChangedEvent<String>() {
+                    @Override public void readObject (Input in) {
+                        super.readObject(in);
+                        _newValue = in.readString();
+                        _oldValue = in.readString();
+                    }
+                    @Override public void writeObject (Output out) {
+                        super.writeObject(out);
+                        out.writeString(_newValue);
+                        out.writeString(_oldValue);
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Creates a value attribute with the supplied initial value.
+     */
     public static <T extends Streamable> DValue<T> create (T value)
     {
         return new DValue<T>(value) {
