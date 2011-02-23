@@ -47,17 +47,17 @@ public interface Streamable
         // TODO: writeList, writeSet, writeMap?
     }
 
-    /**
-     * Reads the contents of this streamable instance from the supplied input stream.
-     *
-     * @exception StreamException thrown if an error occurs while reading.
-     */
-    void readObject (Input in);
+    // /**
+    //  * Reads the contents of this streamable instance from the supplied input stream.
+    //  *
+    //  * @exception StreamException thrown if an error occurs while reading.
+    //  */
+    // void readObject (Input in);
 
-    /**
-     * Writes the contents of this streamable instance to the supplied output stream.
-     *
-     * @exception StreamException thrown if an error occurs while writing.
-     */
-    void writeObject (Output out);
+    // /**
+    //  * Writes the contents of this streamable instance to the supplied output stream.
+    //  *
+    //  * @exception StreamException thrown if an error occurs while writing.
+    //  */
+    // void writeObject (Output out);
 }

@@ -15,7 +15,7 @@ public abstract class DAttribute
     implements Streamable, NexusObject.Attribute
 {
     /** A marker interface from which all attribute listeners must extend. */
-    public interface Listener {
+    public interface DListener {
     }
 
     // from interface NexusObject.Attribute
@@ -28,12 +28,15 @@ public abstract class DAttribute
     /**
      * Adds the supplied listener to the supplied listener list.
      */
-    protected static Listener[] addListener (Listener[] listeners, Listener listener)
+    protected static DListener[] addListener (DListener[] listeners, DListener listener)
     {
+        // scan backwards from the end of the array finding the left-most null slot
         int idx = listeners.length;
-        while (listeners[idx-1] == null) idx--;
+        while (idx > 0 && listeners[idx-1] == null) idx--;
+
+        // if we found no null slots, expand the array
         if (idx == listeners.length) {
-            Listener[] nlist = new Listener[listeners.length+1];
+            DListener[] nlist = new DListener[listeners.length+LISTENER_EXPAND_DELTA];
             System.arraycopy(listeners, 0, nlist, 0, listeners.length);
             nlist[listeners.length] = listener;
             return nlist;
@@ -48,31 +51,58 @@ public abstract class DAttribute
      * The remaining listeners are shifted left to close the gap. Note that the listener is located
      * using reference equality.
      */
-    protected static void removeListener (Listener[] listeners, Listener listener)
+    protected static void removeListener (DListener[] listeners, DListener listener)
     {
         for (int ii = 0, ll = listeners.length; ii < ll; ii++) {
             if (listeners[ii] == listener) {
-                listeners[ii] = null;
-                System.arraycopy(listeners, ii, listeners, ii+1, listeners.length-ii-1);
+                System.arraycopy(listeners, ii+1, listeners, ii, listeners.length-ii-1);
+                listeners[listeners.length-1] = null;
                 return;
             }
         }
     }
 
+    /**
+     * Returns the event value, unless it is (reference) equal to the sentinel value, in which case
+     * it returns the local value. This is used to support the reporting of "previous" values for
+     * value, set and map values, thusly:
+     *
+     * <p> On the authoritative server (the only place where object changes may be made), a value
+     * change results in immediate application of the updated value. The previous value is stored
+     * in a transient field in the ChangedEvent, and when the event is later processed, the
+     * listeners will be notified using the previous value as stored in the event (i.e. chooseValue
+     * returns eventValue).
+     *
+     * <p> On all nodes (clients or other servers) that are subscribed to the object in question,
+     * the ChangedEvent will have come from over the network. In that case, the transient
+     * "previous" value in the ChangedEvent will be equal to the sentinel value. When the event is
+     * applied, the previous value will be extracted from the attribute in question prior to
+     * applying the new value from the event. Because this copy of the attribute was *not* updated
+     * immediately (as it was on the authoritative server), the local value will be the correct
+     * previous value and can be used as such. In that case, chooseValue returns localValue.
+     */
+    protected static <T> T chooseValue (T localValue, T eventValue)
+    {
+        return eventValue == SENTINEL_VALUE ? localValue : eventValue;
+    }
+
+    /**
+     * Returns a sentinel value for use by events in tracking unset values. See {@link
+     * #chooseValue}.
+     */
+    protected static <T> T sentinelValue ()
+    {
+        @SuppressWarnings("unchecked") T value = (T)SENTINEL_VALUE;
+        return value;
+    }
+
     /** A base class for all events associated with an attribute. */
     protected static abstract class Event extends NexusEvent
     {
-        @Override public void readObject (Input in) {
-            super.readObject(in);
-            _index = in.readShort();
+        protected Event (short index) {
+            _index = index;
         }
-
-        @Override public void writeObject (Output out) {
-            super.writeObject(out);
-            out.writeShort(_index);
-        }
-
-        protected short _index;
+        protected final short _index;
     }
 
     /** The object that owns this attribute. */
@@ -82,5 +112,11 @@ public abstract class DAttribute
     protected transient short _index;
 
     /** Used by our subclasses as a sentinel. */
-    protected static final Listener[] NO_LISTENERS = new Listener[0];
+    protected static final DListener[] NO_LISTENERS = new DListener[0];
+
+    /** The number of new slots we add when expanding a listener array. */
+    protected static final int LISTENER_EXPAND_DELTA = 3;
+
+    /** Used by {@link #sentinelValue}. */
+    protected static final Object SENTINEL_VALUE = new Object();
 }

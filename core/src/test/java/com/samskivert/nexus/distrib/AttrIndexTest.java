@@ -14,12 +14,26 @@ import static org.junit.Assert.*;
  */
 public class AttrIndexTest
 {
+    public class TestObject extends NexusObject
+    {
+        public DValue<Integer> monkeys = DValue.create(0);
+
+        @Override protected DAttribute getAttribute (int index) {
+            switch (index) {
+            case 0: return monkeys;
+            default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
+            }
+        }
+
+        @Override protected int getAttributeCount () {
+            return 1;
+        }
+    }
+
     @Test
     public void testAttrIndexAssignment ()
     {
-        final TestObject tobj = new TestObject();
-        final int omonkeys = tobj.monkeys.get();
-        final int nmonkeys = 15;
+        TestObject tobj = new TestObject();
 
         // manually initialize the object attributes since we're not registering with anything
         tobj.initAttributes();
@@ -28,23 +42,5 @@ public class AttrIndexTest
         assertEquals(1, tobj.getAttributeCount());
         assertEquals(0, tobj.monkeys._index);
         assertEquals(tobj, tobj.monkeys._owner);
-
-        // manually configure our event sink for same reason as above
-        tobj._sink = new EventSink() {
-            public void postEvent (NexusObject source, NexusEvent event) {
-                assertTrue(event instanceof DValue.ChangedEvent<?>);
-                DValue.ChangedEvent<?> ice = (DValue.ChangedEvent<?>)event;
-                assertEquals(omonkeys, ice.getOldValue());
-                assertEquals(nmonkeys, ice.getValue());
-
-                // try applying the event to the object, make sure it works, and that our value
-                // gets updated (which is a noop since it gets applied locally anyway)
-                event.applyTo(source);
-                assertEquals(nmonkeys, tobj.monkeys.get().intValue());
-            }
-        };
-
-        // update the monkeys attribute, which will trigger a changed event (handled above)
-        tobj.monkeys.update(nmonkeys);
     }
 }

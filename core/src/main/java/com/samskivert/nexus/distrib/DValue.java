@@ -11,129 +11,21 @@ import com.samskivert.nexus.io.Streamable;
 /**
  * A value attribute for a Nexus object. Contains a single value, which may be updated.
  */
-public abstract class DValue<T> extends DAttribute
+public class DValue<T> extends DAttribute
 {
-    /** An event emitted when a value changes. */
-    public static abstract class ChangedEvent<T> extends DAttribute.Event
-    {
-        /** Returns the new value of the attribute. */
-        public T getValue () {
-            return _newValue;
-        }
-
-        /** Returns the value of the attribute prior to the change. */
-        public T getOldValue () {
-            return _oldValue;
-        }
-
-        @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
-            attr.applyChanged(this);
-        }
-
-        /** Used in lieu of a constructor. */
-        protected ChangedEvent<T> init (short index, T newValue, T oldValue) {
-            _index = index;
-            _newValue = newValue;
-            _oldValue = oldValue;
-            return this;
-        }
-
-        protected T _newValue, _oldValue;
-    }
-
     /** An interface for publishing change events to listeners. */
-    public static interface ChangedListener<T> extends Listener
+    public static interface Listener<T> extends DListener
     {
-        /** Notifies listener of a value change. */
-        void valueChanged (ChangedEvent<T> event);
+        /** Notifies listener of a value update. */
+        void valueUpdated (T value, T oldValue);
     }
 
     /**
-     * Creates a value attribute with the supplied initial value.
+     * Creates a new attribute with the specified initial value.
      */
-    public static DValue<Integer> create (int value)
+    public static <T> DValue<T> create (T value)
     {
-        return new DValue<Integer>(value) {
-            @Override public void readObject (Input in) {
-                _value = in.readInt();
-            }
-            @Override public void writeObject (Output out) {
-                out.writeInt(_value);
-            }
-            @Override protected ChangedEvent<Integer> createChangedEvent () {
-                return new ChangedEvent<Integer>() {
-                    @Override public void readObject (Input in) {
-                        super.readObject(in);
-                        _newValue = in.readInt();
-                        _oldValue = in.readInt();
-                    }
-                    @Override public void writeObject (Output out) {
-                        super.writeObject(out);
-                        out.writeInt(_newValue);
-                        out.writeInt(_oldValue);
-                    }
-                };
-            }
-        };
-    }
-
-    /**
-     * Creates a value attribute with the supplied initial value.
-     */
-    public static DValue<String> create (String value)
-    {
-        return new DValue<String>(value) {
-            @Override public void readObject (Input in) {
-                _value = in.readString();
-            }
-            @Override public void writeObject (Output out) {
-                out.writeString(_value);
-            }
-            @Override protected ChangedEvent<String> createChangedEvent () {
-                return new ChangedEvent<String>() {
-                    @Override public void readObject (Input in) {
-                        super.readObject(in);
-                        _newValue = in.readString();
-                        _oldValue = in.readString();
-                    }
-                    @Override public void writeObject (Output out) {
-                        super.writeObject(out);
-                        out.writeString(_newValue);
-                        out.writeString(_oldValue);
-                    }
-                };
-            }
-        };
-    }
-
-    /**
-     * Creates a value attribute with the supplied initial value.
-     */
-    public static <T extends Streamable> DValue<T> create (T value)
-    {
-        return new DValue<T>(value) {
-            @Override public void readObject (Input in) {
-                _value = in.<T>readStreamable();
-            }
-            @Override public void writeObject (Output out) {
-                out.writeStreamable(_value);
-            }
-            @Override protected ChangedEvent<T> createChangedEvent () {
-                return new ChangedEvent<T>() {
-                    @Override public void readObject (Input in) {
-                        super.readObject(in);
-                        _newValue = in.<T>readStreamable();
-                        _oldValue = in.<T>readStreamable();
-                    }
-                    @Override public void writeObject (Output out) {
-                        super.writeObject(out);
-                        out.writeStreamable(_newValue);
-                        out.writeStreamable(_oldValue);
-                    }
-                };
-            }
-        };
+        return new DValue<T>(value);
     }
 
     /**
@@ -145,8 +37,7 @@ public abstract class DValue<T> extends DAttribute
     }
 
     /**
-     * Updates the current value. Emits a {@link ChangedEvent} to communicate the value change to
-     * listeners.
+     * Updates the current value; notifies {@link Listener}s that the value has changed.
      *
      * @return the value prior to update.
      */
@@ -154,24 +45,24 @@ public abstract class DValue<T> extends DAttribute
     {
         T ovalue = _value;
         _value = value;
-        _owner.postEvent(createChangedEvent().init(_index, value, ovalue));
+        postChanged(value, ovalue);
         return ovalue;
     }
 
     /**
-     * Adds a listener for {@link ChangedEvent}s.
+     * Adds a listener for value changes.
      */
-    public void addChangedListener (ChangedListener<T> listener)
+    public void addListener (Listener<T> listener)
     {
-        _changedListeners = addListener(_changedListeners, listener);
+        _listeners = addListener(_listeners, listener);
     }
 
     /**
-     * Removes a listener for {@link ChangedEvent}s.
+     * Removes a listener for value changes.
      */
-    public void removeChangedListener (ChangedListener<T> listener)
+    public void removeListener (Listener<T> listener)
     {
-        removeListener(_changedListeners, listener);
+        removeListener(_listeners, listener);
     }
 
     protected DValue (T value)
@@ -179,34 +70,46 @@ public abstract class DValue<T> extends DAttribute
         _value = value;
     }
 
-    protected abstract ChangedEvent<T> createChangedEvent ();
-
-    protected void applyChanged (ChangedEvent<T> event)
+    protected void postChanged (T value, T ovalue)
     {
-        _value = event.getValue();
-        for (int ii = 0, ll = _changedListeners.length; ii < ll; ii++) {
-            @SuppressWarnings("unchecked") ChangedListener<T> listener =
-                (ChangedListener<T>)_changedListeners[ii];
-            listener.valueChanged(event);
+        ChangedEvent<T> event = new ChangedEvent<T>(_index, value);
+        event.oldValue = ovalue;
+        _owner.postEvent(event);
+    }
+
+    protected void applyChanged (T value, T oldValue)
+    {
+        T ovalue = DAttribute.chooseValue(_value, oldValue);
+        _value = value;
+        for (int ii = 0, ll = _listeners.length; ii < ll; ii++) {
+            @SuppressWarnings("unchecked") Listener<T> listener = (Listener<T>)_listeners[ii];
+            if (listener != null) {
+                listener.valueUpdated(_value, ovalue);
+            }
         }
     }
 
-    /** Our registered change listeners. */
-    protected Listener[] _changedListeners = NO_LISTENERS;
+    /** An event emitted when a value changes. */
+    protected static class ChangedEvent<T> extends DAttribute.Event
+    {
+        public T oldValue;
+
+        public ChangedEvent (short index, T value) {
+            super(index);
+            _value = value;
+        }
+
+        @Override public void applyTo (NexusObject target) {
+            @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
+            attr.applyChanged(_value, oldValue);
+        }
+
+        protected final T _value;
+    }
 
     /** The current value. */
     protected T _value;
 
-    /** Notifies listeners of a change of a {@link Streamable} value. */
-    protected static class StreamableChangedEvent<T extends Streamable> extends ChangedEvent<T>
-    {
-        @Override public T getValue () {
-            return _newValue;
-        }
-
-        @Override public T getOldValue () {
-            return _oldValue;
-        }
-
-    }
+    /** Our registered listeners. */
+    protected DListener[] _listeners = NO_LISTENERS;
 }
