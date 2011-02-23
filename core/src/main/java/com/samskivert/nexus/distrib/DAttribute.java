@@ -28,7 +28,7 @@ public abstract class DAttribute
     /**
      * Adds the supplied listener to the supplied listener list.
      */
-    protected Listener[] addListener (Listener[] listeners, Listener listener)
+    protected static Listener[] addListener (Listener[] listeners, Listener listener)
     {
         int idx = listeners.length;
         while (listeners[idx-1] == null) idx--;
@@ -48,7 +48,7 @@ public abstract class DAttribute
      * The remaining listeners are shifted left to close the gap. Note that the listener is located
      * using reference equality.
      */
-    protected void removeListener (Listener[] listeners, Listener listener)
+    protected static void removeListener (Listener[] listeners, Listener listener)
     {
         for (int ii = 0, ll = listeners.length; ii < ll; ii++) {
             if (listeners[ii] == listener) {
@@ -58,12 +58,6 @@ public abstract class DAttribute
             }
         }
     }
-
-    /** The object that owns this attribute. */
-    protected NexusObject _owner;
-
-    /** The index of this attribute in its containing object. */
-    protected short _index;
 
     /** A base class for all events associated with an attribute. */
     protected static abstract class Event extends NexusEvent
@@ -80,6 +74,12 @@ public abstract class DAttribute
 
         protected short _index;
     }
+
+    /** The object that owns this attribute. */
+    protected transient NexusObject _owner;
+
+    /** The index of this attribute in its containing object. */
+    protected transient short _index;
 
     /** Used by our subclasses as a sentinel. */
     protected static final Listener[] NO_LISTENERS = new Listener[0];

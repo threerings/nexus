@@ -12,13 +12,13 @@ package com.samskivert.nexus.distrib;
 public class TestObject extends NexusObject
 {
     /** The number of monkeys in our barrel. */
-    public DIntValue monkeys = DIntValue.create(0);
+    public DValue<Integer> monkeys = DValue.create(0);
 
     @Override
     public void readObject (Input in)
     {
         super.readObject(in);
-        monkeys = in.<DIntValue>readStreamable();
+        monkeys = in.<DValue<Integer>>readStreamable();
     }
 
     @Override

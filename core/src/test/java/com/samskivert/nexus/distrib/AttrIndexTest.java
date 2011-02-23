@@ -40,7 +40,7 @@ public class AttrIndexTest
                 // try applying the event to the object, make sure it works, and that our value
                 // gets updated (which is a noop since it gets applied locally anyway)
                 event.applyTo(source);
-                assertEquals(nmonkeys, tobj.monkeys.get());
+                assertEquals(nmonkeys, tobj.monkeys.get().intValue());
             }
         };
 
