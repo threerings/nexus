@@ -6,6 +6,8 @@
 
 package com.samskivert.nexus.io;
 
+import java.util.Collection;
+
 /**
  * An interface implemented by objects that can be streamed over the network.
  */
@@ -26,7 +28,8 @@ public interface Streamable
         double readDouble ();
         String readString ();
         <T extends Streamable> T readStreamable ();
-        // TODO: readList, readSet, readMap?
+        <T> T readValue ();
+        <T> Collection<T> readValues ();
     }
 
     /**
@@ -44,20 +47,7 @@ public interface Streamable
         void writeDouble (double value);
         void writeString (String value);
         <T extends Streamable> void writeStreamable (T value);
-        // TODO: writeList, writeSet, writeMap?
+        <T> void writeValue (T value);
+        <T> void writeValues (Collection<T> value);
     }
-
-    // /**
-    //  * Reads the contents of this streamable instance from the supplied input stream.
-    //  *
-    //  * @exception StreamException thrown if an error occurs while reading.
-    //  */
-    // void readObject (Input in);
-
-    // /**
-    //  * Writes the contents of this streamable instance to the supplied output stream.
-    //  *
-    //  * @exception StreamException thrown if an error occurs while writing.
-    //  */
-    // void writeObject (Output out);
 }
