@@ -11,6 +11,7 @@ import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -108,6 +109,7 @@ public class DMap<K,V> extends DAttribute
     // from interface Map<K,V>
     public V put (K key, V value)
     {
+        checkMutate();
         V ovalue = _impl.get(key);
         postPut(key, value, ovalue);
         return ovalue;
@@ -116,6 +118,8 @@ public class DMap<K,V> extends DAttribute
     // from interface Map<K,V>
     public V remove (Object rawKey)
     {
+        checkMutate();
+
         // avoid generating an event if no mapping exists for the supplied key
         if (!_impl.containsKey(rawKey)) {
             return null;
@@ -137,8 +141,10 @@ public class DMap<K,V> extends DAttribute
     // from interface Map<K,V>
     public void clear ()
     {
-        // generate removed events for our keys
-        for (Map.Entry<K,V> entry : entrySet()) {
+        checkMutate();
+        // generate removed events for our keys (do so on a copy of our set so that we don't
+        // trigger CME if the removed events are processed as they are generated)
+        for (Map.Entry<K,V> entry : new HashSet<Map.Entry<K,V>>(_impl.entrySet())) {
             postRemoved(entry.getKey(), entry.getValue());
         }
         _impl.clear();
@@ -162,8 +168,10 @@ public class DMap<K,V> extends DAttribute
                         if (_current == null) {
                             throw new IllegalStateException();
                         }
-                        // TODO: generate removed event with _current
+                        checkMutate();
+                        V ovalue = DMap.this.get(_current);
                         iiter.remove();
+                        postRemoved(_current, ovalue);
                     }
                     protected K _current;
                 };
@@ -172,8 +180,14 @@ public class DMap<K,V> extends DAttribute
                 return iset.size();
             }
             public boolean remove (Object o) {
-                // TODO: machinery!
-                return iset.remove(o);
+                checkMutate();
+                @SuppressWarnings("unchecked") K key = (K)o;
+                V ovalue = DMap.this.get(key);
+                boolean modified = iset.remove(o);
+                if (modified) {
+                    postRemoved(key, ovalue);
+                }
+                return modified;
             }
             public void clear () {
                 DMap.this.clear();
@@ -184,32 +198,33 @@ public class DMap<K,V> extends DAttribute
     // from interface Map<K,V>
     public Collection<V> values ()
     {
-        final Collection<V> ivals = _impl.values();
+        final Collection<Map.Entry<K,V>> iset = _impl.entrySet();
         return new AbstractCollection<V>() {
             public Iterator<V> iterator () {
-                final Iterator<V> iiter = ivals.iterator();
+                final Iterator<Map.Entry<K,V>> iiter = iset.iterator();
                 return new Iterator<V>() {
                     public boolean hasNext () {
                         return iiter.hasNext();
                     }
                     public V next () {
-                        return (_current = iiter.next());
+                        return (_current = iiter.next()).getValue();
                     }
                     public void remove () {
                         if (_current == null) {
                             throw new IllegalStateException();
                         }
-                        // TODO: generate removed event with _current
+                        checkMutate();
                         iiter.remove();
+                        postRemoved(_current.getKey(), _current.getValue());
                     }
-                    protected V _current;
+                    protected Map.Entry<K,V> _current;
                 };
             }
             public int size () {
-                return ivals.size();
+                return iset.size();
             }
             public boolean contains (Object o) {
-                return ivals.contains(o);
+                return iset.contains(o);
             }
             public void clear () {
                 DMap.this.clear();
@@ -229,14 +244,37 @@ public class DMap<K,V> extends DAttribute
                         return iiter.hasNext();
                     }
                     public Map.Entry<K,V> next () {
-                        return (_current = iiter.next());
+                        _current = iiter.next();
+                        return new Map.Entry<K,V>() {
+                            public K getKey () {
+                                return _current.getKey();
+                            }
+                            public V getValue () {
+                                return _current.getValue();
+                            }
+                            public V setValue (V value) {
+                                checkMutate();
+                                V ovalue = _current.setValue(value);
+                                postPut(_current.getKey(), value, ovalue);
+                                return ovalue;
+                            }
+                            // it's safe to pass these through because Map.Entry's
+                            // implementations operate solely on getKey/getValue
+                            public boolean equals (Object o) {
+                                return _current.equals(o);
+                            }
+                            public int hashCode () {
+                                return _current.hashCode();
+                            }
+                        };
                     }
                     public void remove () {
                         if (_current == null) {
                             throw new IllegalStateException();
                         }
-                        // TODO: generate removed event with _current
+                        checkMutate();
                         iiter.remove();
+                        postRemoved(_current.getKey(), _current.getValue());
                     }
                     protected Map.Entry<K,V> _current;
                 };
@@ -245,8 +283,13 @@ public class DMap<K,V> extends DAttribute
                 return iset.contains(o);
             }
             public boolean remove (Object o) {
-                // TODO: machinery!
-                return iset.remove(o);
+                checkMutate();
+                @SuppressWarnings("unchecked") Map.Entry<K,V> entry = (Map.Entry<K,V>)o;
+                boolean modified = iset.remove(o);
+                if (modified) {
+                    postRemoved(entry.getKey(), entry.getValue());
+                }
+                return modified;
             }
             public int size () {
                 return iset.size();

@@ -40,5 +40,16 @@ public class TestSink implements EventSink
         return tevent;
     }
 
+    /**
+     * Asserts that exactly the specified number of events have been posted, and consumes them so
+     * that assertions can be made about subsequent events.
+     */
+    public void assertPostedCount (int eventCount)
+    {
+        assertTrue("Event count mismatch, expected " + eventCount + ", have " + _events.size(),
+                   _events.size() == eventCount);
+        _events.clear();
+    }
+
     protected List<NexusEvent> _events = new ArrayList<NexusEvent>();
 }

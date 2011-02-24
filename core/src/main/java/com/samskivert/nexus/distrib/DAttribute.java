@@ -26,6 +26,16 @@ public abstract class DAttribute
     }
 
     /**
+     * Confirms that the attribute in question can be mutated. If this attribute is a member of a
+     * proxy object rather than the object on the authoritative server, this will throw an
+     * UnsupportedOperationException.
+     */
+    protected void checkMutate ()
+    {
+        // TODO: determine mutability through _source or _source._sink
+    }
+
+    /**
      * Adds the supplied listener to the supplied listener list.
      */
     protected static DListener[] addListener (DListener[] listeners, DListener listener)
