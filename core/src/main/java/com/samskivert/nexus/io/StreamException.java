@@ -20,4 +20,9 @@ public class StreamException extends RuntimeException
     {
         super(message, cause);
     }
+
+    public StreamException (Throwable cause)
+    {
+        super(cause);
+    }
 }
