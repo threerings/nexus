@@ -27,6 +27,7 @@ public interface Streamable
         float readFloat ();
         double readDouble ();
         String readString ();
+        Class<?> readClass ();
         <T extends Streamable> T readStreamable ();
         <T> T readValue ();
         <T> Collection<T> readValues ();
@@ -46,6 +47,7 @@ public interface Streamable
         void writeFloat (float value);
         void writeDouble (double value);
         void writeString (String value);
+        void writeClass (Class<?> value);
         <T extends Streamable> void writeStreamable (T value);
         <T> void writeValue (T value);
         <T> void writeValues (Collection<T> value);
