@@ -8,12 +8,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.samskivert.nexus.io.StreamException;
 import com.samskivert.nexus.io.Streamable;
+import com.samskivert.nexus.io.Streamer;
 
 /**
  * Provides {@link Streamable#Input} and {@link Streamable#Output} using reflection and I/O support
@@ -36,6 +41,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public byte readByte () {
                 try {
                     return din.readByte();
@@ -43,6 +49,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public short readShort () {
                 try {
                     return din.readShort();
@@ -50,6 +57,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public char readChar () {
                 try {
                     return din.readChar();
@@ -57,6 +65,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public int readInt () {
                 try {
                     return din.readInt();
@@ -64,6 +73,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public long readLong () {
                 try {
                     return din.readLong();
@@ -71,6 +81,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public float readFloat () {
                 try {
                     return din.readFloat();
@@ -78,6 +89,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public double readDouble () {
                 try {
                     return din.readDouble();
@@ -85,6 +97,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public String readString () {
                 try {
                     return din.readUTF();
@@ -92,20 +105,44 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
+            public Class<?> readClass () {
+                short code = readShort();
+                if (code == 0) {
+                    return null; // zero means we're sending the null class
+                }
+                if (code > 0) {
+                    Class<?> clazz = _classes.get(code);
+                    if (clazz == null) {
+                        throw new StreamException("Received unknown class code: " + code);
+                    }
+                    return clazz;
+                }
+                try {
+                    Class<?> clazz = Class.forName(readString());
+                    _classes.put((short)-code, clazz);
+                    return clazz;
+                } catch (Exception e) {
+                    throw new StreamException(e);
+                }
+            }
+
             public <T extends Streamable> T readStreamable () {
-                throw new UnsupportedOperationException(); // TODO: reflect!
+                @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)readClass();
+                return (clazz == null) ? null : // null class means null instance
+                    getStreamer(_streamers, clazz).readObject(this);
             }
+
             @SuppressWarnings("unchecked") public <T> T readValue () {
-                return (T)Streamer.fromCode(readByte()).readValue(this);
+                return (T)ValueStreamer.fromCode(readByte()).readValue(this);
             }
+
             public <T> Collection<T> readValues () {
                 throw new UnsupportedOperationException(); // TODO
-//                 try {
-//                     return din.readBoolean();
-//                 } catch (IOException ioe) {
-//                     throw new StreamException(ioe);
-//                 }
             }
+
+            protected Map<Short, Class<?>> _classes = new HashMap<Short, Class<?>>();
+            protected Map<Class<?>, Streamer<?>> _streamers = new HashMap<Class<?>, Streamer<?>>();
         };
     }
 
@@ -124,6 +161,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeByte (byte value) {
                 try {
                     dout.writeByte(value);
@@ -131,6 +169,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeShort (short value) {
                 try {
                     dout.writeShort(value);
@@ -138,6 +177,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeChar (char value) {
                 try {
                     dout.writeChar(value);
@@ -145,6 +185,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeInt (int value) {
                 try {
                     dout.writeInt(value);
@@ -152,6 +193,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeLong (long value) {
                 try {
                     dout.writeLong(value);
@@ -159,6 +201,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeFloat (float value) {
                 try {
                     dout.writeFloat(value);
@@ -166,6 +209,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeDouble (double value) {
                 try {
                     dout.writeDouble(value);
@@ -173,6 +217,7 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
+
             public void writeString (String value) {
                 try {
                     dout.writeUTF(value);
@@ -180,156 +225,74 @@ public class JVMIO
                     throw new StreamException(ioe);
                 }
             }
-            public <T extends Streamable> void writeStreamable (T value) {
-                throw new UnsupportedOperationException(); // TODO: reflect!
+
+            public void writeClass (Class<?> value) {
+                Short code = _classes.get(value);
+                if (code != null) {
+                    writeShort(code);
+                } else {
+                    if (_nextCode >= Short.MAX_VALUE) {
+                        throw new StreamException(
+                            "Cannot stream more than " + Short.MAX_VALUE + " unique classes.");
+                    }
+                    _classes.put(value, code = (short)++_nextCode);
+                    writeShort((short)-code);
+                    writeString(value.getName());
+                }
             }
+
+            public <T extends Streamable> void writeStreamable (T value) {
+                if (value == null) {
+                    writeShort((short)0); // send the null class for the null instance
+                } else {
+                    @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)value.getClass();
+                    writeClass(clazz);
+                    getStreamer(_streamers, clazz).writeObject(this, value);
+                }
+            }
+
             @SuppressWarnings("unchecked") public <T> void writeValue (T value) {
-                Streamer s = Streamer.fromValue(value);
+                ValueStreamer s = ValueStreamer.fromValue(value);
                 writeByte(s.code);
                 s.writeValue(this, value);
             }
+
             public <T> void writeValues (Collection<T> value) {
                 throw new UnsupportedOperationException(); // TODO
-//                 try {
-//                     dout.writeBoolean(value);
-//                 } catch (IOException ioe) {
-//                     throw new StreamException(ioe);
-//                 }
             }
+
+            protected int _nextCode = 0;
+            protected Map<Class<?>, Short> _classes = new HashMap<Class<?>, Short>();
+            protected Map<Class<?>, Streamer<?>> _streamers = new HashMap<Class<?>, Streamer<?>>();
         };
     }
 
     private JVMIO () {} // no constructy
 
-    protected static enum Streamer {
-        NULL(0) {
-            public Object readValue (Streamable.Input in) {
-                return null;
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                // noop!
-            }
-        },
-        BOOLEAN(1, Boolean.TYPE, Boolean.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readBoolean();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeBoolean((Boolean)value);
-            }
-        },
-        BYTE(2, Byte.TYPE, Byte.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readByte();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeByte((Byte)value);
-            }
-        },
-        CHAR(3, Character.TYPE, Character.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readChar();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeChar((Character)value);
-            }
-        },
-        SHORT(4, Short.TYPE, Short.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readShort();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeShort((Short)value);
-            }
-        },
-        INT(5, Integer.TYPE, Integer.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readInt();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeInt((Integer)value);
-            }
-        },
-        LONG(6, Long.TYPE, Long.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readLong();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeLong((Long)value);
-            }
-        },
-        FLOAT(7, Float.TYPE, Float.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readFloat();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeFloat((Float)value);
-            }
-        },
-        DOUBLE(8, Double.TYPE, Double.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readDouble();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeDouble((Double)value);
-            }
-        },
-        STRING(9, String.class) {
-            public Object readValue (Streamable.Input in) {
-                return in.readString();
-            }
-            public void writeValue (Streamable.Output out, Object value) {
-                out.writeString((String)value);
-            }
-        };
-        // TODO: list, set, map?
+    /**
+     * Returns the name of the streamer class `pkg.Streamer_Name` for a given class `pkg.Name`.
+     */
+    protected static String getStreamerName (Class<?> clazz)
+    {
+        int pkpre = clazz.getPackage().getName().length()+1;
+        String fullName = clazz.getName();
+        return fullName.substring(0, pkpre) + "Streamer_" + fullName.substring(pkpre);
+    }
 
-        /** Reads a value of our associated type from the supplied input. (The code is assumed to
-         * already have been read from the stream and used to select this streamer.) */
-        public abstract Object readValue (Streamable.Input in);
-
-        /** Writes a value of our associated type to the supplied input. (The code is assumed to
-         * already have been written to the stream by the caller.) */
-        public abstract void writeValue (Streamable.Output out, Object value);
-
-        /** Returns the streamer associated with the supplied code. */
-        public static Streamer fromCode (byte code) {
-            return _fromCode.get(code);
-        }
-
-        /** Returns the streamer associated with the supplied value. */
-        public static Streamer fromValue (Object value) {
-            if (value == null) {
-                return NULL;
-            }
-            Streamer s = _fromType.get(value.getClass());
-            if (s == null) {
+    protected static <T extends Streamable> Streamer<T> getStreamer (
+        Map<Class<?>, Streamer<?>> cache, Class<T> clazz)
+    {
+        Streamer<?> s = cache.get(clazz);
+        if (s == null) {
+            try {
+                s = (Streamer<?>)Class.forName(getStreamerName(clazz)).newInstance();
+                cache.put(clazz, s);
+            } catch (Exception e) {
                 throw new StreamException(
-                    "Requested to stream unsupported value type " + value.getClass());
-            }
-            return s;
-        }
-
-        /** The code used to prefix this type on the wire. */
-        public final byte code;
-
-        /** The types handled by this streamer. */
-        public final Class<?>[] types;
-
-        Streamer (int code, Class<?>... types) {
-            this.code = (byte)code;
-            this.types = types;
-        }
-
-        protected static Map<Byte, Streamer> _fromCode = new HashMap<Byte, Streamer>();
-        protected static Map<Class<?>, Streamer> _fromType = new HashMap<Class<?>, Streamer>();
-        static {
-            for (Streamer s : Streamer.values()) {
-                _fromCode.put(s.code, s);
-                for (Class<?> type : s.types) {
-                    _fromType.put(type, s);
-                }
+                    "Error creating streamer for " + clazz.getName(), e);
             }
         }
+        @SuppressWarnings("unchecked") Streamer<T> typed = (Streamer<T>)s;
+        return typed;
     }
 }

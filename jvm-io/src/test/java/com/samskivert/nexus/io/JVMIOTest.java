@@ -6,6 +6,8 @@ package com.samskivert.nexus.io;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import com.samskivert.nexus.distrib.DValue;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -27,7 +29,7 @@ public class JVMIOTest
         final double aDouble = Math.E;
         final String aString = "Hello world!";
 
-        testStreamable(new StreamTester() {
+        testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
                 out.writeBoolean(aBoolean);
                 out.writeByte(aByte);
@@ -67,7 +69,7 @@ public class JVMIOTest
         final double aDouble = Math.E;
         final String aString = "Hello world!";
 
-        testStreamable(new StreamTester() {
+        testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
                 out.writeValue(aNull);
                 out.writeValue(aBoolean);
@@ -95,7 +97,36 @@ public class JVMIOTest
         });
     }
 
-    protected void testStreamable (StreamTester tester)
+    @Test
+    public void testClass ()
+    {
+        testStreaming(new StreamTester() {
+            public void writeTest (Streamable.Output out) {
+                out.writeClass(Widget.class);
+                out.writeClass(Widget.Wangle.class);
+            }
+            public void readTest (Streamable.Input in) {
+                assertEquals(Widget.class, in.readClass());
+                assertEquals(Widget.Wangle.class, in.readClass());
+            }
+        });
+    }
+
+    @Test
+    public void testStreaming ()
+    {
+        final Widget w = new Widget("foo", new Widget.Wangle(42));
+        testStreaming(new StreamTester() {
+            public void writeTest (Streamable.Output out) {
+                out.writeStreamable(w);
+            }
+            public void readTest (Streamable.Input in) {
+                assertEquals(w, in.<Widget>readStreamable());
+            }
+        });
+    }
+
+    protected void testStreaming (StreamTester tester)
     {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Streamable.Output sout = JVMIO.newOutput(out);
