@@ -11,12 +11,12 @@ public class Streamer_Widget implements Streamer<Widget>
     public void writeObject (Streamable.Output out, Widget obj)
     {
         out.writeString(obj.name);
-        out.writeStreamable(obj._wangle);
+        out.writeValue(obj._wangle);
     }
 
     public Widget readObject (Streamable.Input in)
     {
-        return new Widget(in.readString(), in.<Widget.Wangle>readStreamable());
+        return new Widget(in.readString(), in.<Widget.Wangle>readValue());
     }
 
     public static class Wangle implements Streamer<Widget.Wangle> {

@@ -5,6 +5,9 @@ package com.samskivert.nexus.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.samskivert.nexus.distrib.DValue;
 
@@ -98,30 +101,33 @@ public class JVMIOTest
     }
 
     @Test
-    public void testClass ()
+    public void testWriteValue ()
     {
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
-                out.writeClass(Widget.class);
-                out.writeClass(Widget.Wangle.class);
+                for (Widget w : WS) {
+                    out.writeValue(w);
+                }
             }
             public void readTest (Streamable.Input in) {
-                assertEquals(Widget.class, in.readClass());
-                assertEquals(Widget.Wangle.class, in.readClass());
+                for (Widget w : WS) {
+                    assertEquals(w, in.<Widget>readValue());
+                }
             }
         });
     }
 
     @Test
-    public void testStreaming ()
+    public void testWriteValues ()
     {
-        final Widget w = new Widget("foo", new Widget.Wangle(42));
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
-                out.writeStreamable(w);
+                out.writeValues(WS.size(), WS.iterator());
             }
             public void readTest (Streamable.Input in) {
-                assertEquals(w, in.<Widget>readStreamable());
+                List<Widget> into = new ArrayList<Widget>();
+                in.<Widget>readValues(into);
+                assertEquals(WS, into);
             }
         });
     }
@@ -138,4 +144,9 @@ public class JVMIOTest
         void writeTest (Streamable.Output out);
         void readTest (Streamable.Input in);
     }
+
+    protected static final List<Widget> WS = Arrays.asList(
+        new Widget("foo", new Widget.Wangle(42)),
+        new Widget("bar", new Widget.Wangle(21)),
+        new Widget("baz", new Widget.Wangle(7)));
 }
