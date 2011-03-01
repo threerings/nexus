@@ -6,9 +6,7 @@
 
 package com.samskivert.nexus.distrib;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.io.Streamer;
@@ -20,21 +18,12 @@ public class Streamer_DMap<K,V> implements Streamer<DMap<K,V>>
 {
     public void writeObject (Streamable.Output out, DMap<K,V> obj)
     {
-        out.writeValues(obj.keySet());
-        out.writeValues(obj.values());
+        out.writeValue(obj._impl);
     }
 
     public DMap<K,V> readObject (Streamable.Input in)
     {
-        Collection<K> keys = in.<K>readValues();
-        Collection<V> vals = in.<V>readValues();
-        Iterator<K> kiter = keys.iterator();
-        Iterator<V> viter = vals.iterator();
-        DMap<K,V> map = DMap.create(new HashMap<K,V>(keys.size()));
-        while (kiter.hasNext()) {
-            map.put(kiter.next(), viter.next());
-        }
-        return map;
+        return DMap.create(in.<Map<K,V>>readValue());
     }
 
     public static class PutEvent<K,V> implements Streamer<DMap.PutEvent<K,V>> {

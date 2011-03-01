@@ -9,7 +9,7 @@ package com.samskivert.nexus.io;
 /**
  * An interface implemented by generated streamer classes.
  */
-public interface Streamer<T extends Streamable>
+public interface Streamer<T>
 {
     /**
      * Writes the supplied instance to the supplied output.
