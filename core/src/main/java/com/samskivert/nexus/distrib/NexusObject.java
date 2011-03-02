@@ -25,17 +25,17 @@ public abstract class NexusObject
         void init (NexusObject owner, short index);
     }
 
-    // from interface Streamable
-    public void readObject (Input in)
+    /**
+     * Initializes this object with its event sink, which also triggers the initialization of its
+     * distributed attributes. This takes place when the object is registered with dispatcher on
+     * its originating server, and when it is read off the network on a subscribing client.
+     */
+    public void init (EventSink sink)
     {
-        initAttributes();
-        _id = in.readInt();
-    }
-
-    // from interface Streamable
-    public void writeObject (Output out)
-    {
-        out.writeInt(_id);
+        _sink = sink;
+        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
+            getAttribute(ii).init(this, (short)ii);
+        }
     }
 
     /**
@@ -46,16 +46,6 @@ public abstract class NexusObject
     protected DAttribute getAttribute (int index)
     {
         throw new IndexOutOfBoundsException("Invalid attribute index " + index);
-    }
-
-    /**
-     * Initializes the owner reference and index for this object's attributes.
-     */
-    protected void initAttributes ()
-    {
-        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
-            getAttribute(ii).init(this, (short)ii);
-        }
     }
 
     /**

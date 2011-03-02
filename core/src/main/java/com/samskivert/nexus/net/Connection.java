@@ -54,6 +54,7 @@ public abstract class Connection
             log.warning("Missing pender list", "oclass", oclass);
             // TODO: clear our subscription
         } else {
+            response.object.init(this); // we are this object's event sink
             for (Callback<?> pender : penders) {
                 @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                     (Callback<NexusObject>)pender;
@@ -79,7 +80,7 @@ public abstract class Connection
     // from interface Response.Handler
     public void onDispatchEvent (Response.DispatchEvent response)
     {
-        // the dispatcher will locate the target object and executor and dispatch the event
+        // the dispatcher will locate the target object and dispatch the event
         _dispatcher.dispatchEvent(response.event);
     }
 

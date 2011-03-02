@@ -42,8 +42,7 @@ public class DMapTest
         TestSink sink = new TestSink();
 
         MapObject obj = new MapObject();
-        obj._sink = sink;
-        obj.initAttributes();
+        obj.init(sink);
 
         // test add
         prepPutCheck(obj.map, 1, "One", null);
@@ -80,8 +79,7 @@ public class DMapTest
         TestSink sink = new TestSink();
 
         MapObject obj = new MapObject();
-        obj._sink = sink;
-        obj.initAttributes();
+        obj.init(sink);
 
         populateMap(sink, obj.map);
 
@@ -128,8 +126,7 @@ public class DMapTest
         TestSink sink = new TestSink();
 
         MapObject obj = new MapObject();
-        obj._sink = sink;
-        obj.initAttributes();
+        obj.init(sink);
 
         populateMap(sink, obj.map);
 
@@ -174,8 +171,7 @@ public class DMapTest
         TestSink sink = new TestSink();
 
         MapObject obj = new MapObject();
-        obj._sink = sink;
-        obj.initAttributes();
+        obj.init(sink);
 
         populateMap(sink, obj.map);
 
