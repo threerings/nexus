@@ -25,4 +25,9 @@ public class NexusException extends RuntimeException
     {
         super(message, cause);
     }
+
+    public NexusException (Throwable cause)
+    {
+        super(cause);
+    }
 }
