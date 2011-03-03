@@ -54,7 +54,7 @@ public abstract class Connection
             log.warning("Missing pender list", "oclass", oclass);
             // TODO: clear our subscription
         } else {
-            response.object.init(this); // we are this object's event sink
+            response.object.init(response.object.getId(), this); // we are this object's event sink
             for (Callback<?> pender : penders) {
                 @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                     (Callback<NexusObject>)pender;

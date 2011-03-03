@@ -35,7 +35,7 @@ public class AttrIndexTest
     {
         TestObject tobj = new TestObject();
         // manually initialize the object attributes since we're not registering with anything
-        tobj.init(null);
+        tobj.init(0, null);
 
         // make sure our attributes were wired up properly
         assertEquals(1, tobj.getAttributeCount());

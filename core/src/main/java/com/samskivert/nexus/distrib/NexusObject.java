@@ -26,12 +26,22 @@ public abstract class NexusObject
     }
 
     /**
-     * Initializes this object with its event sink, which also triggers the initialization of its
-     * distributed attributes. This takes place when the object is registered with dispatcher on
-     * its originating server, and when it is read off the network on a subscribing client.
+     * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.
      */
-    public void init (EventSink sink)
+    public int getId ()
     {
+        return _id;
+    }
+
+    /**
+     * Initializes this object with its id and event sink, which also triggers the initialization
+     * of its distributed attributes. This takes place when the object is registered with
+     * dispatcher on its originating server, and when it is read off the network on a subscribing
+     * client (though in this latter case the id is not changed).
+     */
+    public void init (int id, EventSink sink)
+    {
+        _id = id;
         _sink = sink;
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).init(this, (short)ii);
