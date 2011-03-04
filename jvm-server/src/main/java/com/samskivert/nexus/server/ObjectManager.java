@@ -19,6 +19,7 @@ import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
+import com.samskivert.nexus.distrib.NexusObjectUtil;
 import com.samskivert.nexus.distrib.Request;
 import com.samskivert.nexus.distrib.Singleton;
 
@@ -132,9 +133,23 @@ public class ObjectManager
      */
     public void clear (NexusObject object)
     {
-        if (_objects.remove(object.getId()) == null) {
-            log.warning("Requested to clear unknown object", "id", object.getId());
+        final int id = object.getId();
+        Binding<NexusObject> bind = _objects.get(id);
+        if (bind == null) {
+            log.warning("Requested to clear unknown object", "id", id);
         }
+
+        // prevent the object from dispatching any more events
+        NexusObjectUtil.clear(object);
+
+        // queue up an action on this object's context that will remove this object's binding; this
+        // will allow any pending events for this object to be processed before the binding is
+        // cleared
+        bind.context.postOp(new Runnable() {
+            public void run () {
+                _objects.remove(id);
+            }
+        });
     }
 
     /**
@@ -207,15 +222,27 @@ public class ObjectManager
     }
 
     // from interface EventSink
-    public void postEvent (NexusObject source, NexusEvent event)
+    public void postEvent (final NexusObject source, final NexusEvent event)
     {
-        // TODO
+        // TODO: fancy aggregation using thread-local accumulators
+        Binding<NexusObject> bind = _objects.get(source.getId());
+        if (bind == null) {
+            log.warning("Dropping event for unregistered object", "id", source.getId(),
+                        "event", event);
+        } else {
+            // TODO: do we want to forward events to network subscribers from here?
+            bind.context.postOp(new Runnable() {
+                public void run () {
+                    event.applyTo(source);
+                }
+            });
+        }
     }
 
     protected void register (NexusObject object, EntityContext ctx)
     {
         int id = getNextObjectId();
-        object.init(id, this);
+        NexusObjectUtil.init(object, id, this);
         _objects.put(id, new Binding<NexusObject>(object, ctx));
     }
 
