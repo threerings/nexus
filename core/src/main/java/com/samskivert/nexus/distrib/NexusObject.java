@@ -8,6 +8,8 @@ package com.samskivert.nexus.distrib;
 
 import com.samskivert.nexus.io.Streamable;
 
+import static com.samskivert.nexus.util.Log.log;
+
 /**
  * The basis for all distributed information sharing in Nexus.
  */
@@ -39,13 +41,23 @@ public abstract class NexusObject
      * dispatcher on its originating server, and when it is read off the network on a subscribing
      * client (though in this latter case the id is not changed).
      */
-    public void init (int id, EventSink sink)
+    protected void init (int id, EventSink sink)
     {
         _id = id;
         _sink = sink;
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).init(this, (short)ii);
         }
+    }
+
+    /**
+     * Clears out this object's distributed id and event sink. Called by the object manager when
+     * this object is unregistered.
+     */
+    protected void clear ()
+    {
+        _id = 0;
+        _sink = null;
     }
 
     /**
@@ -72,8 +84,13 @@ public abstract class NexusObject
      */
     protected void postEvent (NexusEvent event)
     {
-        event.setTargetId(_id);
-        _sink.postEvent(this, event);
+        if (_id > 0) {
+            event.setTargetId(_id);
+            _sink.postEvent(this, event);
+        } else {
+            log.warning("Requested to post event to unregistered object",
+                        "event", event, new Exception());
+        }
     }
 
     /** The unique identifier for this object. This value is not available until the object has

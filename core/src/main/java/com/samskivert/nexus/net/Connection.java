@@ -15,6 +15,7 @@ import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusObject;
+import com.samskivert.nexus.distrib.NexusObjectUtil;
 import com.samskivert.nexus.util.Callback;
 
 import static com.samskivert.nexus.util.Log.log;
@@ -54,7 +55,8 @@ public abstract class Connection
             log.warning("Missing pender list", "oclass", oclass);
             // TODO: clear our subscription
         } else {
-            response.object.init(response.object.getId(), this); // we are this object's event sink
+            // we are this object's event sink
+            NexusObjectUtil.init(response.object, response.object.getId(), this);
             for (Callback<?> pender : penders) {
                 @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                     (Callback<NexusObject>)pender;
