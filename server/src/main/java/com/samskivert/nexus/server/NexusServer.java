@@ -75,7 +75,7 @@ public class NexusServer implements Nexus
     public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<T> action)
     {
         // TODO: determine whether the entity is local or remote
-        throw new UnsupportedOperationException();
+        _omgr.invoke(kclass, key, action);
     }
 
     // from interface Nexus
@@ -88,7 +88,7 @@ public class NexusServer implements Nexus
     public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request)
     {
         // TODO: determine whether the entity is local or remote
-        throw new UnsupportedOperationException();
+        return _omgr.invoke(kclass, key, request);
     }
 
     public NexusServer (NexusConfig config, ExecutorService exec)
