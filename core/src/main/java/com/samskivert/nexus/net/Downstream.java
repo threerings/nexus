@@ -11,24 +11,24 @@ import com.samskivert.nexus.distrib.NexusObject;
 import com.samskivert.nexus.io.Streamable;
 
 /**
- * A base interface for all response messages received from a server.
+ * A base interface for all messages received from a server.
  */
-public interface Response extends Streamable
+public interface Downstream extends Streamable
 {
-    /** Used to dispatch response messages. */
+    /** Used to dispatch downstream messages. */
     public interface Handler {
         /** Dispatches a successful subscribe response. */
-        void onSubscribe (Subscribe response);
+        void onSubscribe (Subscribe message);
 
         /** Dispatches a failed subscribe response. */
-        void onSubscribeFailure (SubscribeFailure response);
+        void onSubscribeFailure (SubscribeFailure message);
 
         /** Dispatches an event originating on the server. */
-        void onDispatchEvent (DispatchEvent response);
+        void onDispatchEvent (DispatchEvent message);
     }
 
     /** A successful response to a subscription request. */
-    public static class Subscribe implements Response
+    public static class Subscribe implements Downstream
     {
         /** The requested object. */
         public final NexusObject object;
@@ -43,7 +43,7 @@ public interface Response extends Streamable
     }
 
     /** A failure response to a subscription request. */
-    public static class SubscribeFailure implements Response
+    public static class SubscribeFailure implements Downstream
     {
         /** The name of the singleton object class requested. */
         public final String oclass;
@@ -62,7 +62,7 @@ public interface Response extends Streamable
     }
 
     /** Notifies the client of an event originating from the server. */
-    public static class DispatchEvent implements Request
+    public static class DispatchEvent implements Downstream
     {
         /** The event to be dispatched. */
         public final NexusEvent event;
@@ -76,6 +76,6 @@ public interface Response extends Streamable
         }
     }
 
-    /** Dispatches this response to the appropriate method on the supplied handler. */
+    /** Dispatches this message to the appropriate method on the supplied handler. */
     void dispatch (Handler handler);
 }

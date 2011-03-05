@@ -24,7 +24,7 @@ import static com.samskivert.nexus.util.Log.log;
  * Manages a connection to a particular server.
  */
 public abstract class Connection
-    implements Response.Handler, EventSink
+    implements Downstream.Handler, EventSink
 {
     /**
      * Requests to subscribe to the specified singleton Nexus object. Success (i.e. the object) or
@@ -34,7 +34,7 @@ public abstract class Connection
     {
         String oclass = clazz.getName();
         if (!_penders.addPender(oclass, cb)) {
-            sendRequest(new Request.Subscribe(oclass));
+            send(new Upstream.Subscribe(oclass));
         }
     }
 
@@ -43,47 +43,47 @@ public abstract class Connection
     // from EventSink
     public void postEvent (NexusObject source, NexusEvent event)
     {
-        sendRequest(new Request.PostEvent(event));
+        send(new Upstream.PostEvent(event));
     }
 
-    // from interface Response.Handler
-    public void onSubscribe (Response.Subscribe response)
+    // from interface Downstream.Handler
+    public void onSubscribe (Downstream.Subscribe msg)
     {
-        String oclass = response.object.getClass().getName();
+        String oclass = msg.object.getClass().getName();
         List<Callback<?>> penders = _penders.getPenders(oclass);
         if (penders == null) {
             log.warning("Missing pender list", "oclass", oclass);
             // TODO: clear our subscription
         } else {
             // we are this object's event sink
-            NexusObjectUtil.init(response.object, response.object.getId(), this);
+            NexusObjectUtil.init(msg.object, msg.object.getId(), this);
             for (Callback<?> pender : penders) {
                 @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                     (Callback<NexusObject>)pender;
-                cb.onSuccess(response.object);
+                cb.onSuccess(msg.object);
             }
         }
     }
 
-    // from interface Response.Handler
-    public void onSubscribeFailure (Response.SubscribeFailure response)
+    // from interface Downstream.Handler
+    public void onSubscribeFailure (Downstream.SubscribeFailure msg)
     {
-        List<Callback<?>> penders = _penders.getPenders(response.oclass);
+        List<Callback<?>> penders = _penders.getPenders(msg.oclass);
         if (penders == null) {
-            log.warning("Missing pender list", "oclass", response.oclass);
+            log.warning("Missing pender list", "oclass", msg.oclass);
         } else {
-            Exception cause = new Exception(response.cause);
+            Exception cause = new Exception(msg.cause);
             for (Callback<?> pender : penders) {
                 pender.onFailure(cause);
             }
         }
     }
 
-    // from interface Response.Handler
-    public void onDispatchEvent (Response.DispatchEvent response)
+    // from interface Downstream.Handler
+    public void onDispatchEvent (Downstream.DispatchEvent msg)
     {
         // the dispatcher will locate the target object and dispatch the event
-        _dispatcher.dispatchEvent(response.event);
+        _dispatcher.dispatchEvent(msg.event);
     }
 
     protected Connection (Dispatcher dispatcher)
@@ -94,14 +94,14 @@ public abstract class Connection
     /**
      * Called to send a request message to the server.
      */
-    protected abstract void sendRequest (Request request);
+    protected abstract void send (Upstream request);
 
     /**
-     * Called when a response message is received from the server.
+     * Called when a message is received from the server.
      */
-    protected void onResponse (Response response)
+    protected void onReceive (Downstream message)
     {
-        response.dispatch(this);
+        message.dispatch(this);
     }
 
     /** This map is accessed by multiple threads, be sure its method are synchronized. */
