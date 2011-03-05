@@ -7,6 +7,7 @@
 package com.samskivert.nexus.server;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -88,6 +89,7 @@ public class Session
     // from interface Upstream.Handler
     public void onPostEvent (final Upstream.PostEvent message)
     {
+        // we pass things straight through to the object manager which handles everything
         _omgr.postEvent(message.event);
     }
 
@@ -111,9 +113,20 @@ public class Session
         _output = output;
     }
 
-    protected void sendMessage (Downstream msg)
+    /**
+     * Flattens a message into bytes and sends it to the client via the transport layer.
+     */
+    protected synchronized void sendMessage (Downstream msg)
     {
-        // TODO
+        // we may be called from many threads, so serialize access to the output streams
+        synchronized (_sout) {
+            try {
+                _sout.writeValue(msg);
+                _output.send(_bout.toByteArray());
+            } finally {
+                _bout.reset();
+            }
+        }
     }
 
     protected static class FramedInputStream extends ByteArrayInputStream
@@ -138,6 +151,10 @@ public class Session
     // these are used for processing input
     protected final FramedInputStream _fin = new FramedInputStream();
     protected final Streamable.Input _sin = JVMIO.newInput(_fin);
+
+    // these are used for flattening output messages
+    protected final ByteArrayOutputStream _bout = new ByteArrayOutputStream();
+    protected final Streamable.Output _sout = JVMIO.newOutput(_bout);
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = Sets.newHashSet();
