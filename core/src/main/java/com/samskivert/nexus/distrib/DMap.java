@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static com.samskivert.nexus.util.Log.log;
+
 /**
  * A map attribute for a Nexus object. Contains a mapping from keys to values.
  */
@@ -325,7 +327,12 @@ public class DMap<K,V> extends DAttribute
         for (int ii = 0, ll = _listeners.length; ii < ll; ii++) {
             @SuppressWarnings("unchecked") Listener<K,V> listener = (Listener<K,V>)_listeners[ii];
             if (listener != null) {
-                listener.entryPut(key, value, ovalue);
+                try {
+                    listener.entryPut(key, value, ovalue);
+                } catch (Throwable t) {
+                    log.warning("Listener choked in entryPut", "key", key, "value", value,
+                                "ovalue", oldValue, "listener", listener, t);
+                }
             }
         }
     }
@@ -343,7 +350,12 @@ public class DMap<K,V> extends DAttribute
         for (int ii = 0, ll = _listeners.length; ii < ll; ii++) {
             @SuppressWarnings("unchecked") Listener<K,V> listener = (Listener<K,V>)_listeners[ii];
             if (listener != null) {
-                listener.entryRemoved(key, ovalue);
+                try {
+                    listener.entryRemoved(key, ovalue);
+                } catch (Throwable t) {
+                    log.warning("Listener choked in entryRemoved", "key", key, "ovalue", oldValue,
+                                "listener", listener, t);
+                }
             }
         }
     }

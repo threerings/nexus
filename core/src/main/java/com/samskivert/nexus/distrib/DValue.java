@@ -8,6 +8,8 @@ package com.samskivert.nexus.distrib;
 
 import com.samskivert.nexus.io.Streamable;
 
+import static com.samskivert.nexus.util.Log.log;
+
 /**
  * A value attribute for a Nexus object. Contains a single value, which may be updated.
  */
@@ -17,7 +19,7 @@ public class DValue<T> extends DAttribute
     public static interface Listener<T> extends DListener
     {
         /** Notifies listener of a value update. */
-        void valueUpdated (T value, T oldValue);
+        void valueChanged (T value, T oldValue);
     }
 
     /**
@@ -84,7 +86,12 @@ public class DValue<T> extends DAttribute
         for (int ii = 0, ll = _listeners.length; ii < ll; ii++) {
             @SuppressWarnings("unchecked") Listener<T> listener = (Listener<T>)_listeners[ii];
             if (listener != null) {
-                listener.valueUpdated(_value, ovalue);
+                try {
+                    listener.valueChanged(_value, ovalue);
+                } catch (Throwable t) {
+                    log.warning("Listener choked in valueChanged", "value", value, "ovalue", oldValue,
+                                "listener", listener, t);
+                }
             }
         }
     }
