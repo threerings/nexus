@@ -3,10 +3,13 @@
 
 package com.samskivert.nexus.server;
 
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
@@ -32,6 +35,13 @@ import static com.samskivert.nexus.util.Log.log;
 public class ObjectManager
     implements EventSink
 {
+    /** An interface implemented by sessions, which must forward object events to clients. */
+    public interface Subscriber
+    {
+        /** Notifies the subscriber of an event which must be forwarded. */
+        void forwardEvent (NexusEvent event);
+    }
+
     public ObjectManager (NexusConfig config, Executor exec)
     {
         _exec = exec;
@@ -148,6 +158,9 @@ public class ObjectManager
         bind.context.postOp(new Runnable() {
             public void run () {
                 _objects.remove(id);
+                synchronized (_subscribers) {
+                    _subscribers.remove(id);
+                }
             }
         });
     }
@@ -221,22 +234,101 @@ public class ObjectManager
         return invoke(requireKeyed(eclass, key, "No singleton registered for"), request);
     }
 
+    /**
+     * Invokes an action on the supplied target object, if it exists.
+     */
+    public void invoke (int id, Action<NexusObject> action)
+    {
+        final Binding<NexusObject> bind = _objects.get(id);
+        if (bind == null) {
+            log.warning("Cannot find object for action", "id", id, "action", action);
+        } else {
+            invoke(bind, action);
+        }
+    }
+
+    /**
+     * Requests that the supplied subscriber be added to the specified singleton object.
+     *
+     * @return the the object to which a subscriber was added.
+     * @throws NexusException if the request fails due to access control, or if the specified
+     * singleton class is not a NexusObject or not registered.
+     */
+    public NexusObject addSubscriber (Class<?> clazz, Subscriber sub)
+    {
+        Binding<Singleton> bind = requireSingleton(clazz, "No singleton registered for ");
+        if (bind.entity instanceof NexusObject) {
+            NexusObject target = (NexusObject)bind.entity;
+            // TODO: access control
+            getSubscriberSet(target.getId()).add(sub);
+            return target;
+        } else {
+            throw new NexusException(clazz.getName() + " is not a NexusObject");
+        }
+    }
+
+    /**
+     * Requests that the supplied subscriber be added to the specified object.
+     *
+     * @return the the object to which a subscriber was added.
+     * @throws NexusException if the request fails due to access control, or a non-existent object.
+     */
+    public NexusObject addSubscriber (int id, Subscriber sub)
+    {
+        Binding<NexusObject> bind = _objects.get(id);
+        if (bind == null) {
+            throw new NexusException("No object registered with id " + id);
+        }
+        // TODO: access control
+        getSubscriberSet(id).add(sub);
+        return bind.entity;
+    }
+
+    /**
+     * Requests that the supplied subscriber be removed from the object with the specified id.
+     */
+    public void clearSubscriber (int id, Subscriber sub)
+    {
+        Set<Subscriber> subs;
+        synchronized (_subscribers) {
+            subs = _subscribers.get(id);
+        }
+        if (subs != null) {
+            if (!subs.remove(sub)) {
+                log.warning("Requested to remove unknown subscriber", "id", id, "sub", sub);
+            }
+        } // otherwise, the object was probably already destroyed
+    }
+
+    public void postEvent (final NexusEvent event)
+    {
+        final Set<Subscriber> subs;
+        synchronized (_subscribers) {
+            subs = _subscribers.get(event.getTargetId());
+        }
+        invoke(event.getTargetId(), new Action<NexusObject>() {
+            public void invoke (NexusObject object) {
+                // TODO: access control
+                // apply the event to the object (notifying listeners)
+                event.applyTo(object);
+                // forward the event to any subscribers
+                if (subs != null) {
+                    for (Subscriber sub : subs) {
+                        sub.forwardEvent(event);
+                    }
+                }
+            }
+            @Override public String toString() {
+                return event.toString();
+            }
+        });
+    }
+
     // from interface EventSink
-    public void postEvent (final NexusObject source, final NexusEvent event)
+    public void postEvent (NexusObject source, final NexusEvent event)
     {
         // TODO: fancy aggregation using thread-local accumulators
-        Binding<NexusObject> bind = _objects.get(source.getId());
-        if (bind == null) {
-            log.warning("Dropping event for unregistered object", "id", source.getId(),
-                        "event", event);
-        } else {
-            // TODO: do we want to forward events to network subscribers from here?
-            bind.context.postOp(new Runnable() {
-                public void run () {
-                    event.applyTo(source);
-                }
-            });
-        }
+        postEvent(event);
     }
 
     protected void register (NexusObject object, EntityContext ctx)
@@ -301,6 +393,18 @@ public class ObjectManager
         }
     }
 
+    protected Set<Subscriber> getSubscriberSet (int targetId)
+    {
+        synchronized (_subscribers) {
+            Set<Subscriber> subs = _subscribers.get(targetId);
+            if (subs == null) {
+                subs = new ConcurrentSkipListSet<Subscriber>(SUBSCRIBER_COMP);
+                _subscribers.put(targetId, subs);
+            }
+            return subs;
+        }
+    }
+
     protected final synchronized int getNextObjectId ()
     {
         // look for the next unused oid; if we had two billion objects, this would loop infinitely,
@@ -336,4 +440,18 @@ public class ObjectManager
     /** A mapping of all keyed entities hosted on this server. */
     protected final ConcurrentMap<Class<?>,ConcurrentMap<Comparable<?>,Binding<Keyed>>> _keyeds =
         Maps.newConcurrentMap();
+
+    /** A mapping from object id to subscriber set. The outer mapping will only be modified under
+     * synchronization, but the inner-set allows concurrent modifications. */
+    protected final Map<Integer,Set<Subscriber>> _subscribers = Maps.newHashMap();
+
+    /** A comparator on subscribers which orders by hashcode. */
+    protected static final Comparator<Subscriber> SUBSCRIBER_COMP = new Comparator<Subscriber>() {
+        public int compare (Subscriber s1, Subscriber s2) {
+            int h1 = s1.hashCode(), h2 = s2.hashCode();
+            if (h1 < h2) return -1;
+            else if (h1 > h2) return 1;
+            else return 0;
+        }
+    };
 }

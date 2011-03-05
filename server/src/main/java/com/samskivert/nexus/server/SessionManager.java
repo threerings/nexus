@@ -62,6 +62,11 @@ public class SessionManager
         void disconnect ();
     }
 
+    public SessionManager (ObjectManager omgr)
+    {
+        _omgr = omgr;
+    }
+
     /**
      * Creates a new session for a client with the supplied IP address. The supplied {@link Output}
      * instance will be used to communicate messages to the client, and the returned {@link Input}
@@ -69,10 +74,17 @@ public class SessionManager
      */
     public Input createSession (String ipaddress, Output output)
     {
-        Session session = new Session(this, ipaddress, output);
+        Session session = new Session(this, _omgr, ipaddress, output);
         _byIP.put(ipaddress, session);
         return session;
     }
+
+    protected void sessionDisconnected (Session sess)
+    {
+    }
+
+    /** Provides the ability to send and receive distributed events, etc. */
+    protected ObjectManager _omgr;
 
     /** Maintains the IP to session mappings. */
     protected Multimap<String,Session> _byIP =
