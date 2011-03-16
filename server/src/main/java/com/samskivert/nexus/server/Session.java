@@ -53,11 +53,13 @@ public class Session
     // from interface SessionManager.Input
     public void onSendError (Throwable error)
     {
+        // TODO
     }
 
     // from interface SessionManager.Input
     public void onReceiveError (Throwable error)
     {
+        // TODO
     }
 
     // from interface SessionManager.Input
