@@ -104,7 +104,7 @@ public abstract class Connection
         message.dispatch(this);
     }
 
-    /** This map is accessed by multiple threads, be sure its method are synchronized. */
+    /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
     protected static class PenderMap
     {
         public synchronized boolean addPender (String oclass, Callback<?> cb) {
