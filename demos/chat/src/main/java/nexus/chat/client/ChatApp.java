@@ -3,6 +3,7 @@
 
 package nexus.chat.client;
 
+import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -24,7 +25,7 @@ public class ChatApp
                 if (_main != null) {
                     frame.remove(_main);
                 }
-                frame.add(_main = panel);
+                frame.add(_main = panel, BorderLayout.CENTER);
             }
             protected NexusClient _client = new NexusClient();
             protected JPanel _main;
