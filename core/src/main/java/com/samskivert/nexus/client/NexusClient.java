@@ -20,20 +20,24 @@ import com.samskivert.nexus.util.Callback;
 public class NexusClient
 {
     /**
-     * Requests that the client connects to the specified server. The callback will be notified
-     * asynchronously on connection success or failure.
-     */
-    public void connect (String serverHost, Callback<Void> callback)
-    {
-        callback.onFailure(new Throwable("TODO: implement connect"));
-    }
-
-    /**
      * Requests to subscribe to the object identified by the supplied address.
      */
     public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> callback)
     {
+        // TODO: establish connection to server if needed
+        // TODO: subscribe using established connection
         callback.onFailure(new Throwable("TODO: implement subscribe"));
+    }
+
+    /**
+     * Unsubscribes from the specified object. Any events in-flight will be sent to the server, and
+     * any events generated after this unsubscription request will be dropped.
+     */
+    public void unsubscribe (NexusObject object)
+    {
+        // TODO: object.postEvent(new UnsubscribeMarker())
+        // TODO: catch UnsubscribeMarker in Connection.postEvent, and unsubscribe instead of
+        // forwarding the event to the server
     }
 
     /**
@@ -60,6 +64,23 @@ public class NexusClient
                 callback.onFailure(cause);
             }
         };
+    }
+
+    protected void connect (String serverHost, Callback<Void> callback)
+    {
+        // TODO: create connection using abstract method (to accommodate websockets vs jvm
+        // connection implementations)
+        callback.onFailure(new Throwable("TODO: implement connect"));
+    }
+
+    // TODO: should we disconnect immediately when clearing last subscription from a given
+    // connection, or should we periodically poll our open connections and disconnect any with no
+    // active subscriptions (this would allow a little leeway, so that a usage pattern wherein one
+    // unsubscribed from their last object on a given server and then immediately subscribed to a
+    // new one, did not cause needless disconnect and reconnect)
+    protected void disconnect (String serverHost)
+    {
+        // TODO
     }
 
     /** A mapping from hostname to connection instance for all active connections. */
