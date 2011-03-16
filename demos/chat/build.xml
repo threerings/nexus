@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<project name="chat-demo" default="compile" xmlns:artifact="urn:maven-artifact-ant">
+  <import file="../../etc/build-support.xml"/>
+
+  <target name="client" depends="compile">
+    <java classname="nexus.chat.client.ChatApp" fork="true" classpathref="test.classpath"/>
+  </target>
+</project>
