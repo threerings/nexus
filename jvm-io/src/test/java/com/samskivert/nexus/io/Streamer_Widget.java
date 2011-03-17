@@ -1,5 +1,8 @@
 //
 // $Id$
+//
+// Nexus JVMIO - I/O and network services for Nexus built on java.nio
+// http://github.com/samskivert/nexus/blob/master/LICENSE
 
 package com.samskivert.nexus.io;
 
