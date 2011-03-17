@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.NexusEvent;
@@ -30,15 +31,23 @@ public abstract class Connection
      * Requests to subscribe to the specified singleton Nexus object. Success (i.e. the object) or
      * failure will be communicated via the supplied callback.
      */
-    public <T extends NexusObject> void subscribe (Class<T> clazz, Callback<T> cb)
+    public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb)
     {
-        String oclass = clazz.getName();
-        if (!_penders.addPender(oclass, cb)) {
-            send(new Upstream.Subscribe(oclass));
+        if (!_penders.addPender(addr, cb)) {
+            send(new Upstream.Subscribe(addr));
         }
     }
 
     // TODO: how to communicate connection termination/failure?
+
+    /**
+     * Closes this connection in an orderly fashion. Any messages currently queued up should be
+     * delivered prior to closure.
+     */
+    public abstract void close ();
+
+    // from EventSink
+    public abstract String getHost ();
 
     // from EventSink
     public void postEvent (NexusObject source, NexusEvent event)
@@ -49,14 +58,16 @@ public abstract class Connection
     // from interface Downstream.Handler
     public void onSubscribe (Downstream.Subscribe msg)
     {
-        String oclass = msg.object.getClass().getName();
-        List<Callback<?>> penders = _penders.getPenders(oclass);
+        // we are this object's event sink
+        NexusObjectUtil.init(msg.object, msg.object.getId(), this);
+        // the above must precede this call, as obtaining the object's address requires that the
+        // event sink be configured
+        Address<?> addr = msg.object.getAddress();
+        List<Callback<?>> penders = _penders.getPenders(addr);
         if (penders == null) {
-            log.warning("Missing pender list", "oclass", oclass);
+            log.warning("Missing pender list", "addr", addr);
             // TODO: clear our subscription
         } else {
-            // we are this object's event sink
-            NexusObjectUtil.init(msg.object, msg.object.getId(), this);
             for (Callback<?> pender : penders) {
                 @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                     (Callback<NexusObject>)pender;
@@ -68,9 +79,9 @@ public abstract class Connection
     // from interface Downstream.Handler
     public void onSubscribeFailure (Downstream.SubscribeFailure msg)
     {
-        List<Callback<?>> penders = _penders.getPenders(msg.oclass);
+        List<Callback<?>> penders = _penders.getPenders(msg.addr);
         if (penders == null) {
-            log.warning("Missing pender list", "oclass", msg.oclass);
+            log.warning("Missing pender list", "addr", msg.addr);
         } else {
             Exception cause = new Exception(msg.cause);
             for (Callback<?> pender : penders) {
@@ -107,22 +118,23 @@ public abstract class Connection
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
     protected static class PenderMap
     {
-        public synchronized boolean addPender (String oclass, Callback<?> cb) {
+        public synchronized boolean addPender (Address<?> addr, Callback<?> cb) {
             boolean wasPending = true;
-            List<Callback<?>> penders = _penders.get(oclass);
+            List<Callback<?>> penders = _penders.get(addr);
             if (penders == null) {
-                _penders.put(oclass, penders = new ArrayList<Callback<?>>());
+                _penders.put(addr, penders = new ArrayList<Callback<?>>());
                 wasPending = false;
             }
             penders.add(cb);
             return wasPending;
         }
 
-        public synchronized List<Callback<?>> getPenders (String oclass) {
-            return _penders.remove(oclass);
+        public synchronized List<Callback<?>> getPenders (Address<?> addr) {
+            return _penders.remove(addr);
         }
 
-        protected Map<String, List<Callback<?>>> _penders = new HashMap<String, List<Callback<?>>>();
+        protected Map<Address<?>, List<Callback<?>>> _penders =
+            new HashMap<Address<?>, List<Callback<?>>>();
     }
 
     /** Handles the dispatch of events received from the server. */

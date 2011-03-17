@@ -6,6 +6,7 @@
 
 package com.samskivert.nexus.net;
 
+import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.io.Streamable;
 
@@ -23,14 +24,14 @@ public interface Upstream extends Streamable
         void onPostEvent (PostEvent message);
     }
 
-    /** A request to subscribe to a singleton object. */
+    /** A request to subscribe to a Nexus object. */
     public static class Subscribe implements Upstream
     {
-        /** The class name of the singleton object to which a subscription is desired. */
-        public final String clazz;
+        /** The address of object to which a subscription is desired. */
+        public final Address<?> addr;
 
-        public Subscribe (String clazz) {
-            this.clazz = clazz;
+        public Subscribe (Address<?> addr) {
+            this.addr = addr;
         }
 
         public void dispatch (Handler handler) {

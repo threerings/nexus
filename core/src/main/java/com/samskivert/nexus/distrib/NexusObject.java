@@ -36,6 +36,22 @@ public abstract class NexusObject
     }
 
     /**
+     * Returns the address of this object.
+     */
+    public Address<?> getAddress ()
+    {
+        if (this instanceof Keyed) {
+            @SuppressWarnings("unchecked") Class<DummyKeyed> clazz = (Class<DummyKeyed>)getClass();
+            return Address.create(_sink.getHost(), clazz, ((Keyed)this).getKey());
+        } else if (this instanceof Singleton) {
+            @SuppressWarnings("unchecked") Class<DummySingle> clazz = (Class<DummySingle>)getClass();
+            return Address.create(_sink.getHost(), clazz);
+        } else {
+            return Address.create(_sink.getHost(), getId());
+        }
+    }
+
+    /**
      * Initializes this object with its id and event sink, which also triggers the initialization
      * of its distributed attributes. This takes place when the object is registered with
      * dispatcher on its originating server, and when it is read off the network on a subscribing
@@ -92,6 +108,13 @@ public abstract class NexusObject
                         "event", event, new Exception());
         }
     }
+
+    /** Used by {@link #getAddress} for type jockeying. */
+    protected static class DummyKeyed extends NexusObject implements Keyed {
+        public Comparable<?> getKey () { return null; }
+    }
+    /** Used by {@link #getAddress} for type jockeying. */
+    protected static class DummySingle extends NexusObject implements Singleton {}
 
     /** The unique identifier for this object. This value is not available until the object has
      * been registered with the Nexus Manager. The id is unique with respect to the peer on which

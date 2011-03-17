@@ -6,6 +6,7 @@
 
 package com.samskivert.nexus.net;
 
+import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusObject;
 import com.samskivert.nexus.io.Streamable;
@@ -45,14 +46,14 @@ public interface Downstream extends Streamable
     /** A failure response to a subscription request. */
     public static class SubscribeFailure implements Downstream
     {
-        /** The name of the singleton object class requested. */
-        public final String oclass;
+        /** The address of the object requested. */
+        public final Address<?> addr;
 
         /** The reason for the failure. */
         public final String cause;
 
-        public SubscribeFailure (String oclass, String cause) {
-            this.oclass = oclass;
+        public SubscribeFailure (Address<?> addr, String cause) {
+            this.addr = addr;
             this.cause = cause;
         }
 

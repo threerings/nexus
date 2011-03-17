@@ -11,13 +11,24 @@ package com.samskivert.nexus.util;
  */
 public interface Callback<T>
 {
+    /** A callback that chains failure to the supplied delegate callback. */
+    public static abstract class Chain<T> implements Callback<T> {
+        public Chain (Callback<?> onFailure) {
+            _onFailure = onFailure;
+        }
+        public void onFailure (Throwable cause) {
+            _onFailure.onFailure(cause);
+        }
+        protected Callback<?> _onFailure;
+    }
+
     /**
      * Called when the asynchronous request succeeded, supplying its result.
      */
-    public void onSuccess (T result);
+    void onSuccess (T result);
 
     /**
      * Called when the asynchronous request failed, supplying a cause for failure.
      */
-    public void onFailure (Throwable cause);
+    void onFailure (Throwable cause);
 }

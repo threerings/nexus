@@ -17,6 +17,12 @@ import static org.junit.Assert.*;
 public class TestSink implements EventSink
 {
     // from interface EventSink
+    public String getHost ()
+    {
+        return "localhost";
+    }
+
+    // from interface EventSink
     public void postEvent (NexusObject source, NexusEvent event)
     {
         _events.add(event);
