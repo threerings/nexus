@@ -73,12 +73,6 @@ public abstract class NexusClient
 
     protected abstract void connect (String host, Callback<Connection> callback);
 
-//     {
-//         // TODO: create connection using abstract method (to accommodate websockets vs jvm
-//         // connection implementations)
-//         callback.onFailure(new Throwable("TODO: implement connect"));
-//     }
-
     // TODO: should we disconnect immediately when clearing last subscription from a given
     // connection, or should we periodically poll our open connections and disconnect any with no
     // active subscriptions (this would allow a little leeway, so that a usage pattern wherein one
