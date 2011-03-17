@@ -47,7 +47,10 @@ public abstract class Connection
     public abstract void close ();
 
     // from EventSink
-    public abstract String getHost ();
+    public String getHost ()
+    {
+        return _host;
+    }
 
     // from EventSink
     public void postEvent (NexusObject source, NexusEvent event)
@@ -97,8 +100,9 @@ public abstract class Connection
         _dispatcher.dispatchEvent(msg.event);
     }
 
-    protected Connection (Dispatcher dispatcher)
+    protected Connection (String host, Dispatcher dispatcher)
     {
+        _host = host;
         _dispatcher = dispatcher;
     }
 
@@ -136,6 +140,9 @@ public abstract class Connection
         protected Map<Address<?>, List<Callback<?>>> _penders =
             new HashMap<Address<?>, List<Callback<?>>>();
     }
+
+    /** The name of the host with which we're communicating. */
+    protected String _host;
 
     /** Handles the dispatch of events received from the server. */
     protected final Dispatcher _dispatcher;
