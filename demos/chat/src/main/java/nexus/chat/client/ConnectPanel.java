@@ -3,7 +3,6 @@
 
 package nexus.chat.client;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -34,14 +33,7 @@ public class ConnectPanel extends JPanel
         add(new JLabel("Server address:"));
 
         JPanel row = GroupLayout.makeHBox();
-        final JTextField address = new JTextField() {
-            // for fuck's sake Swing, really?
-            public Dimension getPreferredSize() {
-                Dimension d = super.getPreferredSize();
-                d.width = Math.max(200, d.width);
-                return d;
-            }
-        };
+        final JTextField address = UIUtil.newTextField(200);
         row.add(address);
 
         JButton connect = new JButton("Connect");
