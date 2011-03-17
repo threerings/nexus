@@ -37,7 +37,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
     /**
      * Creates an address for a singleton instance on the specified host.
      */
-    public static <T extends NexusObject & Singleton> Address make (String host, Class<T> clazz)
+    public static <T extends NexusObject & Singleton> Address<T> make (String host, Class<T> clazz)
     {
         return new OfSingleton<T>(host, clazz);
     }
@@ -45,7 +45,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
     /**
      * Creates an address for a keyed instance on the specified host.
      */
-    public static <T extends NexusObject & Keyed> Address make (
+    public static <T extends NexusObject & Keyed> Address<T> make (
         String host, Class<T> clazz, Comparable<?> key)
     {
         return new OfKeyed<T>(host, clazz, key);
