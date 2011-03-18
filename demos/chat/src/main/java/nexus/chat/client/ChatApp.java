@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.samskivert.nexus.client.JVMClient;
 import com.samskivert.nexus.client.NexusClient;
 
 /**
@@ -27,7 +28,7 @@ public class ChatApp
                 }
                 frame.add(_main = panel, BorderLayout.CENTER);
             }
-            protected NexusClient _client = new NexusClient();
+            protected NexusClient _client = JVMClient.create(47624);
             protected JPanel _main;
         };
 

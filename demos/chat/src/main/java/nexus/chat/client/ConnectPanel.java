@@ -58,7 +58,7 @@ public class ConnectPanel extends JPanel
         // subscribe to the singleton ChatObject on the specified host; this will trigger a
         // connection to that host
         _ctx.getClient().subscribe(
-            Address.make(address, ChatObject.class), new Callback<ChatObject>() {
+            Address.create(address, ChatObject.class), new Callback<ChatObject>() {
             public void onSuccess (ChatObject chatobj) {
                 // we're connected, switch to the main chat display
                 _ctx.setMainPanel(new ChatPanel(_ctx, chatobj));
