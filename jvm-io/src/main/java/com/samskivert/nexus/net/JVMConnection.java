@@ -12,8 +12,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
 
 import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.io.FramedInputStream;
@@ -35,9 +37,10 @@ public class JVMConnection extends Connection
      *
      * @param callback will be notified on connection completion, or failure.
      */
-    public JVMConnection (String host, int port, Dispatcher dispatcher, Callback<Connection> callback)
+    public JVMConnection (String host, int port, Executor exec, Callback<Connection> callback)
     {
-        super(host, dispatcher);
+        super(host);
+        _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
         _reader = new Reader(host, port, callback);
         _reader.start();
@@ -60,6 +63,12 @@ public class JVMConnection extends Connection
     protected void send (Upstream request)
     {
         _outq.offer(request);
+    }
+
+    @Override // from Connection
+    protected void dispatch (Runnable run)
+    {
+        _exec.execute(run);
     }
 
     /**
@@ -214,6 +223,9 @@ public class JVMConnection extends Connection
         protected FramingOutputStream _fout = new FramingOutputStream();
         protected Streamable.Output _sout = JVMIO.newOutput(_fout);
     }
+
+    /** The executor used to dispatch events. */
+    protected Executor _exec;
 
     /** A thread that handles reading incoming network data. */
     protected Reader _reader;
