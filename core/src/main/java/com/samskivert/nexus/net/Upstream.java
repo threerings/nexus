@@ -20,6 +20,9 @@ public interface Upstream extends Streamable
         /** Dispatches a subscribe request. */
         void onSubscribe (Subscribe message);
 
+        /** Dispatches an unsubscribe request. */
+        void onUnsubscribe (Unsubscribe message);
+
         /** Dispatches a post event request. */
         void onPostEvent (PostEvent message);
     }
@@ -36,6 +39,20 @@ public interface Upstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onSubscribe(this);
+        }
+    }
+
+    public static class Unsubscribe implements Upstream
+    {
+        /** The id of the object from which we are unsubscribing. */
+        public final int id;
+
+        public Unsubscribe (int id) {
+            this.id = id;
+        }
+
+        public void dispatch (Handler handler) {
+            handler.onUnsubscribe(this);
         }
     }
 

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusObject;
@@ -28,14 +27,29 @@ public abstract class Connection
     implements Downstream.Handler, EventSink
 {
     /**
-     * Requests to subscribe to the specified singleton Nexus object. Success (i.e. the object) or
-     * failure will be communicated via the supplied callback.
+     * Requests to subscribe to the specified Nexus object. Success (i.e. the object) or failure
+     * will be communicated via the supplied callback.
      */
     public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb)
     {
         if (!_penders.addPender(addr, cb)) {
             send(new Upstream.Subscribe(addr));
         }
+    }
+
+    /**
+     * Requests to unsubscribe from the specified Nexus object.
+     */
+    public void unsubscribe (NexusObject object)
+    {
+        if (_objects.remove(object.getId()) == null) {
+            log.warning("Requested to unsubscribe from unknown object", "id", object.getId());
+            return;
+        }
+
+        // TODO: make a note that we just unsubscribed, and so not to warn about events that arrive
+        // for this object in the near future (the server doesn't yet know that we've unsubscribed)
+        send(new Upstream.Unsubscribe(object.getId()));
     }
 
     // TODO: how to communicate connection termination/failure?
@@ -61,7 +75,7 @@ public abstract class Connection
     // from interface Downstream.Handler
     public void onSubscribe (Downstream.Subscribe msg)
     {
-        // we are this object's event sink
+        // let this object know that we are its event sink
         NexusObjectUtil.init(msg.object, msg.object.getId(), this);
         // the above must precede this call, as obtaining the object's address requires that the
         // event sink be configured
@@ -69,13 +83,18 @@ public abstract class Connection
         List<Callback<?>> penders = _penders.getPenders(addr);
         if (penders == null) {
             log.warning("Missing pender list", "addr", addr);
-            // TODO: clear our subscription
-        } else {
-            for (Callback<?> pender : penders) {
-                @SuppressWarnings("unchecked") Callback<NexusObject> cb =
-                    (Callback<NexusObject>)pender;
-                cb.onSuccess(msg.object);
-            }
+            send(new Upstream.Unsubscribe(msg.object.getId())); // clear our subscription
+            return;
+        }
+
+        // store the object in our local table
+        _objects.put(msg.object.getId(), msg.object);
+
+        // notify the pending listeners that the object has arrived
+        for (Callback<?> pender : penders) {
+            @SuppressWarnings("unchecked") Callback<NexusObject> cb =
+                (Callback<NexusObject>)pender;
+            cb.onSuccess(msg.object);
         }
     }
 
@@ -94,22 +113,37 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onDispatchEvent (Downstream.DispatchEvent msg)
+    public void onDispatchEvent (final Downstream.DispatchEvent msg)
     {
+        final NexusObject target = _objects.get(msg.event.getTargetId());
+        if (target == null) {
+            log.warning("Missing target of event", "event", msg.event);
+            return;
+        }
+
         // the dispatcher will locate the target object and dispatch the event
-        _dispatcher.dispatchEvent(msg.event);
+        dispatch(new Runnable() {
+            public void run () {
+                msg.event.applyTo(target);
+            }
+        });
     }
 
-    protected Connection (String host, Dispatcher dispatcher)
+    protected Connection (String host)
     {
         _host = host;
-        _dispatcher = dispatcher;
     }
 
     /**
      * Called to send a request message to the server.
      */
     protected abstract void send (Upstream request);
+
+    /**
+     * Dispatches the requested unit of work (generally the handling of an event) on the
+     * appropriate thread.
+     */
+    protected abstract void dispatch (Runnable run);
 
     /**
      * Called when a message is received from the server.
@@ -142,11 +176,11 @@ public abstract class Connection
     }
 
     /** The name of the host with which we're communicating. */
-    protected String _host;
+    protected final String _host;
 
-    /** Handles the dispatch of events received from the server. */
-    protected final Dispatcher _dispatcher;
-
-    /** A map of singleton object class to pending subscriber list. */
+    /** Tracks pending subscribers. */
     protected final PenderMap _penders = new PenderMap();
+
+    /** Tracks currently subscribed objects. */
+    protected final Map<Integer, NexusObject> _objects = new HashMap<Integer, NexusObject>();
 }
