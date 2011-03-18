@@ -96,7 +96,7 @@ public abstract class NexusClient
         }
 
         CallbackList<Connection> plist = _penders.get(host);
-        if (_penders != null) {
+        if (plist != null) {
             plist.add(action);
             return;
         }
