@@ -16,6 +16,9 @@ public class NexusConfig
     /** The name of this node, which must differ from all other nodes in the network. */
     public final String nodeName;
 
+    /** The public hostname of this node. This will be used by clients to connect to this node. */
+    public final String publicHostname;
+
     /** The timeout, in milliseconds, of RPC requests to other nodes. */
     public final long rpcTimeout;
 
@@ -26,6 +29,7 @@ public class NexusConfig
     public NexusConfig (Properties props)
     {
         nodeName = require(props, "nexus.node");
+        publicHostname = require(props, "nexus.hostname");
         rpcTimeout = Long.parseLong(require(props, "nexus.rpc_timeout"));
     }
 

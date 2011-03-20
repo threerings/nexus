@@ -20,6 +20,7 @@ import java.util.concurrent.FutureTask;
 import com.google.common.collect.Maps;
 
 import com.samskivert.nexus.distrib.Action;
+import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.NexusEvent;
@@ -47,6 +48,7 @@ public class ObjectManager
 
     public ObjectManager (NexusConfig config, Executor exec)
     {
+        _config = config;
         _exec = exec;
     }
 
@@ -234,7 +236,7 @@ public class ObjectManager
      */
     public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<T,R> request)
     {
-        return invoke(requireKeyed(eclass, key, "No singleton registered for"), request);
+        return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 
     /**
@@ -242,49 +244,40 @@ public class ObjectManager
      */
     public void invoke (int id, Action<NexusObject> action)
     {
-        final Binding<NexusObject> bind = _objects.get(id);
-        if (bind == null) {
-            log.warning("Cannot find object for action", "id", id, "action", action);
-        } else {
-            invoke(bind, action);
-        }
+        invoke(requireObject(id, "No object registered with id "), action);
     }
 
     /**
-     * Requests that the supplied subscriber be added to the specified singleton object.
+     * Requests that the supplied subscriber be added to the object with the specified address.
      *
      * @return the the object to which a subscriber was added.
-     * @throws NexusException if the request fails due to access control, or if the specified
-     * singleton class is not a NexusObject or not registered.
+     * @throws NexusException if the requested object does not exist, or if the instance registered
+     * at the address is not a NexusObject, or if the request fails due to access control.
      */
-    public NexusObject addSubscriber (Class<?> clazz, Subscriber sub)
+    public <T extends NexusObject> T addSubscriber (Address<T> addr, Subscriber sub)
     {
-        Binding<Singleton> bind = requireSingleton(clazz, "No singleton registered for ");
-        if (bind.entity instanceof NexusObject) {
-            NexusObject target = (NexusObject)bind.entity;
-            // TODO: access control
-            getSubscriberSet(target.getId()).add(sub);
-            return target;
+        Binding<?> bind;
+        if (addr instanceof Address.OfKeyed) {
+            Address.OfKeyed<?> kaddr = (Address.OfKeyed<?>)addr;
+            bind = requireKeyed(kaddr.clazz, kaddr.key, "No keyed entity registered for ");
+        } else if (addr instanceof Address.OfSingleton) {
+            Address.OfSingleton<?> saddr = (Address.OfSingleton<?>)addr;
+            bind = requireSingleton(saddr.clazz, "No singleton registered for ");
+        } else if (addr instanceof Address.OfAnonymous) {
+            Address.OfAnonymous aaddr = (Address.OfAnonymous)addr;
+            bind = requireObject(aaddr.id, "No object registered with id ");
         } else {
-            throw new NexusException(clazz.getName() + " is not a NexusObject");
+            throw new IllegalArgumentException("Unknown address type " + addr);
         }
-    }
 
-    /**
-     * Requests that the supplied subscriber be added to the specified object.
-     *
-     * @return the the object to which a subscriber was added.
-     * @throws NexusException if the request fails due to access control, or a non-existent object.
-     */
-    public NexusObject addSubscriber (int id, Subscriber sub)
-    {
-        Binding<NexusObject> bind = _objects.get(id);
-        if (bind == null) {
-            throw new NexusException("No object registered with id " + id);
+        if (!(bind.entity instanceof NexusObject)) {
+            throw new NexusException(bind.entity.getClass().getName() + " is not a NexusObject");
         }
+
+        @SuppressWarnings("unchecked") T target = (T)bind.entity;
         // TODO: access control
-        getSubscriberSet(id).add(sub);
-        return bind.entity;
+        getSubscriberSet(target.getId()).add(sub);
+        return target;
     }
 
     /**
@@ -328,6 +321,12 @@ public class ObjectManager
     }
 
     // from interface EventSink
+    public String getHost ()
+    {
+        return _config.publicHostname;
+    }
+
+    // from interface EventSink
     public void postEvent (NexusObject source, final NexusEvent event)
     {
         // TODO: fancy aggregation using thread-local accumulators
@@ -359,6 +358,15 @@ public class ObjectManager
         Binding<Keyed> bind = emap.get(key);
         if (bind == null) {
             throw new NexusException(errmsg + " " + eclass + ":" + key);
+        }
+        return bind;
+    }
+
+    protected Binding<NexusObject> requireObject (int id, String errmsg)
+    {
+        Binding<NexusObject> bind = _objects.get(id);
+        if (bind == null) {
+            throw new NexusException(errmsg + id);
         }
         return bind;
     }
@@ -427,6 +435,9 @@ public class ObjectManager
             this.context = context;
         }
     }
+
+    /** Contains our server configuration. */
+    protected NexusConfig _config;
 
     /** The executor we use to execute actions and requests. */
     protected final Executor _exec;

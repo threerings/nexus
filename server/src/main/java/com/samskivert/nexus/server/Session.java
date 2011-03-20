@@ -6,8 +6,9 @@
 
 package com.samskivert.nexus.server;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -16,6 +17,8 @@ import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
+import com.samskivert.nexus.io.ByteBufferInputStream;
+import com.samskivert.nexus.io.FramingOutputStream;
 import com.samskivert.nexus.io.JVMIO;
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.net.Downstream;
@@ -39,10 +42,10 @@ public class Session
     }
 
     // from interface SessionManager.Input
-    public void onMessage (byte[] data, int offset, int length)
+    public void onMessage (ByteBuffer data)
     {
         try {
-            _fin.setFrame(data, offset, length);
+            _bin.setBuffer(data);
             Upstream msg = _sin.<Upstream>readValue();
             msg.dispatch(this);
         } catch (Throwable t) {
@@ -80,12 +83,18 @@ public class Session
     {
         try {
             // TODO: per-session class loaders or other fancy business
-            NexusObject object = _omgr.addSubscriber(Class.forName(message.clazz), this);
+            NexusObject object = _omgr.addSubscriber(message.addr, this);
             _subscriptions.add(object.getId());
             sendMessage(new Downstream.Subscribe(object));
         } catch (Throwable t) {
-            sendMessage(new Downstream.SubscribeFailure(message.clazz, t.getMessage()));
+            sendMessage(new Downstream.SubscribeFailure(message.addr, t.getMessage()));
         }
+    }
+
+    // from interface Upstream.Handler
+    public void onUnsubscribe (Upstream.Unsubscribe message)
+    {
+        // TODO
     }
 
     // from interface Upstream.Handler
@@ -122,26 +131,9 @@ public class Session
     {
         // we may be called from many threads, so serialize access to the output streams
         synchronized (_sout) {
-            try {
-                _sout.writeValue(msg);
-                _output.send(_bout.toByteArray());
-            } finally {
-                _bout.reset();
-            }
-        }
-    }
-
-    protected static class FramedInputStream extends ByteArrayInputStream
-    {
-        public FramedInputStream () {
-            super(EMPTY_BUFFER);
-        }
-
-        public void setFrame (byte[] data, int offset, int length) {
-            this.buf = data;
-            this.pos = offset;
-            this.count = Math.min(offset + length, data.length);
-            this.mark = offset;
+            _fout.prepareFrame();
+            _sout.writeValue(msg);
+            _output.send(_fout.frameAndReturnBuffer());
         }
     }
 
@@ -150,13 +142,11 @@ public class Session
     protected final String _ipaddress;
     protected final SessionManager.Output _output;
 
-    // these are used for processing input
-    protected final FramedInputStream _fin = new FramedInputStream();
-    protected final Streamable.Input _sin = JVMIO.newInput(_fin);
-
-    // these are used for flattening output messages
-    protected final ByteArrayOutputStream _bout = new ByteArrayOutputStream();
-    protected final Streamable.Output _sout = JVMIO.newOutput(_bout);
+    // these are used for message I/O
+    protected final ByteBufferInputStream _bin = new ByteBufferInputStream();
+    protected final Streamable.Input _sin = JVMIO.newInput(_bin);
+    protected final FramingOutputStream _fout = new FramingOutputStream();
+    protected final Streamable.Output _sout = JVMIO.newOutput(_fout);
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = Sets.newHashSet();

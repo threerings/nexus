@@ -20,6 +20,27 @@ import com.samskivert.nexus.distrib.Singleton;
  */
 public class NexusServer implements Nexus
 {
+    /**
+     * Creates a server with the supplied configuration.
+     *
+     * @param exec the executor to use for dispatching events and actions. An executor that uses a
+     * pool of threads is appropriate.
+     */
+    public NexusServer (NexusConfig config, ExecutorService exec)
+    {
+        _config = config;
+        _omgr = new ObjectManager(config, exec);
+        _smgr = new SessionManager(_omgr);
+    }
+
+    /**
+     * Returns the session manager used by this server.
+     */
+    public SessionManager getSessionManager ()
+    {
+        return _smgr;
+    }
+
     // from interface Nexus
     public void register (NexusObject object)
     {
@@ -94,12 +115,7 @@ public class NexusServer implements Nexus
         return _omgr.invoke(kclass, key, request);
     }
 
-    public NexusServer (NexusConfig config, ExecutorService exec)
-    {
-        _config = config;
-        _omgr = new ObjectManager(config, exec);
-    }
-
     protected final NexusConfig _config;
     protected final ObjectManager _omgr;
+    protected final SessionManager _smgr;
 }

@@ -6,6 +6,9 @@
 
 package com.samskivert.nexus.server;
 
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -21,10 +24,9 @@ public class SessionManager
      */
     public interface Input {
         /**
-         * Called when a message frame is received from the client. The frame may occupy a subset
-         * of the supplied binary buffer, as dictated by the offset and length parameters.
+         * Called when a message frame is received from the client.
          */
-        void onMessage (byte[] data, int offset, int length);
+        void onMessage (ByteBuffer data);
 
         /**
          * Called when a request to send to the client has failed. This will result in the session
@@ -52,11 +54,12 @@ public class SessionManager
      */
     public interface Output {
         /**
-         * Requests that the supplied message be sent to the client. The session yields control of
-         * the supplied byte array to the transport mechanism, so that it may postpone message
-         * delivery as needed.
+         * Requests that supplied message be sent to the client. The buffer must be either
+         * immediately written in full, or copied if the output handler may need to reference the
+         * buffer data in the future. The sender reserves the write to overwrite the buffer
+         * immediately following this call.
          */
-        void send (byte[] data);
+        void send (ByteBuffer buffer);
 
         /**
          * Requests that the client connection be closed. This may be called following receipt of a
@@ -84,12 +87,16 @@ public class SessionManager
 
     protected void sessionDisconnected (Session sess)
     {
+        // remove the session from our (ip -> sessions) mapping
+        _byIP.remove(sess.getIPAddress(), sess);
+
+        // TODO: anything else?
     }
 
     /** Provides the ability to send and receive distributed events, etc. */
     protected ObjectManager _omgr;
 
-    /** Maintains the IP to session mappings. */
+    /** Maintains the IP to sessions mapping. */
     protected Multimap<String,Session> _byIP =
         Multimaps.synchronizedListMultimap(ArrayListMultimap.<String,Session>create());
 }
