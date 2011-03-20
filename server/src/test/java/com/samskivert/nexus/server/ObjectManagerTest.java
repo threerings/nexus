@@ -17,6 +17,8 @@ import com.samskivert.nexus.distrib.NexusObject;
 import com.samskivert.nexus.distrib.Request;
 import com.samskivert.nexus.distrib.Singleton;
 
+import com.samskivert.nexus.distrib.TestObject;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -214,20 +216,4 @@ public class ObjectManagerTest
             fail();
         }
     };
-
-    protected static class TestObject extends NexusObject
-    {
-        public DValue<String> value = DValue.create("test");
-
-        @Override protected DAttribute getAttribute (int index) {
-            switch (index) {
-            case 0: return value;
-            default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
-            }
-        }
-
-        @Override protected int getAttributeCount () {
-            return 1;
-        }
-    }
 }
