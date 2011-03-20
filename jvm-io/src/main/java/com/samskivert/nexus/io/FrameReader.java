@@ -127,7 +127,7 @@ public class FrameReader
     }
 
     /** The buffer in which we maintain our frame data. */
-    protected ByteBuffer _buffer;
+    protected ByteBuffer _buffer = ByteBuffer.allocate(INITIAL_BUFFER_CAPACITY);
 
     /** The length of the current frame being read. */
     protected int _length = -1;
