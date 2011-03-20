@@ -13,9 +13,9 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.io.ByteBufferInputStream;
@@ -193,7 +193,13 @@ public class JVMConnection extends Connection
 
         @Override public void run () {
             while (true) {
-                Upstream msg = _outq.poll();
+                Upstream msg;
+                try {
+                    msg = _outq.take();
+                } catch (InterruptedException ie) {
+                    log.warning("Writer thread interrupted?");
+                    continue;
+                }
                 if (msg == TERMINATE) {
                     break;
                 }
@@ -202,6 +208,7 @@ public class JVMConnection extends Connection
 
                 try {
                     // flatten the message into a byte array
+                    _fout.prepareFrame();
                     _sout.writeValue(msg);
 
                     // frame and write the data to the output stream
@@ -211,9 +218,6 @@ public class JVMConnection extends Connection
                         log.warning("Failed to write complete message!", "msg", msg,
                                     "size", buffer.limit(), "wrote", wrote);
                     }
-
-                    // make our framing output stream ready for the next message
-                    _fout.resetFrame();
 
                 } catch (Throwable t) {
                     log.warning("Error writing network data", "msg", msg, t);
@@ -241,7 +245,7 @@ public class JVMConnection extends Connection
     protected Writer _writer;
 
     /** The message queue that holds our outgoing messages. */
-    protected Queue<Upstream> _outq = new ConcurrentLinkedQueue<Upstream>();
+    protected BlockingQueue<Upstream> _outq = new LinkedBlockingQueue<Upstream>();
 
     /** A marker instance used to terminate the writer thread. */
     protected static final Upstream TERMINATE = new Upstream() {

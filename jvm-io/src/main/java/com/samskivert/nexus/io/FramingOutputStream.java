@@ -26,13 +26,20 @@ public class FramingOutputStream extends OutputStream
     public FramingOutputStream ()
     {
         _buffer = ByteBuffer.allocate(INITIAL_BUFFER_SIZE);
+    }
+
+    /**
+     * Prepares our internal buffer to write a new frame.
+     */
+    public void prepareFrame ()
+    {
+        _buffer.clear();
         _buffer.put(HEADER_PAD);
     }
 
     /**
-     * Writes the frame length to the beginning of our buffer and returns it for writing to the
-     * appropriate channel. This should be followed by a call to {@link #resetFrame} when the frame
-     * has been written.
+     * Writes the frame length to the beginning of our buffer (which must have been prepared via a
+     * call to {@link #prepareFrame}) and returns it for writing to the appropriate channel.
      */
     public ByteBuffer frameAndReturnBuffer ()
     {
@@ -49,15 +56,6 @@ public class FramingOutputStream extends OutputStream
         _buffer.rewind();
 
         return _buffer;
-    }
-
-    /**
-     * Resets our internal buffer and prepares to write a new frame.
-     */
-    public void resetFrame ()
-    {
-        _buffer.clear();
-        _buffer.put(HEADER_PAD);
     }
 
     @Override
