@@ -140,6 +140,9 @@ public class JVMConnection extends Connection
                 // otherwise we're up and running and we can create our writer
                 connectionEstablished(_channel);
 
+                // let our callback know that we're ready to go
+                _callback.onSuccess(JVMConnection.this);
+
             } catch (IOException ioe) {
                 if (_channel != null) {
                     closeChannel(_channel);
