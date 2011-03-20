@@ -8,48 +8,25 @@ package com.samskivert.nexus.io;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
 /**
- * The framed input stream reads input that was framed by a framing output stream. Framing in this
- * case simply means writing the length of the frame followed by the data associated with the frame
- * so that an entire frame can be loaded from the network layer before any higher layer attempts to
- * process it. Additionally, any failure in decoding a frame won't result in the entire stream
- * being skewed due to the remainder of the undecoded frame remaining in the input stream.
- *
- * <p>The framed input stream reads an entire frame worth of data into its internal buffer when
- * <code>readFrame()</code> is called. It then behaves as if this is the only data available on the
- * stream (meaning that when the data in the frame is exhausted, it will behave as if the end of
- * the stream has been reached). The buffer can only contain a single frame at a time, so any data
- * left over from a previous frame will disappear when <code>readFrame()</code> is called again.
- * </p>
- *
- * <p><em>Note:</em> The framing input stream does not synchronize reads from its internal buffer.
- * It is intended to only be accessed from a single thread. </p>
+ * Handles the reading of network data into frames of explicit length.
  */
-public class FramedInputStream extends InputStream
+public class FrameReader
 {
-    public FramedInputStream ()
-    {
-        _buffer = ByteBuffer.allocate(INITIAL_BUFFER_CAPACITY);
-    }
-
     /**
-     * Reads a frame from the provided channel, appending to any partially read frame. If the
-     * entire frame data is not yet available, <code>readFrame</code> will return false, otherwise
-     * true.
+     * Reads a frame from the provided channel, accumulating partial frames across calls until a
+     * full frame is available.
      *
-     * <p> <em>Note:</em> when this method returns true, it is required that the caller read
-     * <em>all</em> of the frame data from the stream before again calling {@link #readFrame} as
-     * the previous frame's data will be elimitated upon the subsequent call. </p>
+     * @return null if an entire frame is not yet available, <code>readFrame</code>, otherwise it
+     * will return a buffer that contains the next frame's data.
      *
-     * @return true if the entire frame has been read, false if the buffer contains only a partial
-     * frame.
+     * @throws IOException if an error occurs reading from the underlying channel.
+     * @throws EOFException if EOF is reported while attempting to read a frame.
      */
-    public boolean readFrame (ReadableByteChannel source)
+    public ByteBuffer readFrame (ReadableByteChannel source)
         throws IOException
     {
         // flush data from any previous frame from the buffer
@@ -69,11 +46,11 @@ public class FramedInputStream extends InputStream
 
         // we may already have the next frame entirely in the buffer from a previous read
         if (checkForCompleteFrame()) {
-            return true;
+            return _buffer.slice();
         }
 
-        // read whatever data we can from the source
         do {
+            // read whatever data we can from the source
             int got = source.read(_buffer);
             if (got == -1) {
                 throw new EOFException();
@@ -106,63 +83,7 @@ public class FramedInputStream extends InputStream
         } while (_buffer.capacity() < MAX_BUFFER_CAPACITY);
 
         // finally check to see if there's a complete frame in the buffer
-        return checkForCompleteFrame();
-    }
-
-    @Override
-    public int read ()
-    {
-        return (_buffer.remaining() > 0) ? (_buffer.get() & 0xFF) : -1;
-    }
-
-    @Override
-    public int read (byte[] b, int off, int len)
-    {
-        // if they want no bytes, we give them no bytes; this is purportedly the right thing to do
-        // regardless of whether we're at EOF or not
-        if (len == 0) {
-            return 0;
-        }
-
-        // trim the amount to be read to what is available; if they wanted bytes and we have none,
-        // return -1 to indicate EOF
-        if ((len = Math.min(len, _buffer.remaining())) == 0) {
-            return -1;
-        }
-
-        _buffer.get(b, off, len);
-        return len;
-    }
-
-    @Override
-    public long skip (long n)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public int available ()
-    {
-        return _buffer.remaining();
-    }
-
-    @Override
-    public boolean markSupported ()
-    {
-        return false;
-    }
-
-    @Override
-    public void mark (int readAheadLimit)
-    {
-        // not supported; do nothing
-    }
-
-    @Override
-    public void reset ()
-    {
-        // position our buffer at the beginning of the frame data
-        _buffer.position(HEADER_SIZE);
+        return checkForCompleteFrame() ? _buffer.slice() : null;
     }
 
     /**

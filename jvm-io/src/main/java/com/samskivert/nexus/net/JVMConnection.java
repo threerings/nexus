@@ -18,7 +18,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import com.samskivert.nexus.distrib.Dispatcher;
-import com.samskivert.nexus.io.FramedInputStream;
+import com.samskivert.nexus.io.ByteBufferInputStream;
+import com.samskivert.nexus.io.FrameReader;
 import com.samskivert.nexus.io.FramingOutputStream;
 import com.samskivert.nexus.io.JVMIO;
 import com.samskivert.nexus.io.Streamable;
@@ -152,11 +153,13 @@ public class JVMConnection extends Connection
                 while (_running) {
                     // try to read a full frame from the channel, if it's not full, simply loop
                     // back and keep reading until it is
-                    if (!_fin.readFrame(_channel)) {
+                    ByteBuffer frame = _reader.readFrame(_channel);
+                    if (frame == null) {
                         continue;
                     }
 
                     // decode the message from the frame data and pass it on
+                    _bin.setBuffer(frame);
                     onReceive(_sin.<Downstream>readValue());
                     // TODO: if decoding fails, proceed to the next frame and keep going?
                 }
@@ -177,8 +180,9 @@ public class JVMConnection extends Connection
         protected volatile boolean _running = true;
 
         protected SocketChannel _channel;
-        protected FramedInputStream _fin = new FramedInputStream();
-        protected Streamable.Input _sin = JVMIO.newInput(_fin);
+        protected FrameReader _reader = new FrameReader();
+        protected ByteBufferInputStream _bin = new ByteBufferInputStream();
+        protected Streamable.Input _sin = JVMIO.newInput(_bin);
     }
 
     protected class Writer extends Thread
@@ -207,6 +211,9 @@ public class JVMConnection extends Connection
                         log.warning("Failed to write complete message!", "msg", msg,
                                     "size", buffer.limit(), "wrote", wrote);
                     }
+
+                    // make our framing output stream ready for the next message
+                    _fout.resetFrame();
 
                 } catch (Throwable t) {
                     log.warning("Error writing network data", "msg", msg, t);

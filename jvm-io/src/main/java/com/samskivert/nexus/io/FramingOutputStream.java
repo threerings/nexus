@@ -6,6 +6,8 @@
 
 package com.samskivert.nexus.io;
 
+import java.io.OutputStream;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 
 /**
@@ -19,23 +21,12 @@ import java.nio.ByteBuffer;
  * <p><em>Note:</em> The framing output stream does not synchronize writes to its internal buffer.
  * It is intended to only be accessed from a single thread.</p>
  */
-public class FramingOutputStream extends ByteBufferOutputStream
+public class FramingOutputStream extends OutputStream
 {
     public FramingOutputStream ()
     {
+        _buffer = ByteBuffer.allocate(INITIAL_BUFFER_SIZE);
         _buffer.put(HEADER_PAD);
-    }
-
-    @Override
-    public ByteBuffer flip ()
-    {
-        throw new UnsupportedOperationException("Use frameAndReturnBuffer() instead.");
-    }
-
-    @Override
-    public void reset ()
-    {
-        throw new UnsupportedOperationException("Use resetFrame() instead.");
     }
 
     /**
@@ -68,6 +59,58 @@ public class FramingOutputStream extends ByteBufferOutputStream
         _buffer.clear();
         _buffer.put(HEADER_PAD);
     }
+
+    @Override
+    public void write (int b)
+    {
+        try {
+            _buffer.put((byte)b);
+        } catch (BufferOverflowException boe) {
+            expand(1);
+            _buffer.put((byte)b);
+        }
+    }
+
+    @Override
+    public void write (byte[] b, int off, int len)
+    {
+        // sanity check the arguments
+        if ((off < 0) || (off > b.length) || (len < 0) ||
+            ((off + len) > b.length) || ((off + len) < 0)) {
+            throw new IndexOutOfBoundsException();
+        } else if (len == 0) {
+            return;
+        }
+
+        try {
+            _buffer.put(b, off, len);
+        } catch (BufferOverflowException boe) {
+            expand(len);
+            _buffer.put(b, off, len);
+        }
+    }
+
+    /**
+     * Expands our buffer to accomodate the specified capacity.
+     */
+    protected final void expand (int needed)
+    {
+        int ocapacity = _buffer.capacity();
+        int ncapacity = _buffer.position() + needed;
+        if (ncapacity > ocapacity) {
+            // increase the buffer size in large increments
+            ncapacity = Math.max(ocapacity << 1, ncapacity);
+            ByteBuffer newbuf = ByteBuffer.allocate(ncapacity);
+            newbuf.put((ByteBuffer)_buffer.flip());
+            _buffer = newbuf;
+        }
+    }
+
+    /** The buffer in which we store our frame data. */
+    protected ByteBuffer _buffer;
+
+    /** The default initial size of the internal buffer. */
+    protected static final int INITIAL_BUFFER_SIZE = 32;
 
     /** Used to pad the beginning of our buffer so that we can later write the frame length. */
     protected static final byte[] HEADER_PAD = new byte[4];
