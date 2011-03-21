@@ -84,6 +84,8 @@ public class ClientServerTest
         assertTrue("Client value listener failed.", triggered[0]);
 
         // finally shut everything down
+        conmgr.disconnect();
+        conmgr.shutdown();
         exec.shutdown();
         TestUtil.awaitTermination(exec);
     }
