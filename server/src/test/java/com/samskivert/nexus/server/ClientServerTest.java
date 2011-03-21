@@ -41,6 +41,7 @@ public class ClientServerTest
         // register a test object
         TestObject test = new TestObject();
         server.registerSingleton(test);
+        test.value.update("bob");
 
         // create a client connection to said server
         NexusClient client = JVMClient.create(Executors.newSingleThreadExecutor(), 1234);
@@ -48,7 +49,7 @@ public class ClientServerTest
         // subscribe to the test object
         client.subscribe(Address.create("localhost", TestObject.class), new Callback<TestObject>() {
             public void onSuccess (TestObject test) {
-                System.err.println("Got test object " + test);
+                System.err.println("Got test object, value = " + test.value.get());
             }
             public void onFailure (Throwable cause) {
                 fail("Failed to subscribe to test object " + cause);
