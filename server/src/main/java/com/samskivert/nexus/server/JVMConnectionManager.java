@@ -243,6 +243,10 @@ public class JVMConnectionManager
 
     protected void writeLoop ()
     {
+        // TODO: we could create a separate selector for postponed writes, which would allow us to
+        // block, waiting for a full outgoing channel to have room for its pending writes; this
+        // would prevent degeneration into a spinning loop, attempting to write to full sockets in
+        // a server with no other writes to perform
         try {
             // handle the next connection that has data to write
             JVMServerConnection conn = _outq.take();
