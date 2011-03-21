@@ -219,6 +219,7 @@ public class JVMConnectionManager
             return true; // TODO: terminate reader thread on too many successive errors
         }
 
+        // process all of the channels that are ready for action
         for (SelectionKey key : _selector.selectedKeys()) {
             IOHandler handler = _handlers.get(key);
             if (handler == null) {
@@ -233,6 +234,10 @@ public class JVMConnectionManager
                 }
             }
         }
+
+        // now that we've handled all of the ready keys, we must clear the selected set
+        _selector.selectedKeys().clear();
+
         return true;
     }
 
