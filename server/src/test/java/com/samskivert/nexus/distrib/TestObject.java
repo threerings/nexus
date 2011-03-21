@@ -12,7 +12,7 @@ package com.samskivert.nexus.distrib;
 public class TestObject extends NexusObject
     implements Singleton
 {
-    public DValue<String> value = DValue.create("test");
+    public final DValue<String> value = DValue.create("test");
 
     @Override
     protected DAttribute getAttribute (int index)
