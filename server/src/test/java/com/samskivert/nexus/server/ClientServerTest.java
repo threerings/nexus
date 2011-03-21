@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 public class ClientServerTest
 {
     @Test
-    public void testClientServer ()
+    public void testSubscribeAndAttrChange ()
         throws IOException
     {
         // create a server with a thread pool
