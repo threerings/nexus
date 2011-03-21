@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
+
 import com.samskivert.nexus.io.StreamException;
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.io.Streamer;
@@ -109,28 +111,56 @@ public class JVMIO
 
             @Override public String readString () {
                 try {
-                    return din.readUTF();
+                    return din.readBoolean() ? din.readUTF() : null;
                 } catch (IOException ioe) {
                     throw new StreamException(ioe);
                 }
             }
 
-            @Override protected <T> Streamer<T> readClass () {
-                short code = readShort();
-                Streamer<?> s;
-                if (code >= 0) {
-                    s = _streamers.get(code);
-                    if (s == null) {
-                        throw new StreamException("Received unknown class code " + code);
-                    }
-                } else {
-                    _streamers.put((short)-code, s = findStreamer(readString()));
+            @Override public <T extends Streamable> Class<T> readClass () {
+                short code = readResolveClassCode();
+                Class<?> clazz = _classes.get(code);
+                if (clazz == null) {
+                    throw new StreamException("Received unknown class code " + code);
+                }
+                @SuppressWarnings("unchecked") Class<T> tclazz = (Class<T>)clazz;
+                return tclazz;
+            }
+
+            @Override protected <T> Streamer<T> readStreamer () {
+                short code = readResolveClassCode();
+                Streamer<?> s = _streamers.get(code);
+                if (s == null) {
+                    throw new StreamException("Received unknown class code " + code);
                 }
                 @SuppressWarnings("unchecked") Streamer<T> ts = (Streamer<T>)s;
                 return ts;
             }
 
-            protected Map<Short, Streamer<?>> _streamers = new HashMap<Short, Streamer<?>>(STREAMERS);
+            protected final short readResolveClassCode () {
+                short code = readShort();
+                if (code < 0) {
+                    code = (short)-code;
+                    resolveStreamer(code);
+                }
+                return code;
+            }
+
+            protected final void resolveStreamer (short code) {
+                String cname = readString();
+                Streamer<?> s = findStreamer(cname);
+                // extract the target type from the Streamer class (for use by readClass())
+                try {
+                    _classes.put(code, s.getClass().getDeclaredMethod(
+                                     "readObject", Streamable.Input.class).getReturnType());
+                } catch (Throwable t) {
+                    throw new StreamException("Error creating streamer (" + s.getClass() + ")", t);
+                }
+                _streamers.put(code, s);
+            }
+
+            protected Map<Short, Class<?>> _classes = Maps.newHashMap();
+            protected Map<Short, Streamer<?>> _streamers = Maps.newHashMap(STREAMERS);
         };
     }
 
@@ -208,13 +238,27 @@ public class JVMIO
 
             @Override public void writeString (String value) {
                 try {
-                    dout.writeUTF(value);
+                    if (value == null) {
+                        dout.writeBoolean(false);
+                    } else {
+                        dout.writeBoolean(true);
+                        dout.writeUTF(value);
+                    }
                 } catch (IOException ioe) {
                     throw new StreamException(ioe);
                 }
             }
 
-            @Override protected <T> Streamer<T> writeClass (T value) {
+            @Override public <T extends Streamable> void writeClass (Class<T> clazz) {
+                Short code = _classes.get(clazz);
+                if (code != null) {
+                    writeShort(code);
+                } else {
+                    resolveAndWriteClass(clazz);
+                }
+            }
+
+            @Override protected <T> Streamer<T> writeStreamer (T value) {
                 if (value == null) {
                     return this.<T>writeClass((short)0); // null streamer has code 0
                 }
@@ -240,18 +284,7 @@ public class JVMIO
                 }
 
                 // otherwise we need to load and cache the streamer for this class
-                if (_nextCode == Short.MAX_VALUE) {
-                    throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
-                                              " different value types.");
-                }
-                code = (short)++_nextCode;
-                String cname = vclass.getName();
-                @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)findStreamer(cname);
-                _streamers.put(code, s);
-                _classes.put(vclass, code); // do this after findStreamer, which may fail
-                writeShort((short)-code);
-                writeString(cname);
-                return s;
+                return resolveAndWriteClass(vclass);
             }
 
             @SuppressWarnings("unchecked") 
@@ -260,8 +293,23 @@ public class JVMIO
                 return (Streamer<T>)_streamers.get(code);
             }
 
-            protected Map<Class<?>, Short> _classes = new HashMap<Class<?>, Short>(CLASSES);
-            protected Map<Short, Streamer<?>> _streamers = new HashMap<Short, Streamer<?>>(STREAMERS);
+            protected <T> Streamer<T> resolveAndWriteClass (Class<?> clazz) {
+                if (_nextCode == Short.MAX_VALUE) {
+                    throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
+                                              " different value types.");
+                }
+                Short code = (short)++_nextCode;
+                String cname = clazz.getName();
+                @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)findStreamer(cname);
+                _streamers.put(code, s);
+                _classes.put(clazz, code); // do this after findStreamer, which may fail
+                writeShort((short)-code);
+                writeString(cname);
+                return s;
+            }
+
+            protected Map<Class<?>, Short> _classes = Maps.newHashMap(CLASSES);
+            protected Map<Short, Streamer<?>> _streamers = Maps.newHashMap(STREAMERS);
             protected int _nextCode = _streamers.size()-1;
         };
     }
@@ -288,8 +336,8 @@ public class JVMIO
         }
     }
 
-    protected static final Map<Short,Streamer<?>> STREAMERS = new HashMap<Short,Streamer<?>>();
-    protected static final Map<Class<?>,Short> CLASSES = new HashMap<Class<?>,Short>();
+    protected static final Map<Short,Streamer<?>> STREAMERS = Maps.newHashMap();
+    protected static final Map<Class<?>,Short> CLASSES = Maps.newHashMap();
     static {
         // map the streamers for our basic types
         mapStreamer(0, new Streamers.Streamer_Null());

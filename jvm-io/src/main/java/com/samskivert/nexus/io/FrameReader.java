@@ -45,8 +45,9 @@ public class FrameReader
         }
 
         // we may already have the next frame entirely in the buffer from a previous read
-        if (checkForCompleteFrame()) {
-            return _buffer.slice();
+        ByteBuffer early = checkForCompleteFrame();
+        if (early != null) {
+            return early;
         }
 
         do {
@@ -83,7 +84,7 @@ public class FrameReader
         } while (_buffer.capacity() < MAX_BUFFER_CAPACITY);
 
         // finally check to see if there's a complete frame in the buffer
-        return checkForCompleteFrame() ? _buffer.slice() : null;
+        return checkForCompleteFrame();
     }
 
     /**
@@ -94,36 +95,23 @@ public class FrameReader
     {
         // if we don't have enough bytes to determine our frame size, stop here and let the caller
         // know that we're not ready
-        if (_have < HEADER_SIZE) {
-            return -1;
-        }
-
-        // decode the frame length
-        _buffer.rewind();
-        int length = (_buffer.get() & 0xFF) << 24;
-        length += (_buffer.get() & 0xFF) << 16;
-        length += (_buffer.get() & 0xFF) << 8;
-        length += (_buffer.get() & 0xFF);
-        _buffer.position(_have);
-
-        return length;
+        return (_have < HEADER_SIZE) ? -1 : _buffer.getInt(0);
     }
 
     /**
-     * Returns true if a complete frame is in the buffer, false otherwise. If a complete frame is
-     * in the buffer, the buffer will be prepared to deliver that frame via our {@link InputStream}
-     * interface.
+     * Returns a buffer that acts as a view of our frame data, if a complete frame is in the
+     * buffer, null otherwise.
      */
-    protected final boolean checkForCompleteFrame ()
+    protected final ByteBuffer checkForCompleteFrame ()
     {
         if (_length == -1 || _have < _length) {
-            return false;
+            return null;
         }
 
         // prepare the buffer such that this frame can be read
         _buffer.position(HEADER_SIZE);
         _buffer.limit(_length);
-        return true;
+        return _buffer.slice();
     }
 
     /** The buffer in which we maintain our frame data. */

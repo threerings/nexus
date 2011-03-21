@@ -17,7 +17,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.samskivert.nexus.distrib.Dispatcher;
 import com.samskivert.nexus.io.ByteBufferInputStream;
 import com.samskivert.nexus.io.FrameReader;
 import com.samskivert.nexus.io.FramingOutputStream;

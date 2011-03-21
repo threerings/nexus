@@ -45,16 +45,10 @@ public class FramingOutputStream extends OutputStream
     {
         // flip the buffer which will limit it to its current position
         _buffer.flip();
-
-        // then write the frame length and rewind back to the start of the buffer so that all the
-        // data is available
-        int count = _buffer.limit();
-        _buffer.put((byte)((count >>> 24) & 0xFF));
-        _buffer.put((byte)((count >>> 16) & 0xFF));
-        _buffer.put((byte)((count >>>  8) & 0xFF));
-        _buffer.put((byte)((count >>>  0) & 0xFF));
+        // then write the frame length
+        _buffer.putInt(_buffer.limit());
+        // and rewind back to the start of the buffer so that all the data is available
         _buffer.rewind();
-
         return _buffer;
     }
 
