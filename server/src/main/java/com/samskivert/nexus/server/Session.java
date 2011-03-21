@@ -49,7 +49,7 @@ public class Session
             Upstream msg = _sin.<Upstream>readValue();
             msg.dispatch(this);
         } catch (Throwable t) {
-            log.warning("Failure decoding incoming message", "session", this);
+            log.warning("Failure decoding incoming message", "session", this, t);
         }
     }
 

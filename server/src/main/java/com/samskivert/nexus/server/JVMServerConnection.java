@@ -75,8 +75,9 @@ public class JVMServerConnection
         // the outgoing socket, we have to copy it; we could also take this opportunity to copy it
         // into a direct buffer, which may improve I/O performance; someday perhaps we'll measure
         // performance with and without such an optimization
-        ByteBuffer frame = ByteBuffer.allocate(buffer.limit()-buffer.capacity());
-        buffer.put(frame);
+        ByteBuffer frame = ByteBuffer.allocate(buffer.limit()-buffer.position());
+        frame.put(buffer);
+        frame.flip();
 
         // add this frame to our output queue and tell the connection manager that we're writable
         _outq.offer(frame);
