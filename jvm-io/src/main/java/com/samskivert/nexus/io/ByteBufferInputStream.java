@@ -28,7 +28,7 @@ public class ByteBufferInputStream extends InputStream
     {
         // note: we don't rely on "-1 signals EOF" behavior, so we just let read() fail if one
         // attempts to read past the end of the buffer
-        return _buffer.get();
+        return _buffer.get() & 0xFF;
     }
 
     @Override
