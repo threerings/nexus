@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.nexus.io.Streamable;
+
 import static com.samskivert.nexus.util.Log.log;
 
 /**
@@ -302,16 +304,16 @@ public class DMap<K,V> extends DAttribute
         };
     }
 
-    @Override // from Object
-    public boolean equals (Object o)
+    @Override // from DAttribute
+    public void readContents (Streamable.Input in)
     {
-        return (o instanceof DMap<?,?>) && _impl.equals(((DMap<?,?>)o)._impl);
+        _impl = in.<Map<K,V>>readValue();
     }
 
-    @Override // from Object
-    public int hashCode()
+    @Override // from DAttribute
+    public void writeContents (Streamable.Output out)
     {
-        return _impl.hashCode();
+        out.writeValue(_impl);
     }
 
     protected void postPut (K key, V value, V ovalue)

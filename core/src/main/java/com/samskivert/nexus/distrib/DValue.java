@@ -67,6 +67,18 @@ public class DValue<T> extends DAttribute
         removeListener(_listeners, listener);
     }
 
+    @Override // from DAttribute
+    public void readContents (Streamable.Input in)
+    {
+        _value = in.<T>readValue();
+    }
+
+    @Override // from DAttribute
+    public void writeContents (Streamable.Output out)
+    {
+        out.writeValue(_value);
+    }
+
     protected DValue (T value)
     {
         _value = value;

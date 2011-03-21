@@ -52,6 +52,26 @@ public abstract class NexusObject
     }
 
     /**
+     * Reads the contents of this object from the supplied input.
+     */
+    public void readContents (Streamable.Input in)
+    {
+        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
+            getAttribute(ii).readContents(in);
+        }
+    }
+
+    /**
+     * Writes the contents of this object to the supplied output.
+     */
+    public void writeContents (Streamable.Output out)
+    {
+        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
+            getAttribute(ii).writeContents(out);
+        }
+    }
+
+    /**
      * Initializes this object with its id and event sink, which also triggers the initialization
      * of its distributed attributes. This takes place when the object is registered with
      * dispatcher on its originating server, and when it is read off the network on a subscribing

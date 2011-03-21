@@ -12,7 +12,7 @@ import com.samskivert.nexus.io.Streamable;
  * The base type for all Nexus object attributes.
  */
 public abstract class DAttribute
-    implements Streamable, NexusObject.Attribute
+    implements NexusObject.Attribute
 {
     /** A marker interface from which all attribute listeners must extend. */
     public interface DListener {
@@ -24,6 +24,16 @@ public abstract class DAttribute
         _owner = owner;
         _index = index;
     }
+
+    /**
+     * Reads the contents of this attribute from the supplied input.
+     */
+    public abstract void readContents (Streamable.Input in);
+
+    /**
+     * Writes the contents of this attribute to the supplied output.
+     */
+    public abstract void writeContents (Streamable.Output out);
 
     /**
      * Confirms that the attribute in question can be mutated. If this attribute is a member of a

@@ -6,26 +6,15 @@
 
 package com.samskivert.nexus.distrib;
 
-import java.util.Map;
-
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.io.Streamer;
 
 /**
- * Handles the streaming of {@link DMap} instances and its internal events.
+ * Contains streamers for {@link DMap} inner classes.
  */
-public class Streamer_DMap<K,V> implements Streamer<DMap<K,V>>
+public class Streamer_DMap
 {
-    public void writeObject (Streamable.Output out, DMap<K,V> obj)
-    {
-        out.writeValue(obj._impl);
-    }
-
-    public DMap<K,V> readObject (Streamable.Input in)
-    {
-        return DMap.create(in.<Map<K,V>>readValue());
-    }
-
+    /** Handles streaming of {@link DMap.PutEvent} instances. */
     public static class PutEvent<K,V> implements Streamer<DMap.PutEvent<K,V>> {
         public void writeObject (Streamable.Output out, DMap.PutEvent<K,V> obj) {
             out.writeShort(obj._index);
@@ -38,6 +27,7 @@ public class Streamer_DMap<K,V> implements Streamer<DMap<K,V>>
         }
     }
 
+    /** Handles streaming of {@link DMap.RemovedEvent} instances. */
     public static class RemovedEvent<K,V> implements Streamer<DMap.RemovedEvent<K,V>> {
         public void writeObject (Streamable.Output out, DMap.RemovedEvent<K,V> obj) {
             out.writeShort(obj._index);

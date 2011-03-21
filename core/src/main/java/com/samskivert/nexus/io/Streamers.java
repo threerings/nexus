@@ -111,6 +111,8 @@ public class Streamers
         }
     }
 
+    // TODO: boxed streamers
+
     /** A streamer for {@link String}. */
     public static class Streamer_String implements Streamer<String> {
         public void writeObject (Streamable.Output out, String value) {

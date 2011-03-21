@@ -31,13 +31,14 @@ public interface Streamable
         public abstract float readFloat ();
         public abstract double readDouble ();
         public abstract String readString ();
+        public abstract <T extends Streamable> Class<T> readClass ();
 
         /**
          * Reads a single value from the input (which must have been written via a call to {@link
          * Output#writeValue}).
          */
         public <T> T readValue () {
-            return this.<T>readClass().readObject(this);
+            return this.<T>readStreamer().readObject(this);
         }
 
         /**
@@ -47,7 +48,7 @@ public interface Streamable
          */
         public <T> void readValues (Collection<T> into) {
             int count = readShort();
-            Streamer<T> s = this.<T>readClass();
+            Streamer<T> s = this.<T>readStreamer();
             for (; count > 0; --count) {
                 into.add(s.readObject(this));
             }
@@ -57,7 +58,7 @@ public interface Streamable
          * Reads a class identifier from the stream and returns the streamer to be used to unstream
          * instances of that class.
          */
-        protected abstract <T> Streamer<T> readClass ();
+        protected abstract <T> Streamer<T> readStreamer ();
     }
 
     /**
@@ -74,13 +75,14 @@ public interface Streamable
         public abstract void writeFloat (float value);
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
+        public abstract <T extends Streamable> void writeClass (Class<T> clazz);
 
         /**
          * Writes a value to the output, which may be of any of the primitive types, String, a
          * List, Set or Map collection, a class which implements {@link Streamable}, or null.
          */
         public <T> void writeValue (T value) {
-            Streamer<T> s = writeClass(value);
+            Streamer<T> s = writeStreamer(value);
             if (s != null) {
                 s.writeObject(this, value);
             }
@@ -99,7 +101,7 @@ public interface Streamable
             writeShort((short)count);
             if (count > 0) {
                 T first = from.next();
-                Streamer<T> s = writeClass(first);
+                Streamer<T> s = writeStreamer(first);
                 s.writeObject(this, first);
                 while (from.hasNext()) {
                     s.writeObject(this, from.next());
@@ -111,6 +113,6 @@ public interface Streamable
          * Writes the class code for the supplied value and returns the streamer to be used to
          * stream the value's data.
          */
-        protected abstract <T> Streamer<T> writeClass (T value);
+        protected abstract <T> Streamer<T> writeStreamer (T value);
     }
 }

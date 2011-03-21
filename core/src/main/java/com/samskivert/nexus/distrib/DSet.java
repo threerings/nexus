@@ -6,20 +6,22 @@
 
 package com.samskivert.nexus.distrib;
 
+import com.samskivert.nexus.io.Streamable;
+
 /**
  * A set attribute for a Nexus object. Contains an unordered set of distinct values.
  */
 public class DSet<T> extends DAttribute // TODO: implements Set<T>
 {
-    // from interface Streamable
-    public void readObject (Input in)
+    @Override // from DAttribute
+    public void readContents (Streamable.Input in)
     {
-        // TODO
+        // TODO: _impl = in.<Set<T>>readValue();
     }
 
-    // from interface Streamable
-    public void writeObject (Output out)
+    @Override // from DAttribute
+    public void writeContents (Streamable.Output out)
     {
-        // TODO
+        // TODO: out.writeValue(_impl);
     }
 }
