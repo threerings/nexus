@@ -111,7 +111,7 @@ public class DValue<T> extends DAttribute
     /** An event emitted when a value changes. */
     protected static class ChangedEvent<T> extends DAttribute.Event
     {
-        public T oldValue;
+        public T oldValue = DAttribute.<T>sentinelValue();
 
         public ChangedEvent (short index, T value) {
             super(index);
