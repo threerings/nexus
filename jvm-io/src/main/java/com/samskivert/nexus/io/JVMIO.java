@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 
+import com.samskivert.nexus.distrib.NexusService;
 import com.samskivert.nexus.io.StreamException;
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.io.Streamer;
@@ -137,6 +138,25 @@ public class JVMIO
                 return ts;
             }
 
+            @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory () {
+                short code = readShort();
+                if (code < 0) {
+                    code = (short)-code;
+                    String rname = makeAuxName(readString(), "Factory");
+                    try {
+                        _services.put(code, (ServiceFactory<?>)Class.forName(rname).newInstance());
+                    } catch (Exception e) {
+                        throw new StreamException("Error instantiating service factory " + rname, e);
+                    }
+                }
+                @SuppressWarnings("unchecked") ServiceFactory<T> factory =
+                    (ServiceFactory<T>)_services.get(code);
+                if (factory == null) {
+                    throw new StreamException("Received unknown service code " + code);
+                }
+                return factory;
+            }
+
             protected final short readResolveClassCode () {
                 short code = readShort();
                 if (code < 0) {
@@ -161,6 +181,7 @@ public class JVMIO
 
             protected Map<Short, Class<?>> _classes = Maps.newHashMap();
             protected Map<Short, Streamer<?>> _streamers = Maps.newHashMap(STREAMERS);
+            protected Map<Short, ServiceFactory<?>> _services = Maps.newHashMap();
         };
     }
 
@@ -258,6 +279,22 @@ public class JVMIO
                 }
             }
 
+            @Override public void writeService (NexusService service) {
+                if (_nextServiceCode == Short.MAX_VALUE) {
+                    throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
+                                              " different service types.");
+                }
+                Class<?> sclass = service.getClass();
+                Short code = _services.get(sclass);
+                if (code == null) {
+                    _services.put(sclass, code = (short)++_nextServiceCode);
+                    writeShort((short)-code);
+                    writeString(sclass.getName());
+                } else {
+                    writeShort(code);
+                }
+            }
+
             @Override protected <T> Streamer<T> writeStreamer (T value) {
                 if (value == null) {
                     return this.<T>writeClass((short)0); // null streamer has code 0
@@ -294,11 +331,11 @@ public class JVMIO
             }
 
             protected <T> Streamer<T> resolveAndWriteClass (Class<?> clazz) {
-                if (_nextCode == Short.MAX_VALUE) {
+                if (_nextStreamerCode == Short.MAX_VALUE) {
                     throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
                                               " different value types.");
                 }
-                Short code = (short)++_nextCode;
+                Short code = (short)++_nextStreamerCode;
                 String cname = clazz.getName();
                 @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)findStreamer(cname);
                 _streamers.put(code, s);
@@ -310,17 +347,25 @@ public class JVMIO
 
             protected Map<Class<?>, Short> _classes = Maps.newHashMap(CLASSES);
             protected Map<Short, Streamer<?>> _streamers = Maps.newHashMap(STREAMERS);
-            protected int _nextCode = _streamers.size()-1;
+            protected int _nextStreamerCode = _streamers.size()-1;
+
+            protected Map<Class<?>, Short> _services = Maps.newHashMap();
+            protected int _nextServiceCode;
         };
     }
 
     private JVMIO () {} // no constructy
 
-    protected static Streamer<?> findStreamer (String cname)
+    protected static String makeAuxName (String cname, String prefix)
     {
         int didx = cname.lastIndexOf(".");
         // the below works whether didx is -1 or a valid index
-        String sname = cname.substring(0, didx+1) + "Streamer_" + cname.substring(didx+1);
+        return cname.substring(0, didx+1) + prefix + "_" + cname.substring(didx+1);
+    }
+
+    protected static Streamer<?> findStreamer (String cname)
+    {
+        String sname = makeAuxName(cname, "Streamer");
         try {
             return (Streamer<?>)Class.forName(sname).newInstance();
         } catch (Exception e) {
