@@ -14,6 +14,7 @@ import java.util.Map;
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.NexusEvent;
+import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
 import com.samskivert.nexus.distrib.NexusObjectUtil;
 import com.samskivert.nexus.util.Callback;
@@ -60,16 +61,45 @@ public abstract class Connection
      */
     public abstract void close ();
 
-    // from EventSink
+    // from interface EventSink
     public String getHost ()
     {
         return _host;
     }
 
-    // from EventSink
+    // from interface EventSink
     public void postEvent (NexusObject source, NexusEvent event)
     {
         send(new Upstream.PostEvent(event));
+    }
+
+    // from interface EventSink
+    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
+    {
+        // determine whether this call has a callback and at what position (the service generator
+        // code will ensure we never have service methods with multiple callback arguments)
+        int callbackIdx = -1;
+        for (int ii = 0; ii < args.length; ii++) {
+            if (args[ii] instanceof Callback<?>) {
+                callbackIdx = ii;
+                break;
+            }
+        }
+
+        // if we have a callback, assign a call id and map the callback
+        int callId;
+        if (callbackIdx < 0) {
+            callId = 0;
+        } else {
+            callId = 1;
+            for (Integer key : _calls.keySet()) {
+                callId = Math.max(callId, key+1);
+            }
+            _calls.put(callId, (Callback<?>)args[callbackIdx]);
+        }
+
+        // finally send the service call
+        send(new Upstream.ServiceCall(callId, source.getId(), attrIndex, methodId, args));
     }
 
     // from interface Downstream.Handler
@@ -129,6 +159,37 @@ public abstract class Connection
         });
     }
 
+    // from interface Downstream.Handler
+    public void onServiceResponse (Downstream.ServiceResponse msg)
+    {
+        Callback<?> callback = _calls.remove(msg.callId);
+        if (callback == null) {
+            log.warning("Received service response for unknown call", "msg", msg);
+            return;
+        }
+        try {
+            @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;
+            ccb.onSuccess(msg.result);
+        } catch (Throwable t) {
+            log.warning("Failure delivering service response", t);
+        }
+    }
+
+    // from interface Downstream.Handler
+    public void onServiceFailure (Downstream.ServiceFailure msg)
+    {
+        Callback<?> callback = _calls.remove(msg.callId);
+        if (callback == null) {
+            log.warning("Received service failure for unknown call", "msg", msg);
+            return;
+        }
+        try {
+            callback.onFailure(new NexusException(msg.cause));
+        } catch (Throwable t) {
+            log.warning("Failure delivering service failure", t);
+        }
+    }
+
     protected Connection (String host)
     {
         _host = host;
@@ -180,6 +241,9 @@ public abstract class Connection
 
     /** Tracks pending subscribers. */
     protected final PenderMap _penders = new PenderMap();
+
+    /** Tracks pending service calls. */
+    protected final Map<Integer, Callback<?>> _calls = new HashMap<Integer, Callback<?>>();
 
     /** Tracks currently subscribed objects. */
     protected final Map<Integer, NexusObject> _objects = new HashMap<Integer, NexusObject>();

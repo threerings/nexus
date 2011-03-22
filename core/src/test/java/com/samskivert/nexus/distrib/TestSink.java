@@ -29,6 +29,12 @@ public class TestSink implements EventSink
         event.applyTo(source);
     }
 
+    // from interface EventSink
+    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Asserts that an event of the specified class was the next event posted to this event sink.
      * Consumes the event so that assertions can be made about subsequent events.

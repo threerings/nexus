@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.nexus.distrib.NexusService;
+
 /**
  * An interface implemented by objects that will be streamed over the network.
  */
@@ -32,6 +34,7 @@ public interface Streamable
         public abstract double readDouble ();
         public abstract String readString ();
         public abstract <T extends Streamable> Class<T> readClass ();
+        public abstract <T extends NexusService> T readService ();
 
         /**
          * Reads a single value from the input (which must have been written via a call to {@link
@@ -75,7 +78,8 @@ public interface Streamable
         public abstract void writeFloat (float value);
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
-        public abstract <T extends Streamable> void writeClass (Class<T> clazz);
+        public abstract void writeClass (Class<? extends Streamable> clazz);
+        public abstract void writeService (NexusService service);
 
         /**
          * Writes a value to the output, which may be of any of the primitive types, String, a

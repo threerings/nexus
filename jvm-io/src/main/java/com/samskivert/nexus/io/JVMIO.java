@@ -249,7 +249,7 @@ public class JVMIO
                 }
             }
 
-            @Override public <T extends Streamable> void writeClass (Class<T> clazz) {
+            @Override public void writeClass (Class<? extends Streamable> clazz) {
                 Short code = _classes.get(clazz);
                 if (code != null) {
                     writeShort(code);

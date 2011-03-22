@@ -25,6 +25,9 @@ public interface Upstream extends Streamable
 
         /** Dispatches a post event request. */
         void onPostEvent (PostEvent message);
+
+        /** Dispatches a service call request. */
+        void onServiceCall (ServiceCall message);
     }
 
     /** A request to subscribe to a Nexus object. */
@@ -68,6 +71,39 @@ public interface Upstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onPostEvent(this);
+        }
+    }
+
+    /** A request to post a service call on the server. */
+    public static class ServiceCall implements Upstream
+    {
+        /** An id that will be used to correlate this call with a response. If the id is zero, the
+         * call is not expecting a response. */
+        public final int callId;
+
+        /** The id of the object that contains the service in question. */
+        public final int objectId;
+
+        /** The index of the service attribute on said object. */
+        public final short attrIndex;
+
+        /** The id of the method to be called. */
+        public final short methodId;
+
+        /** The arguments to be supplied to the method call. */
+        public final Object[] args;
+
+        public ServiceCall (int callId, int objectId, short attrIndex,
+                            short methodId, Object[] args) {
+            this.callId = callId;
+            this.objectId = objectId;
+            this.attrIndex = attrIndex;
+            this.methodId = methodId;
+            this.args = args;
+        }
+
+        public void dispatch (Handler handler) {
+            handler.onServiceCall(this);
         }
     }
 

@@ -129,6 +129,14 @@ public abstract class NexusObject
         }
     }
 
+    /**
+     * Requests that a service call be posted to this object.
+     */
+    protected void postCall (short attrIndex, short methodId, Object[] args)
+    {
+        _sink.postCall(this, attrIndex, methodId, args);
+    }
+
     /** Used by {@link #getAddress} for type jockeying. */
     protected static class DummyKeyed extends NexusObject implements Keyed {
         public Comparable<?> getKey () { return null; }

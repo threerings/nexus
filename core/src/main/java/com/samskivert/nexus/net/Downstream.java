@@ -26,6 +26,12 @@ public interface Downstream extends Streamable
 
         /** Dispatches an event originating on the server. */
         void onDispatchEvent (DispatchEvent message);
+
+        /** Dispatches a service response from the server. */
+        void onServiceResponse (ServiceResponse message);
+
+        /** Dispatches a failed service notification from the server. */
+        void onServiceFailure (ServiceFailure message);
     }
 
     /** A successful response to a subscription request. */
@@ -74,6 +80,44 @@ public interface Downstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onDispatchEvent(this);
+        }
+    }
+
+    /** Delivers a response to a service call from the server. */
+    public static class ServiceResponse implements Downstream
+    {
+        /** The id of the originating call. */
+        public final int callId;
+
+        /** The result of the call. */
+        public final Object result;
+
+        public ServiceResponse (int callId, Object result) {
+            this.callId = callId;
+            this.result = result;
+        }
+
+        public void dispatch (Handler handler) {
+            handler.onServiceResponse(this);
+        }
+    }
+
+    /** Delivers a failure response to a service call from the server. */
+    public static class ServiceFailure implements Downstream
+    {
+        /** The id of the originating call. */
+        public final int callId;
+
+        /** The reason for the failure. */
+        public final String cause;
+
+        public ServiceFailure (int callId, String cause) {
+            this.callId = callId;
+            this.cause = cause;
+        }
+
+        public void dispatch (Handler handler) {
+            handler.onServiceFailure(this);
         }
     }
 
