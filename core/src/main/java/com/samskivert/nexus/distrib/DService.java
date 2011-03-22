@@ -13,6 +13,17 @@ import com.samskivert.nexus.io.Streamable;
  */
 public class DService<T extends NexusService> extends DAttribute
 {
+    /** Used on the client to post service calls to the server. */
+    public abstract static class Poster {
+        public void postCall (short methodId, Object... args) {
+            _attr.postCall(methodId, args);
+        }
+        protected Poster (DService<?> attr) {
+            _attr = attr;
+        }
+        protected DService<?> _attr;
+    }
+
     /** Used on the server to dispatch service requests. */
     public interface Dispatcher {
         /** Dispatches the specified service method using the supplied arguments. */

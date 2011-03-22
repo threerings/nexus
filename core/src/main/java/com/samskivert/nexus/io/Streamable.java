@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.NexusService;
 
 /**
@@ -34,7 +35,10 @@ public interface Streamable
         public abstract double readDouble ();
         public abstract String readString ();
         public abstract <T extends Streamable> Class<T> readClass ();
-        public abstract <T extends NexusService> T readService ();
+
+        public <T extends NexusService> T readService (DService<T> attr) {
+            return this.<T>readServiceFactory().createMarshaller(attr);
+        }
 
         /**
          * Reads a single value from the input (which must have been written via a call to {@link
@@ -62,6 +66,11 @@ public interface Streamable
          * instances of that class.
          */
         protected abstract <T> Streamer<T> readStreamer ();
+
+        /**
+         * Reads a service factory, which can be used to create marshallers for a Nexus service.
+         */
+        protected abstract <T extends NexusService> ServiceFactory<T> readServiceFactory ();
     }
 
     /**
