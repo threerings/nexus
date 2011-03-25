@@ -119,9 +119,16 @@ public abstract class DAttribute
     /** A base class for all events associated with an attribute. */
     protected static abstract class Event extends NexusEvent
     {
-        protected Event (short index) {
+        protected Event (int targetId, short index) {
+            super(targetId);
             _index = index;
         }
+
+        @Override protected void toString (StringBuilder buf) {
+            super.toString(buf);
+            buf.append(", idx=").append(_index);
+        }
+
         protected final short _index;
     }
 

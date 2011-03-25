@@ -14,6 +14,7 @@ import com.samskivert.nexus.io.Streamable;
 public abstract class NexusEvent
     implements Streamable
 {
+
     /**
      * Applies this event to the supplied target object.
      */
@@ -27,25 +28,27 @@ public abstract class NexusEvent
         return _targetId;
     }
 
-    // from interface Streamable
-    public void readObject (Input in)
+    @Override
+    public String toString ()
     {
-        _targetId = in.readInt();
-    }
-
-    // from interface Streamable
-    public void writeObject (Output out)
-    {
-        out.writeInt(_targetId);
+        String cname = getClass().getName();
+        cname = cname.substring(cname.lastIndexOf(".")+1);
+        StringBuilder buf = new StringBuilder(cname).append("[");
+        toString(buf);
+        return buf.append("]").toString();
     }
 
     /**
-     * Configures this event with its target object id. This is called when the event is posted to
-     * the object and before it is forwarded to the object's event sink.
+     * Creates an event targeted to the specified object.
      */
-    protected void setTargetId (int targetId)
+    protected NexusEvent (int targetId)
     {
         _targetId = targetId;
+    }
+
+    protected void toString (StringBuilder buf)
+    {
+        buf.append("target=").append(_targetId);
     }
 
     protected int _targetId;

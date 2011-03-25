@@ -318,7 +318,7 @@ public class DMap<K,V> extends DAttribute
 
     protected void postPut (K key, V value, V ovalue)
     {
-        PutEvent<K,V> event = new PutEvent<K,V>(_index, key, value);
+        PutEvent<K,V> event = new PutEvent<K,V>(_owner.getId(), _index, key, value);
         event.oldValue = ovalue;
         _owner.postEvent(event);
     }
@@ -341,7 +341,7 @@ public class DMap<K,V> extends DAttribute
 
     protected void postRemoved (K key, V ovalue)
     {
-        RemovedEvent<K,V> event = new RemovedEvent<K,V>(_index, key);
+        RemovedEvent<K,V> event = new RemovedEvent<K,V>(_owner.getId(), _index, key);
         event.oldValue = ovalue;
         _owner.postEvent(event);
     }
@@ -367,8 +367,8 @@ public class DMap<K,V> extends DAttribute
     {
         public V oldValue = DAttribute.<V>sentinelValue();
 
-        public PutEvent (short index, K key, V value) {
-            super(index);
+        public PutEvent (int targetId, short index, K key, V value) {
+            super(targetId, index);
             _key = key;
             _value = value;
         }
@@ -376,6 +376,12 @@ public class DMap<K,V> extends DAttribute
         @Override public void applyTo (NexusObject target) {
             @SuppressWarnings("unchecked") DMap<K,V> attr = (DMap<K,V>)target.getAttribute(_index);
             attr.applyPut(_key, _value, oldValue);
+        }
+
+        @Override protected void toString (StringBuilder buf) {
+            super.toString(buf);
+            buf.append(", key=").append(_key);
+            buf.append(", value=").append(_value);
         }
 
         protected final K _key;
@@ -387,14 +393,19 @@ public class DMap<K,V> extends DAttribute
     {
         public V oldValue = DAttribute.<V>sentinelValue();
 
-        public RemovedEvent (short index, K key) {
-            super(index);
+        public RemovedEvent (int targetId, short index, K key) {
+            super(targetId, index);
             _key = key;
         }
 
         @Override public void applyTo (NexusObject target) {
             @SuppressWarnings("unchecked") DMap<K,V> attr = (DMap<K,V>)target.getAttribute(_index);
             attr.applyRemoved(_key, oldValue);
+        }
+
+        @Override protected void toString (StringBuilder buf) {
+            super.toString(buf);
+            buf.append(", key=").append(_key);
         }
 
         protected final K _key;

@@ -86,7 +86,7 @@ public class DValue<T> extends DAttribute
 
     protected void postChanged (T value, T ovalue)
     {
-        ChangedEvent<T> event = new ChangedEvent<T>(_index, value);
+        ChangedEvent<T> event = new ChangedEvent<T>(_owner.getId(), _index, value);
         event.oldValue = ovalue;
         _owner.postEvent(event);
     }
@@ -113,14 +113,19 @@ public class DValue<T> extends DAttribute
     {
         public T oldValue = DAttribute.<T>sentinelValue();
 
-        public ChangedEvent (short index, T value) {
-            super(index);
+        public ChangedEvent (int targetId, short index, T value) {
+            super(targetId, index);
             _value = value;
         }
 
         @Override public void applyTo (NexusObject target) {
             @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
             attr.applyChanged(_value, oldValue);
+        }
+
+        @Override protected void toString (StringBuilder buf) {
+            super.toString(buf);
+            buf.append(", value=").append(_value);
         }
 
         protected final T _value;
