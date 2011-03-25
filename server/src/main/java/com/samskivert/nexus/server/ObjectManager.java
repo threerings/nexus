@@ -303,9 +303,9 @@ public class ObjectManager
     {
         final Set<Subscriber> subs;
         synchronized (_subscribers) {
-            subs = _subscribers.get(event.getTargetId());
+            subs = _subscribers.get(event.targetId);
         }
-        invoke(event.getTargetId(), new Action<NexusObject>() {
+        invoke(event.targetId, new Action<NexusObject>() {
             public void invoke (NexusObject object) {
                 // TODO: access control
                 // apply the event to the object (notifying listeners)
