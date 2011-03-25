@@ -279,17 +279,16 @@ public class JVMIO
                 }
             }
 
-            @Override public void writeService (NexusService service) {
+            @Override public void writeService (Class<? extends NexusService> clazz) {
                 if (_nextServiceCode == Short.MAX_VALUE) {
                     throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
                                               " different service types.");
                 }
-                Class<?> sclass = service.getClass();
-                Short code = _services.get(sclass);
+                Short code = _services.get(clazz);
                 if (code == null) {
-                    _services.put(sclass, code = (short)++_nextServiceCode);
+                    _services.put(clazz, code = (short)++_nextServiceCode);
                     writeShort((short)-code);
-                    writeString(sclass.getName());
+                    writeString(clazz.getName());
                 } else {
                     writeShort(code);
                 }
