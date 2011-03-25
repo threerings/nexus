@@ -39,6 +39,7 @@ public interface Upstream extends Streamable
         public final Address<?> addr;
 
         public Subscribe (Address<?> addr) {
+            assert(addr != null); // le cheque du sanity
             this.addr = addr;
         }
 
@@ -53,6 +54,7 @@ public interface Upstream extends Streamable
         public final int id;
 
         public Unsubscribe (int id) {
+            assert(id > 0); // le cheque du sanity
             this.id = id;
         }
 
@@ -68,6 +70,7 @@ public interface Upstream extends Streamable
         public final NexusEvent event;
 
         public PostEvent (NexusEvent event) {
+            assert(event != null); // le cheque du sanity
             this.event = event;
         }
 
@@ -97,6 +100,12 @@ public interface Upstream extends Streamable
 
         public ServiceCall (int callId, int objectId, short attrIndex,
                             short methodId, List<Object> args) {
+            // le cheques du sanity
+            assert(callId > 0);
+            assert(objectId > 0);
+            assert(attrIndex >= 0);
+            assert(methodId > 0);
+
             this.callId = callId;
             this.objectId = objectId;
             this.attrIndex = attrIndex;

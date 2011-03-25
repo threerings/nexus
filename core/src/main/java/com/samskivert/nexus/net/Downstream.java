@@ -41,6 +41,7 @@ public interface Downstream extends Streamable
         public final NexusObject object;
 
         public Subscribe (NexusObject object) {
+            assert(object != null); // le cheque du sanity
             this.object = object;
         }
 
@@ -59,6 +60,10 @@ public interface Downstream extends Streamable
         public final String cause;
 
         public SubscribeFailure (Address<?> addr, String cause) {
+            // les cheques du sanity
+            assert(addr != null);
+            assert(cause != null);
+
             this.addr = addr;
             this.cause = cause;
         }
@@ -75,6 +80,7 @@ public interface Downstream extends Streamable
         public final NexusEvent event;
 
         public DispatchEvent (NexusEvent event) {
+            assert(event != null); // le cheque du sanity
             this.event = event;
         }
 
@@ -93,6 +99,10 @@ public interface Downstream extends Streamable
         public final Object result;
 
         public ServiceResponse (int callId, Object result) {
+            // le cheque du sanity
+            assert(callId > 0);
+            // result can be anything since the service returned it
+
             this.callId = callId;
             this.result = result;
         }
@@ -112,6 +122,10 @@ public interface Downstream extends Streamable
         public final String cause;
 
         public ServiceFailure (int callId, String cause) {
+            // les cheques du sanity
+            assert(callId > 0);
+            assert(cause != null);
+
             this.callId = callId;
             this.cause = cause;
         }
