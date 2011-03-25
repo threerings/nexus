@@ -10,6 +10,7 @@ import java.util.concurrent.Executor;
 
 import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.DAttribute;
+import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.DValue;
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.NexusException;
@@ -31,7 +32,7 @@ public class ObjectManagerTest
     public void testRegister ()
     {
         ObjectManager omgr = createObjectManager();
-        TestObject test = new TestObject();
+        TestObject test = new TestObject(DService.create(TestUtil.createTestServiceImpl()));
         omgr.register(test);
 
         // ensure that we've been assigned an id

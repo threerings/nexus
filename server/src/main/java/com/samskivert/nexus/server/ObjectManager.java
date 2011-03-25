@@ -21,14 +21,15 @@ import com.google.common.collect.Maps;
 
 import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.Address;
+import com.samskivert.nexus.distrib.DistribUtil;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.distrib.NexusObjectUtil;
 import com.samskivert.nexus.distrib.Request;
 import com.samskivert.nexus.distrib.Singleton;
+import com.samskivert.nexus.util.Callback;
 
 import static com.samskivert.nexus.util.Log.log;
 
@@ -155,7 +156,7 @@ public class ObjectManager
         }
 
         // prevent the object from dispatching any more events
-        NexusObjectUtil.clear(object);
+        DistribUtil.clear(object);
 
         // queue up an action on this object's context that will remove this object's binding; this
         // will allow any pending events for this object to be processed before the binding is
@@ -296,6 +297,7 @@ public class ObjectManager
         } // otherwise, the object was probably already destroyed
     }
 
+    // from interface EventSink
     public void postEvent (final NexusEvent event)
     {
         final Set<Subscriber> subs;
@@ -321,6 +323,13 @@ public class ObjectManager
     }
 
     // from interface EventSink
+    public void postCall (int objectId, short attrIndex, short methodId, Object[] args)
+    {
+        // TODO
+        ((Callback<?>)args[args.length-1]).onFailure(new Throwable("Not implemented!"));
+    }
+
+    // from interface EventSink
     public String getHost ()
     {
         return _config.publicHostname;
@@ -336,7 +345,7 @@ public class ObjectManager
     protected void register (NexusObject object, EntityContext ctx)
     {
         int id = getNextObjectId();
-        NexusObjectUtil.init(object, id, this);
+        DistribUtil.init(object, id, this);
         _objects.put(id, new Binding<NexusObject>(object, ctx));
     }
 

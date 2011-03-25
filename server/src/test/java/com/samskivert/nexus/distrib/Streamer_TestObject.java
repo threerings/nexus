@@ -16,12 +16,13 @@ public class Streamer_TestObject implements Streamer<TestObject>
 {
     public void writeObject (Streamable.Output out, TestObject obj)
     {
+        out.writeService(TestService.class);
         obj.writeContents(out);
     }
 
     public TestObject readObject (Streamable.Input in)
     {
-        TestObject obj = new TestObject();
+        TestObject obj = new TestObject(in.<TestService>readService());
         obj.readContents(in);
         return obj;
     }

@@ -10,6 +10,9 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.samskivert.nexus.distrib.TestService;
+import com.samskivert.nexus.util.Callback;
+
 import org.junit.Assert;
 
 /**
@@ -35,5 +38,18 @@ public class TestUtil
         } catch (InterruptedException ie) {
             Assert.fail("Executor interrupted?");
         }
+    }
+
+    public static TestService createTestServiceImpl ()
+    {
+        return new TestService () {
+            public void addOne (int value, Callback<Integer> callback) {
+                System.err.println("Adding one to " + value); // temp
+                callback.onSuccess(value+1);
+            }
+            public void launchMissiles () {
+                System.err.println("Bang!");
+            }
+        };
     }
 }

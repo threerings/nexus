@@ -23,6 +23,7 @@ import com.samskivert.nexus.io.JVMIO;
 import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.net.Downstream;
 import com.samskivert.nexus.net.Upstream;
+import com.samskivert.nexus.util.Callback;
 
 import static com.samskivert.nexus.util.Log.log;
 
@@ -79,29 +80,49 @@ public class Session
     }
 
     // from interface Upstream.Handler
-    public void onSubscribe (Upstream.Subscribe message)
+    public void onSubscribe (Upstream.Subscribe msg)
     {
         try {
             // TODO: per-session class loaders or other fancy business
-            NexusObject object = _omgr.addSubscriber(message.addr, this);
+            NexusObject object = _omgr.addSubscriber(msg.addr, this);
             _subscriptions.add(object.getId());
             sendMessage(new Downstream.Subscribe(object));
         } catch (Throwable t) {
-            sendMessage(new Downstream.SubscribeFailure(message.addr, t.getMessage()));
+            sendMessage(new Downstream.SubscribeFailure(msg.addr, t.getMessage()));
         }
     }
 
     // from interface Upstream.Handler
-    public void onUnsubscribe (Upstream.Unsubscribe message)
+    public void onUnsubscribe (Upstream.Unsubscribe msg)
     {
         // TODO
     }
 
     // from interface Upstream.Handler
-    public void onPostEvent (final Upstream.PostEvent message)
+    public void onPostEvent (Upstream.PostEvent msg)
     {
         // we pass things straight through to the object manager which handles everything
-        _omgr.postEvent(message.event);
+        _omgr.postEvent(msg.event);
+    }
+
+    // from interface Upstream.Handler
+    public void onServiceCall (final Upstream.ServiceCall msg)
+    {
+        // if we have a call id, stick a callback in the final slot which communicates the result
+        // back to the calling client
+        Object[] args = msg.args.toArray();
+        if (msg.callId > 0) {
+            assert(args[args.length-1] == null);
+            args[args.length-1] = new Callback<Object>() {
+                public void onSuccess (Object result) {
+                    sendMessage(new Downstream.ServiceResponse(msg.callId, result));
+                }
+                public void onFailure (Throwable cause) {
+                    sendMessage(new Downstream.ServiceFailure(msg.callId, cause.getMessage()));
+                }
+            };
+        }
+        _omgr.postCall(msg.objectId, msg.attrIndex, msg.methodId, args);
     }
 
     // from interface ObjectManager.Subscriber
