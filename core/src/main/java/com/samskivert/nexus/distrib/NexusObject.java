@@ -56,6 +56,7 @@ public abstract class NexusObject
      */
     public void readContents (Streamable.Input in)
     {
+        _id = in.readInt();
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).readContents(in);
         }
@@ -66,6 +67,7 @@ public abstract class NexusObject
      */
     public void writeContents (Streamable.Output out)
     {
+        out.writeInt(_id);
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).writeContents(out);
         }
@@ -121,7 +123,7 @@ public abstract class NexusObject
     protected void postEvent (NexusEvent event)
     {
         if (_id > 0) {
-            event.setTargetId(_id);
+            assert(event.getTargetId() == getId());
             _sink.postEvent(this, event);
         } else {
             log.warning("Requested to post event to unregistered object",
