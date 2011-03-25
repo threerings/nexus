@@ -24,7 +24,7 @@ import static com.samskivert.nexus.util.Log.log;
  *   }
  *   public static class MyEventSlot extends DCustom<MyEvent> {
  *     public void emit (String data) {
- *       postEvent(new MyEvent(_owner.getId(), _index, data));
+ *       postEvent(new MyEvent(_owner.getId(), index, data));
  *     }
  *   }
  *   public MyEventSlot myEvent = new MyEventSlot();
@@ -52,7 +52,7 @@ public abstract class DCustom<T extends DCustom.Event> extends DAttribute
     {
         @Override public void applyTo (NexusObject target) {
             @SuppressWarnings("unchecked") DCustom<Event> attr =
-                (DCustom<Event>)target.getAttribute(_index);
+                (DCustom<Event>)target.getAttribute(this.index);
             attr.applyEvent(this);
         }
 

@@ -17,8 +17,8 @@ public class Streamer_DValue
     /** Handles the streaming of {@link DValue.ChangedEvent} instances. */
     public static class ChangedEvent<T> implements Streamer<DValue.ChangedEvent<T>> {
         public void writeObject (Streamable.Output out, DValue.ChangedEvent<T> obj) {
-            out.writeInt(obj._targetId);
-            out.writeShort(obj._index);
+            out.writeInt(obj.targetId);
+            out.writeShort(obj.index);
             out.writeValue(obj._value);
         }
         public DValue.ChangedEvent<T> readObject (Streamable.Input in) {

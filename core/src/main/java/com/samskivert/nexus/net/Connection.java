@@ -138,7 +138,7 @@ public abstract class Connection
     // from interface Downstream.Handler
     public void onDispatchEvent (final Downstream.DispatchEvent msg)
     {
-        final NexusObject target = _objects.get(msg.event.getTargetId());
+        final NexusObject target = _objects.get(msg.event.targetId);
         if (target == null) {
             log.warning("Missing target of event", "event", msg.event);
             return;

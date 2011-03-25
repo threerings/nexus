@@ -14,19 +14,13 @@ import com.samskivert.nexus.io.Streamable;
 public abstract class NexusEvent
     implements Streamable
 {
+    /** The id of the Nexus object on which this event was generated. */
+    public final int targetId;
 
     /**
      * Applies this event to the supplied target object.
      */
     public abstract void applyTo (NexusObject object);
-
-    /**
-     * Returns the id of the Nexus object on which this event was generated.
-     */
-    public int getTargetId ()
-    {
-        return _targetId;
-    }
 
     @Override
     public String toString ()
@@ -43,13 +37,11 @@ public abstract class NexusEvent
      */
     protected NexusEvent (int targetId)
     {
-        _targetId = targetId;
+        this.targetId = targetId;
     }
 
     protected void toString (StringBuilder buf)
     {
-        buf.append("target=").append(_targetId);
+        buf.append("target=").append(targetId);
     }
-
-    protected int _targetId;
 }

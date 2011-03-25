@@ -17,8 +17,8 @@ public class Streamer_DMap
     /** Handles streaming of {@link DMap.PutEvent} instances. */
     public static class PutEvent<K,V> implements Streamer<DMap.PutEvent<K,V>> {
         public void writeObject (Streamable.Output out, DMap.PutEvent<K,V> obj) {
-            out.writeInt(obj._targetId);
-            out.writeShort(obj._index);
+            out.writeInt(obj.targetId);
+            out.writeShort(obj.index);
             out.writeValue(obj._key);
             out.writeValue(obj._value);
         }
@@ -32,8 +32,8 @@ public class Streamer_DMap
     /** Handles streaming of {@link DMap.RemovedEvent} instances. */
     public static class RemovedEvent<K,V> implements Streamer<DMap.RemovedEvent<K,V>> {
         public void writeObject (Streamable.Output out, DMap.RemovedEvent<K,V> obj) {
-            out.writeInt(obj._targetId);
-            out.writeShort(obj._index);
+            out.writeInt(obj.targetId);
+            out.writeShort(obj.index);
             out.writeValue(obj._key);
         }
 

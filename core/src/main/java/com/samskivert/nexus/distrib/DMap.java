@@ -374,7 +374,8 @@ public class DMap<K,V> extends DAttribute
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DMap<K,V> attr = (DMap<K,V>)target.getAttribute(_index);
+            @SuppressWarnings("unchecked") DMap<K,V> attr =
+                (DMap<K,V>)target.getAttribute(this.index);
             attr.applyPut(_key, _value, oldValue);
         }
 
@@ -399,7 +400,8 @@ public class DMap<K,V> extends DAttribute
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DMap<K,V> attr = (DMap<K,V>)target.getAttribute(_index);
+            @SuppressWarnings("unchecked") DMap<K,V> attr =
+                (DMap<K,V>)target.getAttribute(this.index);
             attr.applyRemoved(_key, oldValue);
         }
 

@@ -119,24 +119,25 @@ public abstract class DAttribute
     /** A base class for all events associated with an attribute. */
     protected static abstract class Event extends NexusEvent
     {
+        /** The index of the attribute targetted by this event. */
+        public final short index;
+
         protected Event (int targetId, short index) {
             super(targetId);
-            _index = index;
+            this.index = index;
         }
 
         @Override protected void toString (StringBuilder buf) {
             super.toString(buf);
-            buf.append(", idx=").append(_index);
+            buf.append(", idx=").append(index);
         }
-
-        protected final short _index;
     }
 
     /** The object that owns this attribute. */
-    protected transient NexusObject _owner;
+    protected NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected transient short _index;
+    protected short _index;
 
     /** Used by our subclasses as a sentinel. */
     protected static final DListener[] NO_LISTENERS = new DListener[0];

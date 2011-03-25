@@ -123,7 +123,7 @@ public abstract class NexusObject
     protected void postEvent (NexusEvent event)
     {
         if (_id > 0) {
-            assert(event.getTargetId() == getId());
+            assert(event.targetId == getId());
             _sink.postEvent(this, event);
         } else {
             log.warning("Requested to post event to unregistered object",

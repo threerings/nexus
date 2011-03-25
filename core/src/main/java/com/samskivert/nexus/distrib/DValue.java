@@ -119,7 +119,8 @@ public class DValue<T> extends DAttribute
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DValue<T> attr = (DValue<T>)target.getAttribute(_index);
+            @SuppressWarnings("unchecked") DValue<T> attr =
+                (DValue<T>)target.getAttribute(this.index);
             attr.applyChanged(_value, oldValue);
         }
 
