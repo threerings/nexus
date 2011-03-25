@@ -185,12 +185,12 @@ public class Streamers
         while (seeker.hasNext()) {
             T item = seeker.next();
             Class<?> iclazz = (item == null) ? null : item.getClass();
-            if (iclazz != clazz && count > 0) {
-                if (count > Short.MAX_VALUE) {
-                    throw new StreamException("Cannot handle more than " + Short.MAX_VALUE +
-                                              " elements in a collection.");
+            if (iclazz != clazz) {
+                if (count > 0) {
+                    out.writeValues(count, writer);
+                    count = 0;
                 }
-                out.writeValues(count, writer);
+                clazz = iclazz;
             }
             count += 1;
         }

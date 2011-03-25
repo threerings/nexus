@@ -6,6 +6,8 @@
 
 package com.samskivert.nexus.net;
 
+import java.util.List;
+
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.io.Streamable;
@@ -43,6 +45,22 @@ public class Streamer_Upstream
         }
         public Upstream.PostEvent readObject (Streamable.Input in) {
             return new Upstream.PostEvent(in.<NexusEvent>readValue());
+        }
+    }
+
+    public static class ServiceCall implements Streamer<Upstream.ServiceCall>
+    {
+        public void writeObject (Streamable.Output out, Upstream.ServiceCall obj) {
+            out.writeInt(obj.callId);
+            out.writeInt(obj.objectId);
+            out.writeShort(obj.attrIndex);
+            out.writeShort(obj.methodId);
+            out.writeValue(obj.args);
+        }
+        public Upstream.ServiceCall readObject (Streamable.Input in) {
+            return new Upstream.ServiceCall(in.readInt(), in.readInt(),
+                                            in.readShort(), in.readShort(),
+                                            in.<List<Object>>readValue());
         }
     }
 }

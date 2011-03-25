@@ -10,10 +10,10 @@ import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.NexusService;
 
 /**
- * Used to create service marshallers.
+ * Used to create service attributes.
  */
 public interface ServiceFactory<T extends NexusService>
 {
-    /** Creates a marshaller for our service bound to the supplied attribute. */
-    T createMarshaller (DService<T> attr);
+    /** Creates an attribute for our service that will dispatch calls over the network. */
+    DService<T> createService ();
 }

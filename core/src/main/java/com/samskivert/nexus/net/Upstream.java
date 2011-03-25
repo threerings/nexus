@@ -6,6 +6,8 @@
 
 package com.samskivert.nexus.net;
 
+import java.util.List;
+
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.io.Streamable;
@@ -91,10 +93,10 @@ public interface Upstream extends Streamable
         public final short methodId;
 
         /** The arguments to be supplied to the method call. */
-        public final Object[] args;
+        public final List<Object> args;
 
         public ServiceCall (int callId, int objectId, short attrIndex,
-                            short methodId, Object[] args) {
+                            short methodId, List<Object> args) {
             this.callId = callId;
             this.objectId = objectId;
             this.attrIndex = attrIndex;

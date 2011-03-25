@@ -7,16 +7,17 @@
 package com.samskivert.nexus.net;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.EventSink;
+import com.samskivert.nexus.distrib.DistribUtil;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.distrib.NexusObjectUtil;
 import com.samskivert.nexus.util.Callback;
 
 import static com.samskivert.nexus.util.Log.log;
@@ -74,39 +75,31 @@ public abstract class Connection
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
+    public void postCall (int objectId, short attrIndex, short methodId, Object[] args)
     {
-        // determine whether this call has a callback and at what position (the service generator
-        // code will ensure we never have service methods with multiple callback arguments)
-        int callbackIdx = -1;
-        for (int ii = 0; ii < args.length; ii++) {
-            if (args[ii] instanceof Callback<?>) {
-                callbackIdx = ii;
-                break;
-            }
-        }
-
-        // if we have a callback, assign a call id and map the callback
-        int callId;
-        if (callbackIdx < 0) {
-            callId = 0;
-        } else {
+        // determine whether we have a callback (which the service generator code will enforce is
+        // always the final argument of the method)
+        int callId, lastIdx = args.length-1;
+        if (args[lastIdx] instanceof Callback<?>) {
             callId = 1;
             for (Integer key : _calls.keySet()) {
                 callId = Math.max(callId, key+1);
             }
-            _calls.put(callId, (Callback<?>)args[callbackIdx]);
+            _calls.put(callId, (Callback<?>)args[lastIdx]);
+            args[lastIdx] = null; // we don't send the Callback over the wire
+        } else {
+            callId = 0; // no callback, no call id
         }
 
         // finally send the service call
-        send(new Upstream.ServiceCall(callId, source.getId(), attrIndex, methodId, args));
+        send(new Upstream.ServiceCall(callId, objectId, attrIndex, methodId, Arrays.asList(args)));
     }
 
     // from interface Downstream.Handler
     public void onSubscribe (Downstream.Subscribe msg)
     {
         // let this object know that we are its event sink
-        NexusObjectUtil.init(msg.object, msg.object.getId(), this);
+        DistribUtil.init(msg.object, msg.object.getId(), this);
         // the above must precede this call, as obtaining the object's address requires that the
         // event sink be configured
         Address<?> addr = msg.object.getAddress();

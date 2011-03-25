@@ -13,58 +13,46 @@ import com.samskivert.nexus.io.Streamable;
  */
 public class DService<T extends NexusService> extends DAttribute
 {
-    /** Used on the client to post service calls to the server. */
-    public abstract static class Poster {
-        public void postCall (short methodId, Object... args) {
-            _attr.postCall(methodId, args);
+    /** An implementation detail used by service marshallers. */
+    public static class Marshaller {
+        /** The attribute that holds this service marshaller reference. */
+        public DService<?> attr;
+
+        protected void postCall (short methodId, Object... args) {
+            attr._owner.postCall(attr._index, methodId, args);
         }
-        protected Poster (DService<?> attr) {
-            _attr = attr;
-        }
-        protected DService<?> _attr;
     }
 
-    /** Used on the server to dispatch service requests. */
-    public interface Dispatcher {
-        /** Dispatches the specified service method using the supplied arguments. */
-        void dispatchCall (short methodId, Object[] args);
-    }
+    /** The service encapsulated by this attribute. */
+    public final T svc;
 
     /**
-     * Returns the service, which can be called.
+     * Creates a service attribute with the supplied underlying service.
      */
-    public T get ()
+    public static <T extends NexusService> DService<T> create (T service)
     {
-        return _service;
+        return new DService<T>(service);
     }
 
     @Override // from DAttribute
     public void readContents (Streamable.Input in)
     {
-        // TODO: _service = in.<T>readService();
+        // NOOP
     }
 
     @Override // from DAttribute
     public void writeContents (Streamable.Output out)
     {
-        // TODO: out.writeService(_service);
+        // NOOP
     }
 
     protected DService (T service)
     {
-        _service = service;
-    }
+        this.svc = service;
 
-    protected void postCall (short methodId, Object[] args)
-    {
-        _owner.postCall(_index, methodId, args);
+        // tie the gordian knot
+        if (service instanceof Marshaller) {
+            ((Marshaller)service).attr = this;
+        }
     }
-
-    protected void dispatchCall (short methodId, Object[] args)
-    {
-        _dispatcher.dispatchCall(methodId, args);
-    }
-
-    protected T _service;
-    protected Dispatcher _dispatcher;
 }

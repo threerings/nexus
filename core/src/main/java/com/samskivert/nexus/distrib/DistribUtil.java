@@ -7,10 +7,10 @@
 package com.samskivert.nexus.distrib;
 
 /**
- * Provides backdoor access to interfaces that should not be called by normal clients, but which
- * must be accessible to the Nexus server code, which necessarily resides in a different package.
+ * Provides access to interfaces that should not be called by normal clients, but which must be
+ * accessible to the Nexus implementation code, which may reside in a different package.
  */
-public class NexusObjectUtil
+public class DistribUtil
 {
     public static void init (NexusObject object, int id, EventSink sink)
     {
@@ -21,4 +21,6 @@ public class NexusObjectUtil
     {
         object.clear();
     }
+
+    private DistribUtil () {} // no constructsky
 }

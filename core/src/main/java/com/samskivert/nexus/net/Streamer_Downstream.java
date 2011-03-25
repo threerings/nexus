@@ -47,4 +47,26 @@ public class Streamer_Downstream
             return new Downstream.DispatchEvent(in.<NexusEvent>readValue());
         }
     }
+
+    public static class ServiceResponse implements Streamer<Downstream.ServiceResponse>
+    {
+        public void writeObject (Streamable.Output out, Downstream.ServiceResponse obj) {
+            out.writeInt(obj.callId);
+            out.writeValue(obj.result);
+        }
+        public Downstream.ServiceResponse readObject (Streamable.Input in) {
+            return new Downstream.ServiceResponse(in.readInt(), in.readValue());
+        }
+    }
+
+    public static class ServiceFailure implements Streamer<Downstream.ServiceFailure>
+    {
+        public void writeObject (Streamable.Output out, Downstream.ServiceFailure obj) {
+            out.writeInt(obj.callId);
+            out.writeString(obj.cause);
+        }
+        public Downstream.ServiceFailure readObject (Streamable.Input in) {
+            return new Downstream.ServiceFailure(in.readInt(), in.readString());
+        }
+    }
 }

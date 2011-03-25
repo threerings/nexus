@@ -36,8 +36,75 @@ public interface Streamable
         public abstract String readString ();
         public abstract <T extends Streamable> Class<T> readClass ();
 
-        public <T extends NexusService> T readService (DService<T> attr) {
-            return this.<T>readServiceFactory().createMarshaller(attr);
+// not sure whether I want these yet...
+
+//         public boolean[] readBooleans () {
+//             // TODO: encode into bitmask
+//             boolean[] data = new boolean[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readBoolean();
+//             }
+//             return data;
+//         }
+
+//         public byte[] readBytes () {
+//             byte[] data = new byte[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readByte();
+//             }
+//             return data;
+//         }
+
+//         public short[] readShorts () {
+//             short[] data = new short[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readShort();
+//             }
+//             return data;
+//         }
+
+//         public char[] readChars () {
+//             char[] data = new char[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readChar();
+//             }
+//             return data;
+//         }
+
+//         public int[] readInts () {
+//             int[] data = new int[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readInt();
+//             }
+//             return data;
+//         }
+
+//         public long[] readLongs () {
+//             long[] data = new long[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readLong();
+//             }
+//             return data;
+//         }
+
+//         public float[] readFloats () {
+//             float[] data = new float[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readFloat();
+//             }
+//             return data;
+//         }
+
+//         public double[] readDoubles () {
+//             double[] data = new double[readInt()];
+//             for (int ii = 0; ii < data.length; ii++) {
+//                 data[ii] = readDouble();
+//             }
+//             return data;
+//         }
+
+        public <T extends NexusService> DService<T> readService () {
+            return this.<T>readServiceFactory().createService();
         }
 
         /**
@@ -55,9 +122,11 @@ public interface Streamable
          */
         public <T> void readValues (Collection<T> into) {
             int count = readShort();
-            Streamer<T> s = this.<T>readStreamer();
-            for (; count > 0; --count) {
-                into.add(s.readObject(this));
+            if (count > 0) {
+                Streamer<T> s = this.<T>readStreamer();
+                for (; count > 0; --count) {
+                    into.add(s.readObject(this));
+                }
             }
         }
 
@@ -68,7 +137,7 @@ public interface Streamable
         protected abstract <T> Streamer<T> readStreamer ();
 
         /**
-         * Reads a service factory, which can be used to create marshallers for a Nexus service.
+         * Reads a service factory, which can be used to create Nexus service attributes.
          */
         protected abstract <T extends NexusService> ServiceFactory<T> readServiceFactory ();
     }
@@ -88,7 +157,7 @@ public interface Streamable
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
         public abstract void writeClass (Class<? extends Streamable> clazz);
-        public abstract void writeService (NexusService service);
+        public abstract void writeService (Class<? extends NexusService> clazz);
 
         /**
          * Writes a value to the output, which may be of any of the primitive types, String, a
@@ -116,7 +185,7 @@ public interface Streamable
                 T first = from.next();
                 Streamer<T> s = writeStreamer(first);
                 s.writeObject(this, first);
-                while (from.hasNext()) {
+                while (--count > 0) {
                     s.writeObject(this, from.next());
                 }
             }
