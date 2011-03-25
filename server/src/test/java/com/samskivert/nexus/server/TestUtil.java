@@ -10,6 +10,8 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.samskivert.nexus.distrib.DService;
+import com.samskivert.nexus.distrib.Factory_TestService;
 import com.samskivert.nexus.distrib.TestService;
 import com.samskivert.nexus.util.Callback;
 
@@ -40,16 +42,15 @@ public class TestUtil
         }
     }
 
-    public static TestService createTestServiceImpl ()
+    public static DService<TestService> createTestServiceAttr ()
     {
-        return new TestService () {
+        return Factory_TestService.createDispatcher(new TestService () {
             public void addOne (int value, Callback<Integer> callback) {
-                System.err.println("Adding one to " + value); // temp
                 callback.onSuccess(value+1);
             }
             public void launchMissiles () {
                 System.err.println("Bang!");
             }
-        };
+        });
     }
 }

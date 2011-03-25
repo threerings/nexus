@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 
 import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.Address;
+import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.DistribUtil;
 import com.samskivert.nexus.distrib.EventSink;
 import com.samskivert.nexus.distrib.Keyed;
@@ -323,10 +324,16 @@ public class ObjectManager
     }
 
     // from interface EventSink
-    public void postCall (int objectId, short attrIndex, short methodId, Object[] args)
+    public void postCall (int objId, final short attrIdx, final short methId, final Object[] args)
     {
-        // TODO
-        ((Callback<?>)args[args.length-1]).onFailure(new Throwable("Not implemented!"));
+        invoke(objId, new Action<NexusObject>() {
+            public void invoke (NexusObject object) {
+                DistribUtil.dispatchCall(object, attrIdx, methId, args);
+            }
+            @Override public String toString () {
+                return "isvc:" + attrIdx + ":" + methId + ":" + args.length;
+            }
+        });
     }
 
     // from interface EventSink

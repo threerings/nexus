@@ -17,15 +17,40 @@ public class Factory_TestService implements ServiceFactory<TestService>
     // from interface ServiceFactory<TestService>
     public DService<TestService> createService ()
     {
-        return DService.<TestService>create(new Marshaller());
+        return new Marshaller();
     }
 
-    protected static class Marshaller extends DService.Marshaller implements TestService
+    public static DService<TestService> createDispatcher (final TestService service)
     {
-        public void addOne (int value, Callback<Integer> callback) {
+        return new DService.Dispatcher<TestService>() {
+            @Override public TestService get () {
+                return service;
+            }
+
+            @Override public void dispatchCall (short methodId, Object[] args) {
+                switch (methodId) {
+                case 1:
+                    service.addOne((Integer)args[0], this.<Callback<Integer>>cast(args[1]));
+                    break;
+                case 2:
+                    service.launchMissiles();
+                    break;
+                default:
+                    super.dispatchCall(methodId, args);
+                }
+            }
+        };
+    }
+
+    protected static class Marshaller extends DService<TestService> implements TestService
+    {
+        @Override public TestService get () {
+            return this;
+        }
+        @Override public void addOne (int value, Callback<Integer> callback) {
             postCall((short)1, value, callback);
         }
-        public void launchMissiles () {
+        @Override public void launchMissiles () {
             postCall((short)2);
         }
     }

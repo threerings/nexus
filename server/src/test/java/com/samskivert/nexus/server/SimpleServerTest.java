@@ -12,7 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.samskivert.nexus.distrib.Action;
-import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.DValue;
 import com.samskivert.nexus.distrib.TestObject;
 
@@ -77,7 +76,7 @@ public class SimpleServerTest
 
     protected void testEventDispatchAndShutdown (NexusServer server, final Runnable onComplete)
     {
-        TestObject test = new TestObject(DService.create(TestUtil.createTestServiceImpl()));
+        TestObject test = new TestObject(TestUtil.createTestServiceAttr());
         server.registerSingleton(test);
 
         // ensure that we've been assigned an id

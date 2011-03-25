@@ -16,7 +16,6 @@ import com.samskivert.nexus.client.JVMClient;
 import com.samskivert.nexus.client.NexusClient;
 import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.DValue;
 import com.samskivert.nexus.distrib.TestObject;
 import com.samskivert.nexus.util.Callback;
@@ -50,13 +49,12 @@ public class ClientServerTest
             _test = test;
         }
 
-        protected void await () {
+        protected boolean await () {
             try {
-                if (!_latch.await(1, TimeUnit.SECONDS)) {
-                    fail("Timed out waiting for test to complete.");
-                }
+                return _latch.await(1, TimeUnit.SECONDS);
             } catch (InterruptedException ie) {
-                fail("Test interrupted while awaiting completion.");
+                fail("Test interrupted while awaiting completion?");
+                return false;
             }
         }
 
@@ -105,7 +103,7 @@ public class ClientServerTest
         runTest(new TestAction() {
             public void onSubscribe (TestObject test) {
                 // call our test service
-                test.testsvc.svc.addOne(41, new Callback<Integer>() {
+                test.testsvc.get().addOne(41, new Callback<Integer>() {
                     public void onSuccess (Integer value) {
                         assertEquals(42, value.intValue());
                         testComplete();
@@ -135,7 +133,7 @@ public class ClientServerTest
         NexusClient client = JVMClient.create(Executors.newSingleThreadExecutor(), 1234);
 
         // register a test object
-        TestObject test = new TestObject(DService.create(TestUtil.createTestServiceImpl()));
+        TestObject test = new TestObject(TestUtil.createTestServiceAttr());
         server.registerSingleton(test);
 
         // initialize the action
@@ -153,12 +151,17 @@ public class ClientServerTest
         });
 
         // wait for the test to complete
-        action.await();
+        boolean completed = action.await();
 
         // finally shut everything down
         conmgr.disconnect();
         conmgr.shutdown();
         exec.shutdown();
         TestUtil.awaitTermination(exec);
+
+        // now that we've cleaned everything up, we can freak out if necessary
+        if (!completed) {
+            fail("Timed out waiting for test to complete.");
+        }
     }
 }
