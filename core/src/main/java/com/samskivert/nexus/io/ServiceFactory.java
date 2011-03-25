@@ -14,6 +14,8 @@ import com.samskivert.nexus.distrib.NexusService;
  */
 public interface ServiceFactory<T extends NexusService>
 {
-    /** Creates an attribute for our service that will dispatch calls over the network. */
+    /**
+     * Creates an attribute for our service that will marshall calls into network service requests.
+     */
     DService<T> createService ();
 }

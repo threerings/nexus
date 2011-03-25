@@ -22,5 +22,10 @@ public class DistribUtil
         object.clear();
     }
 
+    public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args)
+    {
+        ((DService.Dispatcher)object.getAttribute(attrIdx)).dispatchCall(methId, args);
+    }
+
     private DistribUtil () {} // no constructsky
 }

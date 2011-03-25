@@ -11,28 +11,26 @@ import com.samskivert.nexus.io.Streamable;
 /**
  * An attribute that contains a Nexus service reference.
  */
-public class DService<T extends NexusService> extends DAttribute
+public abstract class DService<T extends NexusService> extends DAttribute
 {
-    /** An implementation detail used by service marshallers. */
-    public static class Marshaller {
-        /** The attribute that holds this service marshaller reference. */
-        public DService<?> attr;
+    /** An implementation detail used by service dispatchers. */
+    public static abstract class Dispatcher<T extends NexusService> extends DService<T> {
+        /** Dispatches a service call that came in over the network. */
+        public void dispatchCall (short methodId, Object[] args) {
+            throw new IllegalArgumentException("Unknown service method [id=" + methodId +
+                                               ", obj=" + _owner.getClass().getName() +
+                                               ", attrIdx=" + _index + "]");
+        }
 
-        protected void postCall (short methodId, Object... args) {
-            attr._owner.postCall(attr._index, methodId, args);
+        /** Used to concisely, and without warning, cast arguments of generic type. */
+        @SuppressWarnings("unchecked")
+        protected static <T> T cast (Object obj) {
+            return (T)obj;
         }
     }
 
-    /** The service encapsulated by this attribute. */
-    public final T svc;
-
-    /**
-     * Creates a service attribute with the supplied underlying service.
-     */
-    public static <T extends NexusService> DService<T> create (T service)
-    {
-        return new DService<T>(service);
-    }
+    /** Returns the service encapsulated by this attribute. */
+    public abstract T get ();
 
     @Override // from DAttribute
     public void readContents (Streamable.Input in)
@@ -46,13 +44,11 @@ public class DService<T extends NexusService> extends DAttribute
         // NOOP
     }
 
-    protected DService (T service)
+    /**
+     * Used by marshallers to dispatch calls over the network.
+     */
+    protected void postCall (short methodId, Object... args)
     {
-        this.svc = service;
-
-        // tie the gordian knot
-        if (service instanceof Marshaller) {
-            ((Marshaller)service).attr = this;
-        }
+        _owner.postCall(_index, methodId, args);
     }
 }
