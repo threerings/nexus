@@ -63,9 +63,9 @@ public class ObjectManager
     }
 
     /**
-     * Registers the supplied child object in the context of its parent.
+     * Registers the supplied object in the context of its parent.
      */
-    public void registerChild (Singleton parent, NexusObject child)
+    public void register (NexusObject child, Singleton parent)
     {
         Binding<Singleton> pbind = requireSingleton(
             parent.getClass(), "Can't bind child to unregistered singleton parent");
@@ -73,9 +73,9 @@ public class ObjectManager
     }
 
     /**
-     * Registers the supplied child object in the context of its parent.
+     * Registers the supplied object in the context of its parent.
      */
-    public void registerChild (Keyed parent, NexusObject child)
+    public void register (NexusObject child, Keyed parent)
     {
         Binding<Keyed> pbind = requireKeyed(
             parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
@@ -89,17 +89,17 @@ public class ObjectManager
      */
     public void registerSingleton (Singleton entity)
     {
-        Binding<Singleton> bind = new Binding<Singleton>(entity, new EntityContext(_exec));
-        Class<?> sclass = entity.getClass();
-        if (_singletons.putIfAbsent(sclass, bind) != null) {
-            throw new NexusException(
-                "Singleton entity already registered for " + sclass.getName());
-        }
+        register(entity, new EntityContext(_exec));
+    }
 
-        // if the entity is also a nexus object, register it as such
-        if (entity instanceof NexusObject) {
-            register((NexusObject)entity, bind.context);
-        }
+    /**
+     * Registers the supplied singleton in the context of its parent.
+     */
+    public void registerSingleton (Singleton child, Singleton parent)
+    {
+        Binding<Singleton> pbind = requireSingleton(
+            parent.getClass(), "Can't bind child to unregistered singleton parent");
+        register(child, pbind.context);
     }
 
     /**
@@ -109,31 +109,17 @@ public class ObjectManager
      */
     public void registerKeyed (Keyed entity)
     {
-        // TODO: ensure that the key class is non-null and a legal streamable type
-        Class<?> kclass = entity.getClass();
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
-        if (emap == null) {
-            ConcurrentMap<Comparable<?>,Binding<Keyed>> cmap =
-                _keyeds.putIfAbsent(kclass, emap = Maps.newConcurrentMap());
-            // if someone beat us to the punch, we need to use their map, not ours
-            if (cmap != null) {
-                emap = cmap;
-            }
-        }
+        register(entity, new EntityContext(_exec));
+    }
 
-        Binding<Keyed> bind = new Binding<Keyed>(entity, new EntityContext(_exec));
-        Binding<Keyed> exist = emap.putIfAbsent(entity.getKey(), bind);
-        if (exist != null) {
-            throw new NexusException(
-                "Keyed entity already registered for " + kclass.getName() + ":" + entity.getKey());
-        }
-
-        // if the entity is also a nexus object, assign it an id
-        if (entity instanceof NexusObject) {
-            register((NexusObject)entity, bind.context);
-        }
-
-        // TODO: report to the PeerManager that we host this keyed entity
+    /**
+     * Registers the supplied keyed entity in the context of its parent.
+     */
+    public void registerKeyed (Keyed child, Keyed parent)
+    {
+        Binding<Keyed> pbind = requireKeyed(
+            parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
+        register(child, pbind.context);
     }
 
     /**
@@ -347,6 +333,50 @@ public class ObjectManager
     {
         // TODO: fancy aggregation using thread-local accumulators
         postEvent(event);
+    }
+
+    protected void register (Singleton entity, EntityContext ctx)
+    {
+        Binding<Singleton> bind = new Binding<Singleton>(entity, ctx);
+        Class<?> sclass = entity.getClass();
+        if (_singletons.putIfAbsent(sclass, bind) != null) {
+            throw new NexusException(
+                "Singleton entity already registered for " + sclass.getName());
+        }
+
+        // if the entity is also a nexus object, register it as such
+        if (entity instanceof NexusObject) {
+            register((NexusObject)entity, ctx);
+        }
+    }
+
+    protected void register (Keyed entity, EntityContext ctx)
+    {
+        // TODO: ensure that the key class is non-null and a legal streamable type
+        Class<?> kclass = entity.getClass();
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
+        if (emap == null) {
+            ConcurrentMap<Comparable<?>,Binding<Keyed>> cmap =
+                _keyeds.putIfAbsent(kclass, emap = Maps.newConcurrentMap());
+            // if someone beat us to the punch, we need to use their map, not ours
+            if (cmap != null) {
+                emap = cmap;
+            }
+        }
+
+        Binding<Keyed> bind = new Binding<Keyed>(entity, ctx);
+        Binding<Keyed> exist = emap.putIfAbsent(entity.getKey(), bind);
+        if (exist != null) {
+            throw new NexusException(
+                "Keyed entity already registered for " + kclass.getName() + ":" + entity.getKey());
+        }
+
+        // if the entity is also a nexus object, assign it an id
+        if (entity instanceof NexusObject) {
+            register((NexusObject)entity, ctx);
+        }
+
+        // TODO: report to the PeerManager that we host this keyed entity
     }
 
     protected void register (NexusObject object, EntityContext ctx)

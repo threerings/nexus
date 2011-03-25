@@ -48,15 +48,15 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
-    public void registerChild (Singleton parent, NexusObject child)
+    public void register (NexusObject child, Singleton parent)
     {
-        _omgr.registerChild(parent, child);
+        _omgr.register(child, parent);
     }
 
     // from interface Nexus
-    public void registerChild (Keyed parent, NexusObject child)
+    public void register (NexusObject child, Keyed parent)
     {
-        _omgr.registerChild(parent, child);
+        _omgr.register(child, parent);
     }
 
     // from interface Nexus
@@ -66,9 +66,21 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
+    public void registerSingleton (Singleton child, Singleton parent)
+    {
+        _omgr.registerSingleton(child, parent);
+    }
+
+    // from interface Nexus
     public void registerKeyed (Keyed entity)
     {
         _omgr.registerKeyed(entity);
+    }
+
+    // from interface Nexus
+    public void registerKeyed (Keyed child, Keyed parent)
+    {
+        _omgr.registerKeyed(child, parent);
     }
 
     // from interface Nexus

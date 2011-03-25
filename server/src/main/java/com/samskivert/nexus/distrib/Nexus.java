@@ -20,13 +20,13 @@ public interface Nexus
      * Registers an object as a child of the supplied singleton entity. The child and parent will
      * share the same execution context (thread).
      */
-    void registerChild (Singleton parent, NexusObject child);
+    void register (NexusObject child, Singleton parent);
 
     /**
      * Registers an object as a child of the supplied keyed entity. The child and entity will share
      * the same execution context (thread).
      */
-    void registerChild (Keyed parent, NexusObject child);
+    void register (NexusObject child, Keyed parent);
 
     /**
      * Registers a singleton (object or non-object) entity with the Nexus. This entity will only be
@@ -37,12 +37,24 @@ public interface Nexus
     void registerSingleton (Singleton entity);
 
     /**
+     * Registers a singleton as a child of the supplied parent singleton entity. The child and
+     * parent will share the same execution context (thread).
+     */
+    void registerSingleton (Singleton child, Singleton parent);
+
+    /**
      * Registers a keyed (object or non-object) entity with the Nexus. This entity will be
      * accessible to all server nodes in the Nexus. Code may be executed in this entity's context
      * (server+thread) via, for example, {@link #invoke{Class,Comparable,Action}}. If the keyed is
      * also a {@link NexusObject}, clients can subscribe to the object using its class and key.
      */
     void registerKeyed (Keyed entity);
+
+    /**
+     * Registers a keyed entity as a child of the supplied parent keyed entity. The child and
+     * entity will share the same execution context (thread).
+     */
+    void registerKeyed (Keyed child, Keyed parent);
 
     /**
      * Clears a registration created via {@link #register} or either {@link #registerChild}
