@@ -5,6 +5,7 @@ package nexus.chat.distrib;
 
 import java.util.List;
 
+import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.NexusService;
 import com.samskivert.nexus.util.Callback;
 
@@ -28,12 +29,12 @@ public interface ChatService extends NexusService
      * (to which the client will be subscribed). Failure communicated via exception message (room
      * no longer exists, access denied).
      */
-    void joinRoom (String name, Callback<RoomObject> callback);
+    void joinRoom (String name, Callback<Address<RoomObject>> callback);
 
     /**
      * Requests that a chat room with the specified name be created. The caller implicitly joins
      * the room (and leaves any room they currently occupy). Returns the newly created room object
      * on success (to which the client will be subscribed).
      */
-    void createRoom (String name, Callback<RoomObject> callback);
+    void createRoom (String name, Callback<Address<RoomObject>> callback);
 }
