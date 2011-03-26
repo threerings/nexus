@@ -5,6 +5,8 @@ package nexus.chat.server;
 
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.Nexus;
+import com.samskivert.nexus.distrib.NexusException;
+import com.samskivert.nexus.server.SessionLocal;
 import com.samskivert.nexus.util.Callback;
 
 import nexus.chat.distrib.Factory_RoomService;
@@ -34,11 +36,31 @@ public class RoomManager implements RoomService, Keyed
         nexus.registerKeyed(roomObj, this);
     }
 
+    public void chatterEntered (String nickname)
+    {
+        roomObj.chatEvent.emit(null, nickname + " entered.");
+    }
+
+    public void chatterLeft (String nickname)
+    {
+        roomObj.chatEvent.emit(null, nickname + " left.");
+    }
+
+    public void chatterChangedNick (String oldname, String newname)
+    {
+        roomObj.chatEvent.emit(null, oldname + " is now known as " + newname + ".");
+    }
+
     // from interface RoomService
     public void sendMessage (String message, Callback<Void> callback)
     {
+        Chatter chatter = SessionLocal.get(Chatter.class);
+        if (chatter == null || chatter.nickname == null) {
+            System.err.println(chatter + " " + SessionLocal.getSession());
+            throw new NexusException("Cannot chat until you configure a nickname.");
+        }
         // here we might do things like access control, etc.
-        roomObj.chatEvent.emit("TODO", message);
+        roomObj.chatEvent.emit(chatter.nickname, message);
         // tell the caller their chat message was sent
         callback.onSuccess(null);
     }

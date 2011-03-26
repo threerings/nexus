@@ -53,14 +53,18 @@ public class ChatPanel extends JPanel
         nickrow.add(new JLabel("Nickname:"));
         nickrow.add(_nickname = UIUtil.newTextField(200));
         JButton upnick = new JButton("Update");
-        upnick.addActionListener(new ActionListener() {
+        nickrow.add(upnick);
+
+        ActionListener onUpNick = new ActionListener() {
             public void actionPerformed (ActionEvent event) {
                 updateNickname(_nickname.getText().trim());
             }
-        });
-        nickrow.add(upnick);
+        };
+        _nickname.addActionListener(onUpNick);
+        upnick.addActionListener(onUpNick);
 
-        // TODO: add a label displaying the current room?
+        // add a label displaying the current room name
+        main.add(_roomName = new JLabel("Room: <none>"), GroupLayout.FIXED);
 
         // add the main chat display
         main.add(_chat = new JTextArea());
@@ -146,9 +150,14 @@ public class ChatPanel extends JPanel
                 _roomobj = room;
                 _roomobj.chatEvent.addListener(new DCustom.Listener<RoomObject.ChatEvent>() {
                     public void onEvent (RoomObject.ChatEvent event) {
-                        _chat.append("<" + event.nickname + "> " + event.message + "\n");
+                        if (event.nickname == null) {
+                            _chat.append(event.message + "\n"); // from the server
+                        } else {
+                            _chat.append("<" + event.nickname + "> " + event.message + "\n");
+                        }
                     }
                 });
+                _roomName.setText("Room: " + room.name);
                 feedback("Joined room '" + room.name + "'");
                 _entry.setEnabled(true);
             }
@@ -185,6 +194,7 @@ public class ChatPanel extends JPanel
 
     protected JList _rooms;
     protected JTextField _nickname;
+    protected JLabel _roomName;
     protected JTextArea _chat;
     protected JTextField _entry;
 }

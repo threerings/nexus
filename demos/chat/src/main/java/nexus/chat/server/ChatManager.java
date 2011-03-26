@@ -5,14 +5,18 @@ package nexus.chat.server;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.Nexus;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.Singleton;
+import com.samskivert.nexus.server.Session;
+import com.samskivert.nexus.server.SessionLocal;
 import com.samskivert.nexus.util.Callback;
 
 import nexus.chat.distrib.ChatObject;
@@ -43,7 +47,15 @@ public class ChatManager implements ChatService, Singleton
     // from interface ChatService
     public void updateNick (String nickname, Callback<Void> callback)
     {
-        callback.onFailure(new Exception("TODO"));
+        if (_activeNicks.contains(nickname)) {
+            throw new NexusException("The nickname '" + nickname + "' is in use.");
+        }
+        if (nickname.startsWith("<") || nickname.toLowerCase().contains("anonymous")) {
+            throw new NexusException("Invalid nickname."); // no spoofing
+        }
+        getChatter().updateNick(nickname);
+        _activeNicks.add(nickname);
+        callback.onSuccess(null);
     }
 
     // from interface ChatService
@@ -59,6 +71,9 @@ public class ChatManager implements ChatService, Singleton
         if (mgr == null) {
             throw new NexusException("No room named '" + name + "'.");
         }
+
+        // note that this chatter has entered this room
+        getChatter().enterRoom(mgr);
 
         // here we might check invitation lists or whatnot
         callback.onSuccess(Address.of(mgr.roomObj));
@@ -77,6 +92,28 @@ public class ChatManager implements ChatService, Singleton
         callback.onSuccess(Address.of(mgr.roomObj));
     }
 
+    protected Chatter getChatter ()
+    {
+        Chatter chatter = SessionLocal.get(Chatter.class);
+        if (chatter == null) {
+            chatter = new Chatter();
+            chatter.nickname = "<anonymous@" + SessionLocal.getSession().getIPAddress() + ">";
+            System.err.println("setting chatter " + chatter + " " + SessionLocal.getSession());
+            SessionLocal.set(Chatter.class, chatter);
+
+            // register a listener on this chatter's session to learn when they go away
+            SessionLocal.getSession().addListener(new Session.Listener() {
+                public void onDisconnect () {
+                    Chatter chatter = SessionLocal.get(Chatter.class);
+                    _activeNicks.remove(chatter.nickname); // clear out this chatter's nickname
+                    chatter.leaveRoom(); // leave any occupied room
+                }
+            });
+        }
+        return chatter;
+    }
+
     protected Nexus _nexus;
     protected Map<String, RoomManager> _rooms = Maps.newHashMap();
+    protected Set<String> _activeNicks = Sets.newHashSet();
 }
