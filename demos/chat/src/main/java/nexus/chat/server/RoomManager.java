@@ -5,7 +5,6 @@ package nexus.chat.server;
 
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.Nexus;
-import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.server.SessionLocal;
 import com.samskivert.nexus.util.Callback;
 

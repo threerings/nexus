@@ -13,7 +13,6 @@ import com.google.common.collect.Sets;
 
 import com.samskivert.nexus.distrib.Address;
 import com.samskivert.nexus.distrib.Nexus;
-import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.Singleton;
 import com.samskivert.nexus.server.Session;
 import com.samskivert.nexus.server.SessionLocal;
@@ -23,6 +22,8 @@ import nexus.chat.distrib.ChatObject;
 import nexus.chat.distrib.ChatService;
 import nexus.chat.distrib.Factory_ChatService;
 import nexus.chat.distrib.RoomObject;
+
+import static com.samskivert.nexus.distrib.NexusException.require;
 
 /**
  * Manages the global chat services.
@@ -44,12 +45,10 @@ public class ChatManager implements ChatService, Singleton
     // from interface ChatService
     public void updateNick (String nickname, Callback<Void> callback)
     {
-        if (_activeNicks.contains(nickname)) {
-            throw new NexusException("The nickname '" + nickname + "' is in use.");
-        }
-        if (nickname.startsWith("{") || nickname.toLowerCase().contains("anonymous")) {
-            throw new NexusException("Invalid nickname."); // no spoofing
-        }
+        require(!_activeNicks.contains(nickname), "The nickname '" + nickname + "' is in use.");
+        require(!nickname.startsWith("{") && !nickname.toLowerCase().contains("anonymous"),
+                "Invalid nickname."); // no spoofing
+
         getChatter().updateNick(nickname);
         _activeNicks.add(nickname);
         callback.onSuccess(null);
@@ -64,32 +63,29 @@ public class ChatManager implements ChatService, Singleton
     // from interface ChatService
     public void joinRoom (String name, Callback<Address<RoomObject>> callback)
     {
-        RoomManager mgr = _rooms.get(name);
-        if (mgr == null) {
-            throw new NexusException("No room named '" + name + "'.");
-        }
+        Address<RoomObject> addr = _rooms.get(name);
+        require(addr != null, "No room named '" + name + "'.");
         // here we might check invitation lists or whatnot
 
         // note that this chatter has entered this room
         getChatter().enterRoom(name);
-        callback.onSuccess(Address.of(mgr.roomObj));
+        callback.onSuccess(addr);
     }
 
     // from interface ChatService
     public void createRoom (String name, Callback<Address<RoomObject>> callback)
     {
-        if (_rooms.containsKey(name)) {
-            throw new NexusException("Room already exists.");
-        }
+        require(!_rooms.containsKey(name), "Room already exists.");
         // here we might check privileges or whether the room name contains swear words, etc.
 
         // create a manager for the new room
         RoomManager mgr = new RoomManager(_nexus, name);
-        _rooms.put(name, mgr);
+        Address<RoomObject> addr = Address.of(mgr.roomObj);
+        _rooms.put(name, addr);
 
         // note that this chatter has entered this room
         getChatter().enterRoom(name);
-        callback.onSuccess(Address.of(mgr.roomObj));
+        callback.onSuccess(addr);
     }
 
     protected Chatter getChatter ()
@@ -112,6 +108,6 @@ public class ChatManager implements ChatService, Singleton
     }
 
     protected Nexus _nexus;
-    protected Map<String, RoomManager> _rooms = Maps.newHashMap();
+    protected Map<String, Address<RoomObject>> _rooms = Maps.newHashMap();
     protected Set<String> _activeNicks = Sets.newHashSet();
 }
