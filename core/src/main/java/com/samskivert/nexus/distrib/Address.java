@@ -34,9 +34,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         }
 
         @Override public boolean equals (Object other) {
-            if (other.getClass() != getClass()) {
-                return false;
-            }
+            if (other.getClass() != getClass()) return false;
             OfKeyed<?> oaddr = (OfKeyed<?>)other;
             return oaddr.key.equals(key) && super.equals(oaddr);
         }
@@ -58,6 +56,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
 
         public OfAnonymous (String host, int id) {
             super(host);
+            if (id <= 0) throw new IllegalArgumentException("Id must be >= 0.");
             this.id = id;
         }
 
@@ -70,9 +69,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         }
 
         @Override public boolean equals (Object other) {
-            if (other.getClass() != getClass()) {
-                return false;
-            }
+            if (other.getClass() != getClass()) return false;
             OfAnonymous oaddr = (OfAnonymous)other;
             return (oaddr.id == id) && super.equals(oaddr);
         }
@@ -127,15 +124,16 @@ public abstract class Address<T extends NexusObject> implements Streamable
 
     @Override public boolean equals (Object other)
     {
-        if (other.getClass() != getClass()) {
-            return false;
-        }
+        if (other.getClass() != getClass()) return false;
         Address<?> oaddr = (Address<?>)other;
         return oaddr.host.equals(host);
     }
 
     protected Address (String host)
     {
+        if (host == null || host.length() == 0) {
+            throw new IllegalArgumentException("Host must be non-blank.");
+        }
         this.host = host;
     }
 
@@ -159,9 +157,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         }
 
         @Override public boolean equals (Object other) {
-            if (other.getClass() != getClass()) {
-                return false;
-            }
+            if (other.getClass() != getClass()) return false;
             OfTyped<?> oaddr = (OfTyped<?>)other;
             return oaddr.clazz.equals(clazz) && super.equals(oaddr);
         }
