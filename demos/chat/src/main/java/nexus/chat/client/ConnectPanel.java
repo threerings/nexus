@@ -60,6 +60,7 @@ public class ConnectPanel extends JPanel
         _ctx.getClient().subscribe(
             Address.create(address, ChatObject.class), new Callback<ChatObject>() {
             public void onSuccess (ChatObject chatobj) {
+                System.err.println("Got chat object " + chatobj);
                 // we're connected, switch to the main chat display
                 _ctx.setMainPanel(new ChatPanel(_ctx, chatobj));
             }

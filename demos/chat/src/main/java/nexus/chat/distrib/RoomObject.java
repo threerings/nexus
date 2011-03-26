@@ -3,7 +3,9 @@
 
 package nexus.chat.distrib;
 
+import com.samskivert.nexus.distrib.DAttribute;
 import com.samskivert.nexus.distrib.DCustom;
+import com.samskivert.nexus.distrib.DService;
 import com.samskivert.nexus.distrib.Keyed;
 import com.samskivert.nexus.distrib.NexusObject;
 
@@ -29,6 +31,7 @@ public class RoomObject extends NexusObject
         }
     }
 
+    /** Used to emit and listen for chat events. */
     public static class ChatEventSlot extends DCustom<ChatEvent>
     {
         public void emit (String nickname, String message) {
@@ -37,17 +40,39 @@ public class RoomObject extends NexusObject
     }
 
     /** The name of this chat room (unique among names). */
-    public String name;
+    public final String name;
 
-    /** Provides room services for this room. */
-    public RoomService roomService;
+    /** Provides services for this room. */
+    public final DService<RoomService> roomSvc;
 
     /** A slot by which chat events can be listened for, and (on the server), emitted. */
-    public ChatEventSlot chatEvent = new ChatEventSlot();
+    public final ChatEventSlot chatEvent = new ChatEventSlot();
 
     // from interface Keyed
     public Comparable<?> getKey ()
     {
         return name;
+    }
+
+    public RoomObject (String name, DService<RoomService> roomSvc)
+    {
+        this.name = name;
+        this.roomSvc = roomSvc;
+    }
+
+    @Override
+    protected DAttribute getAttribute (int index)
+    {
+        switch (index) {
+        case 0: return roomSvc;
+        case 1: return chatEvent;
+        default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
+        }
+    }
+
+    @Override
+    protected int getAttributeCount ()
+    {
+        return 2;
     }
 }

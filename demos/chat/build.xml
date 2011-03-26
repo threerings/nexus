@@ -5,4 +5,8 @@
   <target name="client" depends="compile">
     <java classname="nexus.chat.client.ChatApp" fork="true" classpathref="test.classpath"/>
   </target>
+
+  <target name="server" depends="compile">
+    <java classname="nexus.chat.server.ChatServer" fork="true" classpathref="test.classpath"/>
+  </target>
 </project>

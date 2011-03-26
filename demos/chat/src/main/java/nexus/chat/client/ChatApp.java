@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.samskivert.util.OneLineLogFormatter;
+
 import com.samskivert.nexus.client.JVMClient;
 import com.samskivert.nexus.client.NexusClient;
 
@@ -17,18 +19,20 @@ public class ChatApp
 {
     public static void main (String[] args)
     {
+        // improve our logging output
+        OneLineLogFormatter.configureDefaultHandler(false);
+
         final JFrame frame = new JFrame("Chat Demo");
         ChatContext ctx = new ChatContext() {
             public NexusClient getClient () {
                 return _client;
             }
             public void setMainPanel (JPanel panel) {
-                if (_main != null) {
-                    frame.remove(_main);
-                }
-                frame.add(_main = panel, BorderLayout.CENTER);
+                frame.setContentPane(_main = panel);
+                _main.revalidate(); // why setContentPane does not automatically trigger a
+                                    // revalidation, I cannot venture to guess
             }
-            protected NexusClient _client = JVMClient.create(47624);
+            protected NexusClient _client = JVMClient.create(1234);
             protected JPanel _main;
         };
 
