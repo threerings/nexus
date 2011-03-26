@@ -32,8 +32,8 @@ public class GWTIO
         /** Returns the code assigned to the supplied service class. */
         short getServiceCode (Class<? extends NexusService> clazz);
 
-        /** Returns the streamer for the supplied class. */
-        Streamer<?> getStreamer (Class<?> clazz);
+        /** Writes the class code for the supplied value, and returns the streamer for same. */
+        <T> Streamer<T> writeStreamer (Streamable.Output out, T value);
     }
 
     /**

@@ -81,17 +81,7 @@ class StreamableOutput extends Streamable.Output
 
     @Override protected <T> Streamer<T> writeStreamer (T value)
     {
-        if (value == null) {
-            writeShort((short)0); // code for null
-            @SuppressWarnings("unchecked") Streamer<T> streamer = (Streamer<T>)NULL_STREAMER;
-            return streamer;
-        }
-
-        Class<?> clazz = value.getClass();
-        // what's two hash lookups between friends?
-        writeShort(_szer.getCode(clazz));
-        @SuppressWarnings("unchecked") Streamer<T> streamer = (Streamer<T>)_szer.getStreamer(clazz);
-        return streamer;
+        return _szer.<T>writeStreamer(this, value);
     }
 
     protected void writeNonNullString (String value)
