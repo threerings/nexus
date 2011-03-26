@@ -9,9 +9,11 @@ package com.samskivert.nexus.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -36,12 +38,30 @@ public class Session
     implements SessionManager.Input, Upstream.Handler, ObjectManager.Subscriber
 {
     /**
-     * Returns the IP address via which this session is operating. Note that multiple sessions can
-     * be operating over the same IP, so do not treat this as a unique key.
+     * An interface for entities that wish to track a session's lifecycle. During calls to the
+     * callback, the session in question will be bound as current, so that {@link SessionLocal} can
+     * be used to access session-local data.
      */
-    public String getIPAddress ()
+    public interface Listener
     {
-        return _ipaddress;
+        /** Notifies the listener that this session has been disconnected. */
+        void onDisconnect ();
+    }
+
+    /**
+     * Adds a listener to this session.
+     */
+    public void addListener (Listener listener)
+    {
+        _listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener from this session.
+     */
+    public void removeListener (Listener listener)
+    {
+        _listeners.remove(listener);
     }
 
     /**
@@ -62,6 +82,15 @@ public class Session
     {
         @SuppressWarnings("unchecked") T ovalue = (T)_locals.put(key, value);
         return ovalue;
+    }
+
+    /**
+     * Returns the IP address via which this session is operating. Note that multiple sessions can
+     * be operating over the same IP, so do not treat this as a unique key.
+     */
+    public String getIPAddress ()
+    {
+        return _ipaddress;
     }
 
     // from interface SessionManager.Input
@@ -91,7 +120,21 @@ public class Session
     // from interface SessionManager.Input
     public void onDisconnect ()
     {
-        // clear any object subscriptions we currently have
+        // notify our listeners that we are audi 5000
+        try {
+            SessionLocal.setCurrent(this);
+            for (Listener listener : Lists.newArrayList(_listeners)) {
+                try {
+                    listener.onDisconnect();
+                } catch (Throwable t) {
+                    log.warning("Listener choked in onDisconnect", "listener", listener, t);
+                }
+            }
+        } finally {
+            SessionLocal.clearCurrent();
+        }
+
+        // clear any object subscriptions we currently hold
         for (Integer id : _subscriptions) {
             _omgr.clearSubscriber(id, this);
         }
@@ -199,6 +242,9 @@ public class Session
 
     /** Tracks session-local attributes. */
     protected final Map<Class<?>, Object> _locals = Maps.newHashMap();
+
+    /** Tracks session listeners. */
+    protected final List<Listener> _listeners = Lists.newArrayList();
 
     protected static final byte[] EMPTY_BUFFER = new byte[0];
 }
