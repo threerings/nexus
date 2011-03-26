@@ -14,14 +14,12 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import static com.samskivert.nexus.util.Log.log;
 
@@ -57,7 +55,7 @@ public class JVMConnectionManager
         ssocket.socket().bind(addr);
 
         SelectionKey key = ssocket.register(_selector, SelectionKey.OP_ACCEPT);
-        _handlers.put(key, new IOHandler() {
+        key.attach(new IOHandler() {
             public void handleIO () {
                 handleAccept(ssocket);
             }
@@ -157,11 +155,11 @@ public class JVMConnectionManager
             }
             chan.configureBlocking(false);
             SelectionKey key = chan.register(_selector, SelectionKey.OP_READ);
-            JVMServerConnection conn = new JVMServerConnection(this, key, chan);
-            SessionManager.Input sess = _smgr.createSession(
-                chan.socket().getInetAddress().toString(), conn);
+            JVMServerConnection conn = new JVMServerConnection(this, chan);
+            String ipaddr = chan.socket().getInetAddress().toString();
+            SessionManager.Input sess = _smgr.createSession(ipaddr, conn);
             conn.setSession(sess);
-            _handlers.put(key, conn);
+            key.attach(conn);
             log.info("Started new session " + sess);
 
         } catch (IOException ioe) {
@@ -200,12 +198,12 @@ public class JVMConnectionManager
      * Called by a connection when it has been closed (in an orderly fashion, or due to failure).
      * @param cause the cause of failure, if the shutdown was not orderly, null otherwise.
      */
-    protected void connectionClosed (SelectionKey key, IOException cause)
+    protected void connectionClosed (SocketChannel chan, IOException cause)
     {
-        log.info("Connection closed", "key", key, "cause", cause);
+        log.info("Connection closed", "addr", chan.socket().getInetAddress(), "cause", cause);
         // the key itself is automatically canceled when the socket is closed, so we don't need to
-        // remove it from our selector
-        _handlers.remove(key);
+        // remove it from our selector, and the handler is attached to they key, so garbage
+        // collection cleans everything up for us
     }
 
     /**
@@ -225,7 +223,7 @@ public class JVMConnectionManager
 
         // process all of the channels that are ready for action
         for (SelectionKey key : _selector.selectedKeys()) {
-            IOHandler handler = _handlers.get(key);
+            IOHandler handler = (IOHandler)key.attachment();
             if (handler == null) {
                 log.warning("Received network event with no handler",
                             "key", key, "ops", key.readyOps());
@@ -274,9 +272,6 @@ public class JVMConnectionManager
     /** Our list of listening sockets. */
     protected List<ServerSocketChannel> _ssocks = Lists.newArrayList();
 
-    /** Maps selection keys to handlers of incoming network data. */
-    protected Map<SelectionKey, IOHandler> _handlers = Maps.newConcurrentMap();
-
     /** A queue of connections that have outgoing messages. */
     protected BlockingQueue<JVMServerConnection> _outq =
         new LinkedBlockingQueue<JVMServerConnection>();
@@ -288,5 +283,5 @@ public class JVMConnectionManager
     protected volatile State _state = State.INIT;
 
     /** A sentinel object used to ensure that the writer thread shuts down. */
-    protected final JVMServerConnection TERMINATOR = new JVMServerConnection(null, null, null);
+    protected final JVMServerConnection TERMINATOR = new JVMServerConnection(null, null);
 }

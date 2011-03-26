@@ -17,16 +17,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.samskivert.nexus.io.FrameReader;
 
+import static com.samskivert.nexus.util.Log.log;
+
 /**
  * Handles a connection to a single client.
  */
 public class JVMServerConnection
     implements JVMConnectionManager.IOHandler, SessionManager.Output
 {
-    public JVMServerConnection (JVMConnectionManager cmgr, SelectionKey key, SocketChannel chan)
+    public JVMServerConnection (JVMConnectionManager cmgr, SocketChannel chan)
     {
         _cmgr = cmgr;
-        _key = key;
         _chan = chan;
     }
 
@@ -63,8 +64,8 @@ public class JVMServerConnection
             // out our outgoing queue so that any final calls to writeMessages NOOP
             _outq.clear();
             // now let the usual suspects know that we failed
-            _cmgr.connectionClosed(_key, ioe);
             _input.onSendError(ioe);
+            onClose(ioe);
         }
     }
     
@@ -101,17 +102,28 @@ public class JVMServerConnection
             }
 
         } catch (EOFException eofe) {
-            _cmgr.connectionClosed(_key, null);
             _input.onDisconnect();
+            onClose(null);
 
         } catch (IOException ioe) {
-            _cmgr.connectionClosed(_key, ioe);
             _input.onReceiveError(ioe);
+            onClose(ioe);
         }
     }
 
+    protected void onClose (IOException cause)
+    {
+        if (_chan == null) return; // no double closeage
+        try {
+            _chan.close();
+        } catch (IOException ioe) {
+            log.warning("Failed to close socket channel", "chan", _chan, "error", ioe);
+        }
+        _cmgr.connectionClosed(_chan, cause);
+        _chan = null;
+    }
+
     protected JVMConnectionManager _cmgr;
-    protected SelectionKey _key;
     protected SocketChannel _chan;
     protected SessionManager.Input _input;
 
