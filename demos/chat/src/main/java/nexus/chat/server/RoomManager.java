@@ -56,7 +56,6 @@ public class RoomManager implements RoomService, Keyed
     {
         Chatter chatter = SessionLocal.get(Chatter.class);
         if (chatter == null || chatter.nickname == null) {
-            System.err.println(chatter + " " + SessionLocal.getSession());
             throw new NexusException("Cannot chat until you configure a nickname.");
         }
         // here we might do things like access control, etc.

@@ -50,7 +50,7 @@ public class ChatManager implements ChatService, Singleton
         if (_activeNicks.contains(nickname)) {
             throw new NexusException("The nickname '" + nickname + "' is in use.");
         }
-        if (nickname.startsWith("<") || nickname.toLowerCase().contains("anonymous")) {
+        if (nickname.startsWith("{") || nickname.toLowerCase().contains("anonymous")) {
             throw new NexusException("Invalid nickname."); // no spoofing
         }
         getChatter().updateNick(nickname);
@@ -97,8 +97,7 @@ public class ChatManager implements ChatService, Singleton
         Chatter chatter = SessionLocal.get(Chatter.class);
         if (chatter == null) {
             chatter = new Chatter();
-            chatter.nickname = "<anonymous@" + SessionLocal.getSession().getIPAddress() + ">";
-            System.err.println("setting chatter " + chatter + " " + SessionLocal.getSession());
+            chatter.nickname = "{anonymous@" + SessionLocal.getSession().getIPAddress() + "}";
             SessionLocal.set(Chatter.class, chatter);
 
             // register a listener on this chatter's session to learn when they go away
