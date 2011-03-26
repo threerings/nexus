@@ -81,7 +81,8 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
     }
 
     @SuppressWarnings("unchecked") 
-    protected final <T> Streamer<T> writeClass (Streamable.Output out, Short code) {
+    protected final <T> Streamer<T> writeClass (Streamable.Output out, Short code)
+    {
         out.writeShort(code);
         return (Streamer<T>)_streamers.get(code);
     }
