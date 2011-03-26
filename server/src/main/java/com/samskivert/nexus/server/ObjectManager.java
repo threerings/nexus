@@ -284,8 +284,11 @@ public class ObjectManager
         } // otherwise, the object was probably already destroyed
     }
 
-    // from interface EventSink
-    public void postEvent (final NexusEvent event)
+    /**
+     * Dispatches the supplied event to the appropriate object, on the appropriate thread.
+     * @param source the session from which the event originated, or null.
+     */
+    public void dispatchEvent (final NexusEvent event, final Session source)
     {
         final Set<Subscriber> subs;
         synchronized (_subscribers) {
@@ -293,9 +296,15 @@ public class ObjectManager
         }
         invoke(event.targetId, new Action<NexusObject>() {
             public void invoke (NexusObject object) {
-                // TODO: access control
-                // apply the event to the object (notifying listeners)
-                event.applyTo(object);
+                SessionLocal.setCurrent(source);
+                try {
+                    // TODO: access control
+                    // apply the event to the object (notifying listeners)
+                    event.applyTo(object);
+                } finally {
+                    SessionLocal.clearCurrent();
+                }
+
                 // forward the event to any subscribers
                 if (subs != null) {
                     for (Subscriber sub : subs) {
@@ -309,17 +318,40 @@ public class ObjectManager
         });
     }
 
-    // from interface EventSink
-    public void postCall (int objId, final short attrIdx, final short methId, final Object[] args)
+    /**
+     * Dispatches the supplied service call on the appropriate object, on the appropriate thread.
+     * @param source the session from which the call originated, or null.
+     */
+    public void dispatchCall (int objId, final short attrIdx, final short methId, final Object[] args,
+                              final Session source)
     {
         invoke(objId, new Action<NexusObject>() {
             public void invoke (NexusObject object) {
-                DistribUtil.dispatchCall(object, attrIdx, methId, args);
+                SessionLocal.setCurrent(source);
+                try {
+                    DistribUtil.dispatchCall(object, attrIdx, methId, args);
+                } finally {
+                    SessionLocal.clearCurrent();
+                }
             }
             @Override public String toString () {
                 return "isvc:" + attrIdx + ":" + methId + ":" + args.length;
             }
         });
+    }
+
+    // from interface EventSink
+    public void postEvent (NexusEvent event)
+    {
+        // events that originate on the server are dispatched directly
+        dispatchEvent(event, null);
+    }
+
+    // from interface EventSink
+    public void postCall (int objId, short attrIdx, short methId, Object[] args)
+    {
+        // calls that originate on the server are dispatched directly
+        dispatchCall(objId, attrIdx, methId, args, null);
     }
 
     // from interface EventSink

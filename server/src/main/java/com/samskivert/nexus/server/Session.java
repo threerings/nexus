@@ -9,8 +9,10 @@ package com.samskivert.nexus.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.samskivert.nexus.distrib.Action;
@@ -40,6 +42,26 @@ public class Session
     public String getIPAddress ()
     {
         return _ipaddress;
+    }
+
+    /**
+     * Returns the value of the specified session-local attribute, or null if no value is currently
+     * configured for the supplied key.
+     */
+    public <T> T getLocal (Class<T> key)
+    {
+        @SuppressWarnings("unchecked") T value = (T)_locals.get(key);
+        return value;
+    }
+
+    /**
+     * Configures the supplied value as the session-local attribute for the specified key.
+     * @return the previously configured value for that key. (TODO: reject overwrites instead?)
+     */
+    public <T> T setLocal (Class<T> key, T value)
+    {
+        @SuppressWarnings("unchecked") T ovalue = (T)_locals.put(key, value);
+        return ovalue;
     }
 
     // from interface SessionManager.Input
@@ -82,6 +104,7 @@ public class Session
     // from interface Upstream.Handler
     public void onSubscribe (Upstream.Subscribe msg)
     {
+        SessionLocal.setCurrent(this);
         try {
             // TODO: per-session class loaders or other fancy business
             NexusObject object = _omgr.addSubscriber(msg.addr, this);
@@ -89,6 +112,8 @@ public class Session
             sendMessage(new Downstream.Subscribe(object));
         } catch (Throwable t) {
             sendMessage(new Downstream.SubscribeFailure(msg.addr, t.getMessage()));
+        } finally {
+            SessionLocal.clearCurrent();
         }
     }
 
@@ -102,7 +127,7 @@ public class Session
     public void onPostEvent (Upstream.PostEvent msg)
     {
         // we pass things straight through to the object manager which handles everything
-        _omgr.postEvent(msg.event);
+        _omgr.dispatchEvent(msg.event, this);
     }
 
     // from interface Upstream.Handler
@@ -122,7 +147,7 @@ public class Session
                 }
             };
         }
-        _omgr.postCall(msg.objectId, msg.attrIndex, msg.methodId, args);
+        _omgr.dispatchCall(msg.objectId, msg.attrIndex, msg.methodId, args, this);
     }
 
     // from interface ObjectManager.Subscriber
@@ -171,6 +196,9 @@ public class Session
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = Sets.newHashSet();
+
+    /** Tracks session-local attributes. */
+    protected final Map<Class<?>, Object> _locals = Maps.newHashMap();
 
     protected static final byte[] EMPTY_BUFFER = new byte[0];
 }
