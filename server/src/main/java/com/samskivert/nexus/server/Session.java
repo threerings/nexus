@@ -201,7 +201,8 @@ public class Session
 
     @Override public String toString ()
     {
-        return _ipaddress; // TODO: if authed, report authed id?
+        // TODO: if authed, report authed id?
+        return "[id=" + hashCode() + ", addr=" + _ipaddress + "]";
     }
 
     protected Session (SessionManager smgr, ObjectManager omgr, String ipaddress,

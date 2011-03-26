@@ -158,8 +158,11 @@ public class JVMConnectionManager
             chan.configureBlocking(false);
             SelectionKey key = chan.register(_selector, SelectionKey.OP_READ);
             JVMServerConnection conn = new JVMServerConnection(this, key, chan);
-            conn.setSession(_smgr.createSession(chan.socket().getInetAddress().toString(), conn));
+            SessionManager.Input sess = _smgr.createSession(
+                chan.socket().getInetAddress().toString(), conn);
+            conn.setSession(sess);
             _handlers.put(key, conn);
+            log.info("Started new session " + sess);
 
         } catch (IOException ioe) {
             log.warning("Failure accepting connected socket", "ssock", ssock, ioe);
@@ -199,6 +202,7 @@ public class JVMConnectionManager
      */
     protected void connectionClosed (SelectionKey key, IOException cause)
     {
+        log.info("Connection closed", "key", key, "cause", cause);
         // the key itself is automatically canceled when the socket is closed, so we don't need to
         // remove it from our selector
         _handlers.remove(key);
