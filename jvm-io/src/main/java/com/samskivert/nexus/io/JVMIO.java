@@ -186,8 +186,7 @@ public class JVMIO
     }
 
     /**
-     * Returns a {@link Streamable#Output} that obtains its underlying data from the supplied output
-     * stream.
+     * Returns a {@link Streamable#Output} that writes encoded data to the supplied output stream.
      */
     public static Streamable.Output newOutput (OutputStream out)
     {
