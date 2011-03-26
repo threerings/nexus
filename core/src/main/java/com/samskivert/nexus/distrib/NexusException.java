@@ -16,6 +16,16 @@ import com.samskivert.nexus.io.Streamable;
 public class NexusException extends RuntimeException
     implements Streamable
 {
+    /**
+     * Throws a NexusException with the supplied error message if {@code condition} is not true.
+     */
+    public static void require (boolean condition, String errmsg)
+    {
+        if (!condition) {
+            throw new NexusException(errmsg);
+        }
+    }
+
     public NexusException (String message)
     {
         super(message);
