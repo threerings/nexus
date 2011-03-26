@@ -36,35 +36,59 @@ public class ChatPanel extends JPanel
         setLayout(new BorderLayout(5, 5));
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // add the list of rooms on the left
+        // add the list of rooms on the right
         JPanel left = GroupLayout.makeVStretchBox(5);
         left.add(new JLabel("Rooms"), GroupLayout.FIXED);
         left.add(_rooms = new JList());
         JButton join = new JButton("Join");
         left.add(join, GroupLayout.FIXED);
-        add(left, BorderLayout.WEST);
+        add(left, BorderLayout.EAST);
+
+        join.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent event) {
+                String room = (String)_rooms.getSelectedValue();
+                if (room != null) {
+                    joinRoom(room);
+                }
+            }
+        });
 
         JPanel main = GroupLayout.makeVStretchBox(5);
         add(main, BorderLayout.CENTER);
 
-        // add a nickname configuration UI up top
-        JPanel nickrow = GroupLayout.makeHBox();
-        main.add(nickrow, GroupLayout.FIXED);
-        nickrow.add(new JLabel("Nickname:"));
-        nickrow.add(_nickname = UIUtil.newTextField(200));
+        // add a nickname configuration and room creation UI up top
+        final JTextField nickname = new JTextField();
         JButton upnick = new JButton("Update");
-        nickrow.add(upnick);
-
         ActionListener onUpNick = new ActionListener() {
             public void actionPerformed (ActionEvent event) {
-                updateNickname(_nickname.getText().trim());
+                updateNickname(nickname.getText().trim());
             }
         };
-        _nickname.addActionListener(onUpNick);
+        nickname.addActionListener(onUpNick);
         upnick.addActionListener(onUpNick);
 
+        final JTextField roomname = new JTextField();
+        JButton newroom = new JButton("Create");
+        ActionListener creator = new ActionListener() {
+            public void actionPerformed (ActionEvent event) {
+                createRoom(roomname.getText().trim());
+                roomname.setText("");
+            }
+        };
+        roomname.addActionListener(creator);
+        newroom.addActionListener(creator);
+
+        JPanel toprow = GroupLayout.makeHStretchBox(5);
+        main.add(toprow, GroupLayout.FIXED);
+        toprow.add(new JLabel("Nickname:"), GroupLayout.FIXED);
+        toprow.add(nickname);
+        toprow.add(upnick, GroupLayout.FIXED);
+        toprow.add(new JLabel("Create room:"), GroupLayout.FIXED);
+        toprow.add(roomname);
+        toprow.add(newroom, GroupLayout.FIXED);
+
         // add a label displaying the current room name
-        main.add(_roomName = new JLabel("Room: <none>"), GroupLayout.FIXED);
+        main.add(_curRoom = new JLabel("Room: <none>"), GroupLayout.FIXED);
 
         // add the main chat display
         main.add(_chat = new JTextArea());
@@ -77,29 +101,6 @@ public class ChatPanel extends JPanel
         final JButton send = new JButton("Send");
         chatrow.add(send, GroupLayout.FIXED);
         main.add(chatrow, GroupLayout.FIXED);
-
-        // make a request for the current room list and populate our listbox
-        _chatobj.chatSvc.get().getRooms(callback(new Action<List<String>>() {
-            public void onSuccess (final List<String> rooms) {
-                _rooms.setModel(new AbstractListModel() {
-                    public int getSize () {
-                        return rooms.size();
-                    }
-                    public Object getElementAt (int idx) {
-                        return rooms.get(idx);
-                    }
-                });
-            }
-        }, "Failed to fetch rooms"));
-
-        join.addActionListener(new ActionListener() {
-            public void actionPerformed (ActionEvent event) {
-                String room = (String)_rooms.getSelectedValue();
-                if (room != null) {
-                    joinRoom(room);
-                }
-            }
-        });
 
         ActionListener sender = new ActionListener() {
             public void actionPerformed (ActionEvent event) {
@@ -125,6 +126,25 @@ public class ChatPanel extends JPanel
         };
         send.addActionListener(sender);
         _entry.addActionListener(sender);
+
+        // make a request for the current room list
+        refreshRooms();
+    }
+
+    protected void refreshRooms ()
+    {
+        _chatobj.chatSvc.get().getRooms(callback(new Action<List<String>>() {
+            public void onSuccess (final List<String> rooms) {
+                _rooms.setModel(new AbstractListModel() {
+                    public int getSize () {
+                        return rooms.size();
+                    }
+                    public Object getElementAt (int idx) {
+                        return rooms.get(idx);
+                    }
+                });
+            }
+        }, "Failed to fetch rooms"));
     }
 
     protected void updateNickname (final String nickname)
@@ -142,29 +162,51 @@ public class ChatPanel extends JPanel
 
     protected void joinRoom (final String name)
     {
+        if (_roomobj != null && _roomobj.name.equals(name)) {
+            return; // no point in noopin'
+        }
         Action<RoomObject> onJoin = new Action<RoomObject>() {
             public void onSuccess (RoomObject room) {
-                if (_roomobj != null) {
-                    _ctx.getClient().unsubscribe(_roomobj);
-                }
-                _roomobj = room;
-                _roomobj.chatEvent.addListener(new DCustom.Listener<RoomObject.ChatEvent>() {
-                    public void onEvent (RoomObject.ChatEvent event) {
-                        if (event.nickname == null) {
-                            _chat.append(event.message + "\n"); // from the server
-                        } else {
-                            _chat.append("<" + event.nickname + "> " + event.message + "\n");
-                        }
-                    }
-                });
-                _roomName.setText("Room: " + room.name);
-                feedback("Joined room '" + room.name + "'");
-                _entry.setEnabled(true);
+                joinedRoom(room);
             }
         };
         _chatobj.chatSvc.get().joinRoom(
             name, _ctx.getClient().subscriber(
                 callback(onJoin, "Failed to join room '" + name + "'")));
+    }
+
+    protected void createRoom (final String name)
+    {
+        Action<RoomObject> onCreate = new Action<RoomObject>() {
+            public void onSuccess (RoomObject room) {
+                joinedRoom(room);
+                refreshRooms();
+            }
+        };
+        _chatobj.chatSvc.get().createRoom(
+            name, _ctx.getClient().subscriber(
+                callback(onCreate, "Failed to create room '" + name + "'")));
+    }
+
+    protected void joinedRoom (RoomObject room)
+    {
+        if (_roomobj != null) {
+            _ctx.getClient().unsubscribe(_roomobj);
+        }
+        _roomobj = room;
+        _roomobj.chatEvent.addListener(new DCustom.Listener<RoomObject.ChatEvent>() {
+            public void onEvent (RoomObject.ChatEvent event) {
+                if (event.nickname == null) {
+                    _chat.append(event.message + "\n"); // from the server
+                } else {
+                    _chat.append("<" + event.nickname + "> " + event.message + "\n");
+                }
+            }
+        });
+        _curRoom.setText("Room: " + room.name);
+        feedback("Joined room '" + room.name + "'");
+        _entry.setEnabled(true);
+        _entry.requestFocusInWindow();
     }
 
     protected void feedback (String message)
@@ -193,8 +235,7 @@ public class ChatPanel extends JPanel
     protected RoomObject _roomobj;
 
     protected JList _rooms;
-    protected JTextField _nickname;
-    protected JLabel _roomName;
+    protected JLabel _curRoom;
     protected JTextArea _chat;
     protected JTextField _entry;
 }

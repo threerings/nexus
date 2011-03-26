@@ -49,6 +49,10 @@ public class ConnectPanel extends JPanel
         };
         address.addActionListener(onConnect);
         connect.addActionListener(onConnect);
+
+        // try connecting to localhost straight away
+        address.setText("localhost");
+        onConnect.actionPerformed(null);
     }
 
     protected void onConnect (String address)

@@ -39,9 +39,6 @@ public class ChatManager implements ChatService, Singleton
         // create and register our chat object as a child singleton in our same context
         ChatObject chatobj = new ChatObject(Factory_ChatService.createDispatcher(this));
         nexus.registerSingleton(chatobj, this);
-
-        // TEMP: create a chat room
-        _rooms.put("Test", new RoomManager(_nexus, "Test"));
     }
 
     // from interface ChatService
@@ -71,11 +68,10 @@ public class ChatManager implements ChatService, Singleton
         if (mgr == null) {
             throw new NexusException("No room named '" + name + "'.");
         }
+        // here we might check invitation lists or whatnot
 
         // note that this chatter has entered this room
-        getChatter().enterRoom(mgr);
-
-        // here we might check invitation lists or whatnot
+        getChatter().enterRoom(name);
         callback.onSuccess(Address.of(mgr.roomObj));
     }
 
@@ -83,12 +79,16 @@ public class ChatManager implements ChatService, Singleton
     public void createRoom (String name, Callback<Address<RoomObject>> callback)
     {
         if (_rooms.containsKey(name)) {
-            throw new NexusException("Room with name '" + name + "' already exists.");
+            throw new NexusException("Room already exists.");
         }
-
         // here we might check privileges or whether the room name contains swear words, etc.
+
+        // create a manager for the new room
         RoomManager mgr = new RoomManager(_nexus, name);
         _rooms.put(name, mgr);
+
+        // note that this chatter has entered this room
+        getChatter().enterRoom(name);
         callback.onSuccess(Address.of(mgr.roomObj));
     }
 
@@ -96,9 +96,8 @@ public class ChatManager implements ChatService, Singleton
     {
         Chatter chatter = SessionLocal.get(Chatter.class);
         if (chatter == null) {
-            chatter = new Chatter();
-            chatter.nickname = "{anonymous@" + SessionLocal.getSession().getIPAddress() + "}";
-            SessionLocal.set(Chatter.class, chatter);
+            String nickname = "{anonymous@" + SessionLocal.getSession().getIPAddress() + "}";
+            SessionLocal.set(Chatter.class, chatter = new Chatter(_nexus, nickname));
 
             // register a listener on this chatter's session to learn when they go away
             SessionLocal.getSession().addListener(new Session.Listener() {

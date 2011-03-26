@@ -3,6 +3,11 @@
 
 package nexus.chat.server;
 
+import com.samskivert.nexus.distrib.Action;
+import com.samskivert.nexus.distrib.Nexus;
+
+import nexus.chat.client.ChatPanel;
+
 /**
  * A class used to store session-local data for a chatter.
  */
@@ -11,29 +16,51 @@ public class Chatter
     /** This chatter's configured nickname. */
     public String nickname;
 
-    public void enterRoom (RoomManager currentRoom)
+    public Chatter (Nexus nexus, String nickname)
+    {
+        this.nickname = nickname;
+        _nexus = nexus;
+    }
+
+    public void enterRoom (String name)
     {
         leaveRoom(); // leave any current room
-        _currentRoom = currentRoom;
-        _currentRoom.chatterEntered(nickname);
+        _name = name;
+        _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {
+            public void invoke (RoomManager mgr) {
+                mgr.chatterEntered(nickname);
+            }
+        });
     }
 
     public void leaveRoom ()
     {
-        if (_currentRoom != null) {
-            _currentRoom.chatterLeft(nickname);
-            _currentRoom = null;
+        if (_name != null) {
+            _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {
+                public void invoke (RoomManager mgr) {
+                    mgr.chatterLeft(nickname);
+                }
+            });
+            _name = null;
         }
     }
 
-    public void updateNick (String nickname)
+    public void updateNick (final String nickname)
     {
-        if (_currentRoom != null) {
-            _currentRoom.chatterChangedNick(this.nickname, nickname);
+        if (_name != null) {
+            final String onickname = this.nickname;
+            _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {
+                public void invoke (RoomManager mgr) {
+                    mgr.chatterChangedNick(onickname, nickname);
+                }
+            });
         }
         this.nickname = nickname;
     }
 
-    /** The current room occupied by this chatter. */
-    protected RoomManager _currentRoom;
+    /** Used to communicate with our occupied room. */
+    protected Nexus _nexus;
+
+    /** The name of the current room occupied by this chatter. */
+    protected String _name;
 }

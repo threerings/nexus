@@ -48,18 +48,17 @@ public class RoomManager implements RoomService, Keyed
 
     public void chatterChangedNick (String oldname, String newname)
     {
-        roomObj.chatEvent.emit(null, oldname + " is now known as " + newname + ".");
+        roomObj.chatEvent.emit(null, oldname + " is now known as <" + newname + ">.");
     }
 
     // from interface RoomService
     public void sendMessage (String message, Callback<Void> callback)
     {
-        Chatter chatter = SessionLocal.get(Chatter.class);
-        if (chatter == null || chatter.nickname == null) {
-            throw new NexusException("Cannot chat until you configure a nickname.");
-        }
         // here we might do things like access control, etc.
-        roomObj.chatEvent.emit(chatter.nickname, message);
+
+        // send the chat event to all subscribers to the room
+        roomObj.chatEvent.emit(SessionLocal.get(Chatter.class).nickname, message);
+
         // tell the caller their chat message was sent
         callback.onSuccess(null);
     }
