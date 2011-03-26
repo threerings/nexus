@@ -86,6 +86,7 @@ public class JVMConnection extends Connection
      */
     protected void connectionClosed ()
     {
+        log.info("Connection closed. TODO!");
         // TODO: report to our client (or observer) that we were shutdown
     }
 
@@ -140,6 +141,7 @@ public class JVMConnection extends Connection
                 connectionEstablished(_channel);
 
                 // let our callback know that we're ready to go
+                log.info("Established server connection", "addr", addr);
                 _callback.onSuccess(JVMConnection.this);
 
             } catch (IOException ioe) {
