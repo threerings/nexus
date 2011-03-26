@@ -101,6 +101,7 @@ public abstract class NexusClient
             return;
         }
 
+        log.info("Connecting to " + host);
         _penders.put(host, plist = CallbackList.create(action));
         connect(host, new Callback<Connection>() {
             public void onSuccess (Connection conn) {
