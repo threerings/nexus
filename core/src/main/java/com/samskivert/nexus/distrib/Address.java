@@ -79,6 +79,15 @@ public abstract class Address<T extends NexusObject> implements Streamable
     }
 
     /**
+     * Returns the address of the supplied NexusObject, with the proper generic type.
+     */
+    public static <T extends NexusObject> Address<T> of (T object)
+    {
+        @SuppressWarnings("unchecked") Address<T> addr = (Address<T>)object.getAddress();
+        return addr;
+    }
+
+    /**
      * Creates an address for a keyed instance on the specified host.
      */
     public static <T extends NexusObject & Keyed> Address<T> create (
