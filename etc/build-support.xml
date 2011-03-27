@@ -84,11 +84,16 @@
     <property name="test" value=""/>
     <!-- allows passing -Dgwt.log=TRACE to obtain GWT debug logging -->
     <property name="gwt.log" value="WARN"/>
+    <!-- allows passing -Dgwt.mode=-prod to obtain GWT debug logging -->
+    <property name="gwt.mode" value=""/>
+
     <mkdir dir="${deploy.dir}/test-reports"/>
+    <property name="war.dir" value="${deploy.dir}/test-war"/>
     <!-- we have to fork, otherwise the classloader will not work for GWT -->
     <junit printsummary="off" haltonfailure="yes" fork="yes">
       <classpath refid="test.classpath"/>
-      <sysproperty key="gwt.args" value="-logLevel ${gwt.log} -war ${deploy.dir}/test-war" />
+      <sysproperty key="java.awt.headless" value="true"/>
+      <sysproperty key="gwt.args" value="${gwt.mode} -logLevel ${gwt.log} -war ${war.dir}"/>
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
