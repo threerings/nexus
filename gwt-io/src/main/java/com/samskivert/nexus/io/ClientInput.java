@@ -53,7 +53,7 @@ class ClientInput extends Streamable.Input
     /*-{
         var data = this.@com.samskivert.nexus.io.ClientInput::_values[
             this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
-        return @com.google.gwt.lang.LongLib::longFromBase64(Ljava/lang/String;)(s);
+        return @com.google.gwt.lang.LongLib::longFromBase64(Ljava/lang/String;)(data);
     }-*/;
 
     @Override public native float readFloat ()
