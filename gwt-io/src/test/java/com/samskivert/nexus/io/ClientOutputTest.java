@@ -9,7 +9,8 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
- * Tests our {@link ClientOutput} class.
+ * Tests the client output and server input pair (in conjunction with ServerInputTest in
+ * nexus-server).
  */
 public class ClientOutputTest extends GWTTestCase
 {
