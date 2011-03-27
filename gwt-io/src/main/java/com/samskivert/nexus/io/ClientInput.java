@@ -67,10 +67,11 @@ class ClientInput extends Streamable.Input
             this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
-    @Override public String readString ()
-    {
-        return readBoolean() ? readNonNullString() : null;
-    }
+    @Override public native String readString ()
+    /*-{
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
+    }-*/;
 
     @Override public <T extends Streamable> Class<T> readClass ()
     {
@@ -90,12 +91,6 @@ class ClientInput extends Streamable.Input
             (ServiceFactory<T>)_szer.getServiceFactory(readShort());
         return factory;
     }
-
-    protected native String readNonNullString ()
-    /*-{
-        return this.@com.samskivert.nexus.io.ClientInput::_values[
-            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
-    }-*/;
 
     /** Decodes an encoded payload into a JavaScript array. As the payload is formatted as a
      * JavaScript array, this is done using {@code eval()} for efficiency. */
