@@ -105,7 +105,7 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
     protected AbstractSerializer ()
     {
         // map the streamers for our basic types
-        mapStreamer(new Streamers.Streamer_Null(), Void.TYPE);
+        mapStreamer(new Streamers.Streamer_Null(), Void.class);
         mapStreamer(new Streamers.Streamer_Boolean(), Boolean.class);
         mapStreamer(new Streamers.Streamer_Byte(), Byte.class);
         mapStreamer(new Streamers.Streamer_Character(), Character.class);
