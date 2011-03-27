@@ -105,6 +105,4 @@ class ClientOutput extends Streamable.Output
 
     protected final GWTIO.Serializer _szer;
     protected final StringBuffer _output;
-
-    protected static final Streamer<Void> NULL_STREAMER = new Streamers.Streamer_Null();
 }

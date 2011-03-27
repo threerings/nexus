@@ -8,7 +8,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.samskivert.nexus.distrib.NexusService;
 
 /**
- * Handles the decoding of an input payload into proper values.
+ * Handles the decoding of an input payload (from the server) into proper values.
  */
 class ClientInput extends Streamable.Input
 {
