@@ -12,6 +12,9 @@ import com.samskivert.nexus.distrib.NexusService;
  */
 class ClientOutput extends Streamable.Output
 {
+    /** The character used to separate values in an encoded payload. */
+    public static final char SEPARATOR = '|';
+
     public ClientOutput (GWTIO.Serializer szer, StringBuffer output)
     {
         _szer = szer;
@@ -97,12 +100,11 @@ class ClientOutput extends Streamable.Output
     protected void append (String token)
     {
         _output.append(token);
-        _output.append(RPC_SEPARATOR_CHAR);
+        _output.append(SEPARATOR);
     }
 
     protected final GWTIO.Serializer _szer;
     protected final StringBuffer _output;
 
-    protected static final char RPC_SEPARATOR_CHAR = '|';
     protected static final Streamer<Void> NULL_STREAMER = new Streamers.Streamer_Null();
 }
