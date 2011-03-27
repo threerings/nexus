@@ -68,7 +68,7 @@ class ClientOutput extends Streamable.Output
             writeBoolean(false);
         } else {
             writeBoolean(true);
-            writeNonNullString(value);
+            append(quoteString(value));
         }
     }
 
@@ -85,11 +85,6 @@ class ClientOutput extends Streamable.Output
     @Override protected <T> Streamer<T> writeStreamer (T value)
     {
         return _szer.<T>writeStreamer(this, value);
-    }
-
-    protected void writeNonNullString (String value)
-    {
-        append(quoteString(value));
     }
 
     protected String quoteString (String value)
