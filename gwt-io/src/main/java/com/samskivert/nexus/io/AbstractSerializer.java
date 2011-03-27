@@ -22,31 +22,31 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
     // from interface GWTIO.Serializer
     public Class<?> getClass (short code)
     {
-        return _classes.get(code);
+        return nonNull(_classes.get(code), "Unknown class code ", code);
     }
 
     // from interface GWTIO.Serializer
     public Streamer<?> getStreamer (short code)
     {
-        return _streamers.get(code);
+        return nonNull(_streamers.get(code), "Unknown class code ", code);
     }
 
     // from interface GWTIO.Serializer
     public ServiceFactory<?> getServiceFactory (short code)
     {
-        return _services.get(code);
+        return nonNull(_services.get(code), "Unknown service code ", code);
     }
 
     // from interface GWTIO.Serializer
     public short getCode (Class<?> clazz)
     {
-        return _codes.get(clazz);
+        return nonNull(_codes.get(clazz), "Unknown streamable class ", clazz);
     }
 
     // from interface GWTIO.Serializer
     public short getServiceCode (Class<? extends NexusService> clazz)
     {
-        return _serviceCodes.get(clazz);
+        return nonNull(_serviceCodes.get(clazz), "Unknown service class ", clazz);
     }
 
     // from interface GWTIO.Serializer
@@ -77,7 +77,7 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         }
 
         // otherwise: houston, we have a problem
-        throw new NexusException("Requested to stream unknown type: " + vclass);
+        throw new NexusException("Requested to stream unknown type " + vclass);
     }
 
     @SuppressWarnings("unchecked") 
@@ -120,6 +120,12 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         mapStreamer(new Streamers.Streamer_List(), ArrayList.class);
         mapStreamer(new Streamers.Streamer_Set(), HashSet.class);
         mapStreamer(new Streamers.Streamer_Map(), HashMap.class);
+    }
+
+    protected static <T> T nonNull (T value, String errmsg, Object data)
+    {
+        if (value == null) throw new NexusException(errmsg + data);
+        return value;
     }
 
     protected int _nextCode = -1; // so that null gets zero
