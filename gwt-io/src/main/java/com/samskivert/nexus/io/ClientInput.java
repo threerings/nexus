@@ -4,6 +4,7 @@
 package com.samskivert.nexus.io;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.UnsafeNativeLong;
 
 import com.samskivert.nexus.distrib.NexusService;
 
@@ -48,7 +49,7 @@ class ClientInput extends Streamable.Input
             this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
-    @Override public native long readLong ()
+    @Override @UnsafeNativeLong public native long readLong ()
     /*-{
         var data = this.@com.samskivert.nexus.io.ClientInput::_values[
             this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
