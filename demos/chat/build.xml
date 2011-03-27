@@ -1,12 +1,36 @@
 <?xml version="1.0"?>
 <project name="chat-demo" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <import file="../../etc/build-support.xml"/>
+  <property name="webapp.dir" value="${deploy.dir}/webapp"/>
 
-  <target name="client" depends="compile">
+  <target name="-prep-webapp" depends="-prepare">
+    <mkdir dir="${webapp.dir}"/>
+    <copy todir="${webapp.dir}">
+      <fileset dir="src/main/webapp" includes="**"/>
+    </copy>
+  </target>
+
+  <target name="client" depends="compile" description="Runs JVM chat client.">
     <java classname="nexus.chat.client.ChatApp" fork="true" classpathref="test.classpath"/>
   </target>
 
-  <target name="server" depends="compile">
+  <target name="server" depends="compile" description="Runs chat server.">
     <java classname="nexus.chat.server.ChatServer" fork="true" classpathref="test.classpath"/>
+  </target>
+
+  <target name="devmode" depends="-prep-webapp,compile" description="Runs GWT development mode.">
+    <java fork="true" classname="com.google.gwt.dev.DevMode">
+      <classpath>
+        <path refid="classpath"/>
+        <pathelement location="${classes.dir}"/>
+        <pathelement path="${src.dir}"/>
+      </classpath>
+      <jvmarg value="-Xmx256M"/>
+      <arg value="-startupUrl"/>
+      <arg value="index.html"/>
+      <arg value="-war"/>
+      <arg value="${deploy.dir}/webapp"/>
+      <arg value="nexus.chat.Chat"/>
+    </java>
   </target>
 </project>
