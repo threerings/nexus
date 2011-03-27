@@ -10,9 +10,9 @@ import com.samskivert.nexus.distrib.NexusService;
 /**
  * Handles the decoding of an input payload into proper values.
  */
-class StreamableInput extends Streamable.Input
+class ClientInput extends Streamable.Input
 {
-    public StreamableInput (GWTIO.Serializer szer, String data)
+    public ClientInput (GWTIO.Serializer szer, String data)
     {
         _szer = szer;
         _values = decode(data);
@@ -20,51 +20,51 @@ class StreamableInput extends Streamable.Input
 
     @Override public native boolean readBoolean ()
     /*-{
-        return !!this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return !!this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native byte readByte ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native short readShort ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native char readChar ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native int readInt ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native long readLong ()
     /*-{
-        var data = this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        var data = this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
         return @com.google.gwt.lang.LongLib::longFromBase64(Ljava/lang/String;)(s);
     }-*/;
 
     @Override public native float readFloat ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public native double readDouble ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     @Override public String readString ()
@@ -93,8 +93,8 @@ class StreamableInput extends Streamable.Input
 
     protected native String readNonNullString ()
     /*-{
-        return this.@com.samskivert.nexus.io.StreamableInput::_values[
-            this.@com.samskivert.nexus.io.StreamableInput::_nextValIdx++];
+        return this.@com.samskivert.nexus.io.ClientInput::_values[
+            this.@com.samskivert.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
     /** Decodes an encoded payload into a JavaScript array. As the payload is formatted as a

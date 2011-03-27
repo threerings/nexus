@@ -10,9 +10,9 @@ import com.samskivert.nexus.distrib.NexusService;
 /**
  * Handles the encoding of streamable data into a string payload (for delivery to the server).
  */
-class StreamableOutput extends Streamable.Output
+class ClientOutput extends Streamable.Output
 {
-    public StreamableOutput (GWTIO.Serializer szer, StringBuffer output)
+    public ClientOutput (GWTIO.Serializer szer, StringBuffer output)
     {
         _szer = szer;
         _output = output;

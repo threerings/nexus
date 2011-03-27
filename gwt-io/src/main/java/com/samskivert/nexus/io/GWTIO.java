@@ -42,7 +42,7 @@ public class GWTIO
      */
     public static Streamable.Input newInput (Serializer szer, String data)
     {
-        return new StreamableInput(szer, data);
+        return new ClientInput(szer, data);
     }
 
     /**
@@ -51,7 +51,7 @@ public class GWTIO
      */
     public static Streamable.Output newOutput (Serializer szer, StringBuffer output)
     {
-        return new StreamableOutput(szer, output);
+        return new ClientOutput(szer, output);
     }
 
     private GWTIO () {} // no constructsky
