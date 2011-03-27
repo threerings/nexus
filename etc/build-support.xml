@@ -82,11 +82,13 @@
   <target name="tests" depends="compile" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
+    <!-- allows passing -Dgwt.log=TRACE to obtain GWT debug logging -->
+    <property name="gwt.log" value="WARN"/>
     <mkdir dir="${deploy.dir}/test-reports"/>
     <!-- we have to fork, otherwise the classloader will not work for GWT -->
     <junit printsummary="off" haltonfailure="yes" fork="yes">
       <classpath refid="test.classpath"/>
-      <sysproperty key="gwt.args" value="-logLevel WARN -war ${deploy.dir}/test-war" />
+      <sysproperty key="gwt.args" value="-logLevel ${gwt.log} -war ${deploy.dir}/test-war" />
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
