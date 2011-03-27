@@ -54,7 +54,7 @@ public class ClientInputTest extends GWTTestCase
     }
 
     protected static final String BASIC_TYPES_PAYLOAD =
-        "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
-        "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
-        "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
+        "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
+        "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
+        "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
 }
