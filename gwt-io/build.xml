@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <project name="nexus-gwt-io" default="compile" xmlns:artifact="urn:maven-artifact-ant">
+  <property name="build.copy-gwt-sources" value="true"/>
   <import file="../etc/build-support.xml"/>
 </project>
