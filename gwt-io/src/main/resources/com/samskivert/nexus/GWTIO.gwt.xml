@@ -1,0 +1,3 @@
+<module>
+  <inherits name="com.samskivert.nexus.Core"/>
+</module>
