@@ -86,7 +86,7 @@ public class ServerInput extends Streamable.Input
 
     @Override public String readString ()
     {
-        return readBoolean() ? null : _valiter.next();
+        return readBoolean() ? _valiter.next() : null;
     }
 
     @Override public <T extends Streamable> Class<T> readClass ()
