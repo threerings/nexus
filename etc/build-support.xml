@@ -45,13 +45,20 @@
     <delete dir="${deploy.dir}"/>
   </target>
 
-  <target name="compile" depends="-prepare" description="Compiles the code.">
-    <mkdir dir="${classes.dir}"/>
-<!--
+  <target name="-prep-gwt" if="build.copy-gwt-sources">
     <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" includes="**/*.java"/>
+    </copy>
+    <copy todir="${tclasses.dir}">
+      <fileset dir="${test.dir}" includes="**/*.java"/>
+    </copy>
+  </target>
+
+  <target name="compile" depends="-prepare,-prep-gwt" description="Compiles the code.">
+    <mkdir dir="${classes.dir}"/>
+    <copy todir="${classes.dir}" failonerror="false">
       <fileset dir="src/main/resources" includes="**"/>
     </copy>
--->
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.6" target="1.6" encoding="utf-8">
       <classpath refid="classpath"/>
@@ -61,6 +68,9 @@
     </javac>
 
     <mkdir dir="${tclasses.dir}"/>
+    <copy todir="${classes.dir}" failonerror="false">
+      <fileset dir="src/test/resources" includes="**"/>
+    </copy>
     <javac srcdir="${test.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.6" target="1.6" encoding="utf-8">
       <classpath refid="test.classpath"/>
@@ -72,18 +82,18 @@
   <target name="tests" depends="compile" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
-    <taskdef name="unit" classpathref="classpath"
-      classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
     <mkdir dir="${deploy.dir}/test-reports"/>
-    <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
+    <!-- we have to fork, otherwise the classloader will not work for GWT -->
+    <junit printsummary="off" haltonfailure="yes" fork="yes">
       <classpath refid="test.classpath"/>
+      <sysproperty key="gwt.args" value="-logLevel WARN -war ${deploy.dir}/test-war" />
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
       <batchtest todir="${deploy.dir}/test-reports">
         <fileset dir="${test.dir}" includes="**/${test}*Test.java"/>
       </batchtest>
-    </unit>
+    </junit>
   </target>
 
   <target name="dist" depends="compile" description="Compiles code and builds jar file.">
