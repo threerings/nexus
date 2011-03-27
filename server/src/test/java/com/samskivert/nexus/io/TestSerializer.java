@@ -13,6 +13,7 @@ public class TestSerializer extends AbstractSerializer
 {
     public TestSerializer ()
     {
-        // presently nothing to register
+        mapStreamer(new Streamer_Widget(), Widget.class);
+        mapStreamer(new Streamer_Widget.Wangle(), Widget.Wangle.class);
     }
 }

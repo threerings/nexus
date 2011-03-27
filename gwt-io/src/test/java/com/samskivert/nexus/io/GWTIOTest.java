@@ -6,6 +6,10 @@
 
 package com.samskivert.nexus.io;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.gwt.junit.client.GWTTestCase;
 
 import org.junit.*;
@@ -24,10 +28,17 @@ public class GWTIOTest extends GWTTestCase
         return "com.samskivert.nexus.GWTIO";
     }
 
+    // NOTE: changes to these tests should be mirrored in Server{Input|Output}Test in nexus-server
+
     @Test
     public void testBasicTypesInput ()
     {
-        Streamable.Input in = GWTIO.newInput(new TestSerializer(), BASIC_TYPES_INPUT_PAYLOAD);
+        final String PAYLOAD =
+            "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
+            "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
+            "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
+
+        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
         assertEquals(true, in.readBoolean());
         assertEquals(false, in.readBoolean());
         assertEquals(Byte.MIN_VALUE, in.readByte());
@@ -60,7 +71,6 @@ public class GWTIOTest extends GWTTestCase
     {
         StringBuffer buf = new StringBuffer();
         Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
-        // note: additions to this test should be mirrored in ServerInputTest in nexus-server
         out.writeBoolean(true);
         out.writeBoolean(false);
         out.writeByte(Byte.MIN_VALUE);
@@ -87,16 +97,62 @@ public class GWTIOTest extends GWTTestCase
         out.writeString(null);
         out.writeString("The quick brown fox jumped over the lazy dog.");
         // System.out.println(buf); // for regeneration
-        assertEquals(BASIC_TYPES_OUTPUT_PAYLOAD, buf.toString());
+
+        final String PAYLOAD =
+            "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
+            "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
+            "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
+        assertEquals(PAYLOAD, buf.toString());
     }
 
-    protected static final String BASIC_TYPES_INPUT_PAYLOAD =
-        "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
-        "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
-        "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
+    @Test
+    public void testValueInput ()
+    {
+        final String PAYLOAD = "[13,\"foo\",14,42,13,\"bar\",14,21,13,\"baz\",14,7]";
+        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
+        for (Widget w : WS) {
+            assertEquals(w, in.<Widget>readValue());
+        }
+    }
 
-    protected static final String BASIC_TYPES_OUTPUT_PAYLOAD =
-        "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
-        "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
-        "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
+    @Test
+    public void testValueOutput ()
+    {
+        StringBuffer buf = new StringBuffer();
+        Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
+        for (Widget w : WS) {
+            out.writeValue(w);
+        }
+        // System.out.println(buf);
+
+        final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+        assertEquals(PAYLOAD, buf.toString());
+    }
+
+    @Test
+    public void testValuesInput ()
+    {
+        final String PAYLOAD = "[3,13,\"foo\",14,42,\"bar\",14,21,\"baz\",14,7]";
+        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
+        List<Widget> into = new ArrayList<Widget>();
+        in.<Widget>readValues(into);
+        assertEquals(WS, into);
+    }
+
+    @Test
+    public void testValuesOutput ()
+    {
+        StringBuffer buf = new StringBuffer();
+        Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
+        out.writeValues(WS.size(), WS.iterator());
+        // System.out.println(buf);
+
+        final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+        assertEquals(PAYLOAD, buf.toString());
+    }
+
+    protected static final List<Widget> WS = Arrays.asList(
+        new Widget("foo", new Widget.Wangle(42)),
+        new Widget("bar", new Widget.Wangle(21)),
+        new Widget("baz", new Widget.Wangle(7)));
 }

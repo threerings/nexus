@@ -6,6 +6,10 @@
 
 package com.samskivert.nexus.io;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.*;
 import static org.junit.Assert.*;
 
@@ -17,7 +21,11 @@ public class ServerInputTest
     @Test
     public void testBasicTypes ()
     {
-        Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), BASIC_TYPES_PAYLOAD);
+        final String PAYLOAD =
+            "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
+            "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
+            "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
+        Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         assertEquals(true, in.readBoolean());
         assertEquals(false, in.readBoolean());
         assertEquals(Byte.MIN_VALUE, in.readByte());
@@ -45,8 +53,28 @@ public class ServerInputTest
         assertEquals("The quick brown fox jumped over the lazy dog.", in.readString());
     }
 
-    protected static final String BASIC_TYPES_PAYLOAD =
-        "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
-        "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
-        "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
+    @Test
+    public void testValueInput ()
+    {
+        final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+        Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
+        for (Widget w : WS) {
+            assertEquals(w, in.<Widget>readValue());
+        }
+    }
+
+    @Test
+    public void testValuesInput ()
+    {
+        final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+        Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
+        List<Widget> into = new ArrayList<Widget>();
+        in.<Widget>readValues(into);
+        assertEquals(WS, into);
+    }
+
+    protected static final List<Widget> WS = Arrays.asList(
+        new Widget("foo", new Widget.Wangle(42)),
+        new Widget("bar", new Widget.Wangle(21)),
+        new Widget("baz", new Widget.Wangle(7)));
 }

@@ -46,11 +46,37 @@ public class ServerOutputTest
         out.writeString(null);
         out.writeString("The quick brown fox jumped over the lazy dog.");
         // System.out.println(buf.getPayload()); // for regeneration
-        assertEquals(BASIC_TYPES_PAYLOAD, buf.getPayload());
+
+        final String PAYLOAD =
+            "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
+            "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
+            "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
+        assertEquals(PAYLOAD, buf.getPayload());
     }
 
-    protected static final String BASIC_TYPES_PAYLOAD =
-        "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
-        "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
-        "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
+    @Test
+    public void testValueOutput ()
+    {
+        GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
+        Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
+        for (Widget w : ServerInputTest.WS) {
+            out.writeValue(w);
+        }
+        // System.out.println(buf.getPayload());
+
+        final String PAYLOAD = "[13,\"foo\",14,42,13,\"bar\",14,21,13,\"baz\",14,7]";
+        assertEquals(PAYLOAD, buf.getPayload());
+    }
+
+    @Test
+    public void testValuesOutput ()
+    {
+        GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
+        Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
+        out.writeValues(ServerInputTest.WS.size(), ServerInputTest.WS.iterator());
+        // System.out.println(buf.getPayload());
+
+        final String PAYLOAD = "[3,13,\"foo\",14,42,\"bar\",14,21,\"baz\",14,7]";
+        assertEquals(PAYLOAD, buf.getPayload());
+    }
 }
