@@ -10,7 +10,7 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
- * Tests the client output and server input pair.
+ * Tests the client output and server input pair (in conjunction with ClientOutputTest in gwt-io).
  */
 public class ServerInputTest
 {
