@@ -21,10 +21,6 @@ import com.samskivert.nexus.distrib.Action;
 import com.samskivert.nexus.distrib.NexusEvent;
 import com.samskivert.nexus.distrib.NexusException;
 import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.io.ByteBufferInputStream;
-import com.samskivert.nexus.io.FramingOutputStream;
-import com.samskivert.nexus.io.JVMIO;
-import com.samskivert.nexus.io.Streamable;
 import com.samskivert.nexus.net.Downstream;
 import com.samskivert.nexus.net.Upstream;
 import com.samskivert.nexus.util.Callback;
@@ -94,15 +90,9 @@ public class Session
     }
 
     // from interface SessionManager.Input
-    public void onMessage (ByteBuffer data)
+    public void onMessage (Upstream msg)
     {
-        try {
-            _bin.setBuffer(data);
-            Upstream msg = _sin.<Upstream>readValue();
-            msg.dispatch(this);
-        } catch (Throwable t) {
-            log.warning("Failure decoding incoming message", "session", this, t);
-        }
+        msg.dispatch(this);
     }
 
     // from interface SessionManager.Input
@@ -219,24 +209,13 @@ public class Session
      */
     protected synchronized void sendMessage (Downstream msg)
     {
-        // we may be called from many threads, so serialize access to the output streams
-        synchronized (_sout) {
-            _fout.prepareFrame();
-            _sout.writeValue(msg);
-            _output.send(_fout.frameAndReturnBuffer());
-        }
+        _output.send(msg);
     }
 
     protected final SessionManager _smgr;
     protected final ObjectManager _omgr;
     protected final String _ipaddress;
     protected final SessionManager.Output _output;
-
-    // these are used for message I/O
-    protected final ByteBufferInputStream _bin = new ByteBufferInputStream();
-    protected final Streamable.Input _sin = JVMIO.newInput(_bin);
-    protected final FramingOutputStream _fout = new FramingOutputStream();
-    protected final Streamable.Output _sout = JVMIO.newOutput(_fout);
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = Sets.newHashSet();

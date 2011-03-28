@@ -13,6 +13,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import com.samskivert.nexus.net.Downstream;
+import com.samskivert.nexus.net.Upstream;
+
 /**
  * Manages active client sessions. Actual communication is handled by external entities so that
  * raw-socket, WebSocket, and potentially other session types can be simultaneously supported.
@@ -24,9 +27,9 @@ public class SessionManager
      */
     public interface Input {
         /**
-         * Called when a message frame is received from the client.
+         * Called when a message is received from the client.
          */
-        void onMessage (ByteBuffer data);
+        void onMessage (Upstream msg);
 
         /**
          * Called when a request to send to the client has failed. This will result in the session
@@ -54,12 +57,9 @@ public class SessionManager
      */
     public interface Output {
         /**
-         * Requests that supplied message be sent to the client. The buffer must be either
-         * immediately written in full, or copied if the output handler may need to reference the
-         * buffer data in the future. The sender reserves the write to overwrite the buffer
-         * immediately following this call.
+         * Requests that supplied message be sent to the client.
          */
-        void send (ByteBuffer buffer);
+        void send (Downstream msg);
 
         /**
          * Requests that the client connection be closed. This may be called following receipt of a
