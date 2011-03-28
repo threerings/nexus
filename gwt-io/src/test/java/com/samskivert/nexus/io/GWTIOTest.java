@@ -17,9 +17,9 @@ import static org.junit.Assert.*;
 
 /**
  * Tests the client input and server output pair (in conjunction with ServerOutputTest in
- * nexus-server), and the client output and server input pair (in conjunction with ServerInputTest
- * in nexus-server). These are combined into one test to mitigate the massive 15-20 second overhead
- * of running a GWT test (yay!).
+ * gwt-server), and the client output and server input pair (in conjunction with ServerInputTest in
+ * gwt-server). These are combined into one test to mitigate the massive 15-20 second overhead of
+ * running a GWT test (yay!).
  */
 public class GWTIOTest extends GWTTestCase
 {
@@ -28,7 +28,7 @@ public class GWTIOTest extends GWTTestCase
         return "com.samskivert.nexus.GWTIO";
     }
 
-    // NOTE: changes to these tests should be mirrored in Server{Input|Output}Test in nexus-server
+    // NOTE: changes to these tests should be mirrored in Server{Input|Output}Test in gwt-server
 
     @Test
     public void testBasicTypesInput ()

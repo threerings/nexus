@@ -11,7 +11,7 @@ import com.samskivert.nexus.distrib.NexusService;
 /**
  * Provides {@link Streamable#Input} and {@link Streamable#Output} using precomputed class
  * mappings, and writes data to and from UTF8 strings. Note that this protocol is assymetric and
- * the corresponding server reader and writer are in the nexus-server project (to allow the server
+ * the corresponding server reader and writer are in the gwt-server project (to allow the server
  * code to make use of the full range of JDK libraries).
  */
 public class GWTIO
