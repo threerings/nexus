@@ -15,7 +15,13 @@ import java.nio.channels.SocketChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import com.samskivert.nexus.io.ByteBufferInputStream;
 import com.samskivert.nexus.io.FrameReader;
+import com.samskivert.nexus.io.FramingOutputStream;
+import com.samskivert.nexus.io.JVMIO;
+import com.samskivert.nexus.io.Streamable;
+import com.samskivert.nexus.net.Downstream;
+import com.samskivert.nexus.net.Upstream;
 
 import static com.samskivert.nexus.util.Log.log;
 
@@ -70,8 +76,14 @@ public class JVMServerConnection
     }
     
     // from interface SessionManager.Output
-    public void send (ByteBuffer buffer)
+    public synchronized void send (Downstream msg)
     {
+        // we may be called from many threads, this method is serialized to avoid conflicting
+        // accesses to the output streams
+        _fout.prepareFrame();
+        _sout.writeValue(msg);
+        ByteBuffer buffer = _fout.frameAndReturnBuffer();
+
         // as we do not control the supplied buffer, and we may not be able to write it fully to
         // the outgoing socket, we have to copy it; we could also take this opportunity to copy it
         // into a direct buffer, which may improve I/O performance; someday perhaps we'll measure
@@ -98,7 +110,12 @@ public class JVMServerConnection
             // keep reading and processing frames while we have them
             ByteBuffer frame;
             while ((frame = _reader.readFrame(_chan)) != null) {
-                _input.onMessage(frame);
+                try {
+                    _bin.setBuffer(frame);
+                    _input.onMessage(_sin.<Upstream>readValue());
+                } catch (Throwable t) {
+                    log.warning("Failure decoding incoming message", "chan", _chan, t);
+                }
             }
 
         } catch (EOFException eofe) {
@@ -123,10 +140,16 @@ public class JVMServerConnection
         _chan = null;
     }
 
-    protected JVMConnectionManager _cmgr;
+    protected final JVMConnectionManager _cmgr;
     protected SocketChannel _chan;
     protected SessionManager.Input _input;
 
-    protected FrameReader _reader = new FrameReader();
-    protected Queue<ByteBuffer> _outq = new ConcurrentLinkedQueue<ByteBuffer>();
+    // these are used for message I/O
+    protected final ByteBufferInputStream _bin = new ByteBufferInputStream();
+    protected final Streamable.Input _sin = JVMIO.newInput(_bin);
+    protected final FramingOutputStream _fout = new FramingOutputStream();
+    protected final Streamable.Output _sout = JVMIO.newOutput(_fout);
+
+    protected final FrameReader _reader = new FrameReader();
+    protected final Queue<ByteBuffer> _outq = new ConcurrentLinkedQueue<ByteBuffer>();
 }
