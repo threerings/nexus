@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project name="nexus" default="maven-deploy" xmlns:artifact="urn:maven-artifact-ant">
+  <!-- hey Ant, how do I iterate over a list in a way that doesn't require an extension? -->
+  <target name="clean">
+    <ant dir="core" target="clean"/>
+    <ant dir="test-support" target="clean"/>
+    <ant dir="server" target="clean"/>
+    <ant dir="jvm-io" target="clean"/>
+    <ant dir="jvm-server" target="clean"/>
+    <ant dir="gwt-io" target="clean"/>
+    <ant dir="gwt-server" target="clean"/>
+  </target>
+
+  <target name="maven-deploy">
+    <ant dir="core" target="maven-deploy"/>
+    <ant dir="test-support" target="maven-deploy"/>
+    <ant dir="server" target="maven-deploy"/>
+    <ant dir="jvm-io" target="maven-deploy"/>
+    <ant dir="jvm-server" target="maven-deploy"/>
+    <ant dir="gwt-io" target="maven-deploy"/>
+    <ant dir="gwt-server" target="maven-deploy"/>
+  </target>
+</project>
