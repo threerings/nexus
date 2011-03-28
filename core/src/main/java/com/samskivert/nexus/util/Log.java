@@ -25,6 +25,9 @@ public class Log
 
         /** Implementation detail that's easier to expose here; please ignore. */
         void log (Object level, String message, Throwable cause);
+
+        /** Disables info logging, shows only warnings and above. */
+        void setWarnOnly ();
     }
 
     // TODO: some secret static initialization that wires up either a Java logger or GWT depending
@@ -74,6 +77,10 @@ public class Log
 
         public void log (Object level, String message, Throwable cause) {
             _impl.log((java.util.logging.Level)level, message, cause);
+        }
+
+        public void setWarnOnly () {
+            _impl.setLevel(java.util.logging.Level.WARNING);
         }
 
         protected final java.util.logging.Logger _impl;
