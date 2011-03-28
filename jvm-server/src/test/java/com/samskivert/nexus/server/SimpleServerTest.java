@@ -17,12 +17,18 @@ import com.samskivert.nexus.distrib.TestObject;
 
 import org.junit.*;
 import static org.junit.Assert.*;
+import static com.samskivert.nexus.util.Log.log;
 
 /**
  * Tests basic Nexus server functionality.
  */
 public class SimpleServerTest
 {
+    @Before
+    public void suppressLogging () {
+        log.setWarnOnly();
+    }
+
     @Test
     public void testStartupShutdown ()
     {

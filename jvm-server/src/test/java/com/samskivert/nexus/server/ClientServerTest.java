@@ -22,6 +22,7 @@ import com.samskivert.nexus.util.Callback;
 
 import org.junit.*;
 import static org.junit.Assert.*;
+import static com.samskivert.nexus.util.Log.log;
 
 /**
  * Tests simple client server communication.
@@ -62,6 +63,11 @@ public class ClientServerTest
         protected NexusClient _client;
         protected TestObject _test;
         protected CountDownLatch _latch = new CountDownLatch(1);
+    }
+
+    @Before
+    public void suppressLogging () {
+        log.setWarnOnly();
     }
 
     @Test
