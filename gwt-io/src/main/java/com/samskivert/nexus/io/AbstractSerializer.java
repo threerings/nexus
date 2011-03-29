@@ -90,12 +90,12 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         return (Streamer<T>)_streamers.get(code);
     }
 
-    protected void mapStreamer (Streamer<?> streamer, Class<?> clazz)
+    protected void mapStreamer (Streamer<?> streamer)
     {
         short code = (short)++_nextCode;
-        _classes.put(code, clazz);
+        _classes.put(code, streamer.getObjectClass());
         _streamers.put(code, streamer);
-        _codes.put(clazz, code);
+        _codes.put(streamer.getObjectClass(), code);
     }
 
     protected void mapService (ServiceFactory<?> factory, Class<? extends NexusService> clazz)
@@ -108,21 +108,39 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
     protected AbstractSerializer ()
     {
         // map the streamers for our basic types
-        mapStreamer(new Streamers.Streamer_Null(), Void.class);
-        mapStreamer(new Streamers.Streamer_Boolean(), Boolean.class);
-        mapStreamer(new Streamers.Streamer_Byte(), Byte.class);
-        mapStreamer(new Streamers.Streamer_Character(), Character.class);
-        mapStreamer(new Streamers.Streamer_Short(), Short.class);
-        mapStreamer(new Streamers.Streamer_Integer(), Integer.class);
-        mapStreamer(new Streamers.Streamer_Long(), Long.class);
-        mapStreamer(new Streamers.Streamer_Float(), Float.class);
-        mapStreamer(new Streamers.Streamer_Double(), Double.class);
-        mapStreamer(new Streamers.Streamer_String(), String.class);
+        mapStreamer(new Streamers.Streamer_Null());
+        mapStreamer(new Streamers.Streamer_Boolean());
+        mapStreamer(new Streamers.Streamer_Byte());
+        mapStreamer(new Streamers.Streamer_Character());
+        mapStreamer(new Streamers.Streamer_Short());
+        mapStreamer(new Streamers.Streamer_Integer());
+        mapStreamer(new Streamers.Streamer_Long());
+        mapStreamer(new Streamers.Streamer_Float());
+        mapStreamer(new Streamers.Streamer_Double());
+        mapStreamer(new Streamers.Streamer_String());
         // fast path for common implementations; a slow path will catch all other types with a
         // series of instanceof checks
-        mapStreamer(new Streamers.Streamer_List(), ArrayList.class);
-        mapStreamer(new Streamers.Streamer_Set(), HashSet.class);
-        mapStreamer(new Streamers.Streamer_Map(), HashMap.class);
+        mapStreamer(new Streamers.Streamer_List());
+        mapStreamer(new Streamers.Streamer_Set());
+        mapStreamer(new Streamers.Streamer_Map());
+
+        // TEMP: map the core streamables manually while we lack a code generator
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_Address.OfKeyed());
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_Address.OfSingleton());
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_Address.OfAnonymous());
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_DMap.PutEvent());
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_DMap.RemovedEvent());
+        mapStreamer(new com.samskivert.nexus.distrib.Streamer_DValue.ChangedEvent());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Downstream.Subscribe());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Downstream.SubscribeFailure());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Downstream.DispatchEvent());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Downstream.ServiceResponse());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Downstream.ServiceFailure());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Upstream.Subscribe());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Upstream.Unsubscribe());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Upstream.PostEvent());
+        mapStreamer(new com.samskivert.nexus.net.Streamer_Upstream.ServiceCall());
+        // END TEMP
     }
 
     protected static <T> T nonNull (T value, String errmsg, Object data)
