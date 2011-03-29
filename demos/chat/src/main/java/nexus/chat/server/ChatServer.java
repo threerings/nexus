@@ -3,6 +3,7 @@
 
 package nexus.chat.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,7 @@ public class ChatServer
         // set up a Jetty instance and our GWTIO servlet
         final GWTConnectionManager gwtmgr = new GWTConnectionManager(
             server.getSessionManager(), new ChatSerializer(), config.publicHostname, 6502);
+        gwtmgr.setDocRoot(new File("dist/webapp"));
         gwtmgr.start();
     }
 }

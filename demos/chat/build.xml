@@ -35,4 +35,22 @@
       <arg value="nexus.chat.Chat"/>
     </java>
   </target>
+
+  <target name="gclient" depends="-prep-webapp,compile" description="Compiles GWT client.">
+    <java fork="true" maxmemory="1024M" failonerror="true" classname="com.google.gwt.dev.Compiler">
+      <classpath>
+        <pathelement path="../../core/${src.dir}"/>
+        <pathelement path="../../gwt-io/${src.dir}"/>
+        <pathelement path="${src.dir}"/>
+        <pathelement location="${classes.dir}"/>
+        <path refid="classpath"/>
+      </classpath>
+      <jvmarg value="-Djava.awt.headless=true"/>
+      <!--<arg value="-style"/><arg value="pretty"/>-->
+      <!--<arg value="-gen"/><arg value="${deploy.dir}/gwt-gen"/>-->
+      <arg value="-war"/>
+      <arg value="${deploy.dir}/webapp"/>
+      <arg value="nexus.chat.Chat"/>
+    </java>
+  </target>
 </project>
