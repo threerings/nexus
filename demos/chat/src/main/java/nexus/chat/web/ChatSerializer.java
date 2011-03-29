@@ -22,9 +22,9 @@ public class ChatSerializer extends AbstractSerializer
 {
     public ChatSerializer ()
     {
-        mapStreamer(new Streamer_ChatObject(), ChatObject.class);
-        mapStreamer(new Streamer_RoomObject(), RoomObject.class);
-        mapStreamer(new Streamer_RoomObject.ChatEvent(), RoomObject.ChatEvent.class);
+        mapStreamer(new Streamer_ChatObject());
+        mapStreamer(new Streamer_RoomObject());
+        mapStreamer(new Streamer_RoomObject.ChatEvent());
         mapService(new Factory_ChatService(), ChatService.class);
         mapService(new Factory_RoomService(), RoomService.class);
     }
