@@ -6,10 +6,13 @@
 
 package com.samskivert.nexus.client;
 
+import com.google.gwt.core.client.GWT;
+
 import com.samskivert.nexus.io.GWTIO;
 import com.samskivert.nexus.net.Connection;
 import com.samskivert.nexus.net.GWTConnection;
 import com.samskivert.nexus.util.Callback;
+import com.samskivert.nexus.util.Log;
 
 /**
  * Provides a Nexus client using WebSockets and GWT-based I/O.
@@ -23,6 +26,7 @@ public class GWTClient extends NexusClient
      */
     public static NexusClient create (int port, GWTIO.Serializer szer)
     {
+        Log.log = GWT_LOGGER; // configure the logger to use GWT
         return new GWTClient(port, szer);
     }
 
@@ -39,4 +43,22 @@ public class GWTClient extends NexusClient
 
     protected int _port;
     protected GWTIO.Serializer _szer;
+
+    protected static final Log.Logger GWT_LOGGER = new Log.Logger() {
+        public void info (String message, Object... args) {
+            if (!_warnOnly) {
+                format(null, message, args);
+            }
+        }
+        public void warning (String message, Object... args) {
+            format(null, message, args);
+        }
+        public void log (Object level, String message, Throwable cause) {
+            GWT.log(message, cause);
+        }
+        public void setWarnOnly () {
+            _warnOnly = true;
+        }
+        protected boolean _warnOnly;
+    };
 }
