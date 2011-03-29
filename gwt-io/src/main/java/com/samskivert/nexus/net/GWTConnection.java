@@ -88,26 +88,23 @@ public class GWTConnection extends Connection
                  "WebSocket not supported by this browser.");
             return;
         }
-        this._ws = new $wnd.WebSocket(url);
 
         var conn = this;
-        this._ws.onopen = function (event) {
-            conn.@com.samskivert.nexus.net.GWTConnection::onOpen(Lcom/google/gwt/core/client/JavaScriptObject;)(conn._ws);
+        var ws = new $wnd.WebSocket(url);
+        ws.onopen = function (event) {
+            conn.@com.samskivert.nexus.net.GWTConnection::onOpen(Lcom/google/gwt/core/client/JavaScriptObject;)(ws);
         };
-
-        this._ws.onmessage = function (event) {
+        ws.onmessage = function (event) {
             if (event.data) {
                 conn.@com.samskivert.nexus.net.GWTConnection::onMessage(Ljava/lang/String;)(
                     event.data);
             }
         };
-
-        this._ws.onerror = function (event) {
+        ws.onerror = function (event) {
              conn.@com.samskivert.nexus.net.GWTConnection::onError(Ljava/lang/String;)(
                  "TODO");
         };
-
-        this._ws.onclose = function (event) {
+        ws.onclose = function (event) {
              conn.@com.samskivert.nexus.net.GWTConnection::onClose()();
         };
     }-*/;
