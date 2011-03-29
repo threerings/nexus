@@ -56,7 +56,8 @@ public class ServerInputTest
     @Test
     public void testValueInput ()
     {
-        final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+        // final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+        final String PAYLOAD = "28|1|foo|29|42|28|1|bar|29|21|28|1|baz|29|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         for (Widget w : WS) {
             assertEquals(w, in.<Widget>readValue());
@@ -66,7 +67,8 @@ public class ServerInputTest
     @Test
     public void testValuesInput ()
     {
-        final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+        // final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+        final String PAYLOAD = "3|28|1|foo|29|42|1|bar|29|21|1|baz|29|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         List<Widget> into = new ArrayList<Widget>();
         in.<Widget>readValues(into);
