@@ -14,6 +14,11 @@ import com.samskivert.nexus.io.Streamer;
  */
 public class Streamer_TestObject implements Streamer<TestObject>
 {
+    public Class<?> getObjectClass ()
+    {
+        return TestObject.class;
+    }
+
     public void writeObject (Streamable.Output out, TestObject obj)
     {
         out.writeService(TestService.class);

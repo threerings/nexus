@@ -11,6 +11,11 @@ package com.samskivert.nexus.io;
  */
 public class Streamer_Widget implements Streamer<Widget>
 {
+    public Class<?> getObjectClass ()
+    {
+        return Widget.class;
+    }
+
     public void writeObject (Streamable.Output out, Widget obj)
     {
         out.writeString(obj.name);
@@ -22,14 +27,15 @@ public class Streamer_Widget implements Streamer<Widget>
         return new Widget(in.readString(), in.<Widget.Wangle>readValue());
     }
 
-    public static class Wangle implements Streamer<Widget.Wangle> {
-        public void writeObject (Streamable.Output out, Widget.Wangle obj)
-        {
+    public static class Wangle implements Streamer<Widget.Wangle>
+    {
+        public Class<?> getObjectClass () {
+            return Widget.Wangle.class;
+        }
+        public void writeObject (Streamable.Output out, Widget.Wangle obj) {
             out.writeInt(obj.size);
         }
-
-        public Widget.Wangle readObject (Streamable.Input in)
-        {
+        public Widget.Wangle readObject (Streamable.Input in) {
             return new Widget.Wangle(in.readInt());
         }
     }
