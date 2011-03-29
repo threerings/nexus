@@ -108,7 +108,8 @@ public class GWTIOTest extends GWTTestCase
     @Test
     public void testValueInput ()
     {
-        final String PAYLOAD = "[13,\"foo\",14,42,13,\"bar\",14,21,13,\"baz\",14,7]";
+//         final String PAYLOAD = "[13,\"foo\",14,42,13,\"bar\",14,21,13,\"baz\",14,7]";
+        final String PAYLOAD = "[28,\"foo\",29,42,28,\"bar\",29,21,28,\"baz\",29,7]";
         Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
         for (Widget w : WS) {
             assertEquals(w, in.<Widget>readValue());
@@ -125,14 +126,16 @@ public class GWTIOTest extends GWTTestCase
         }
         // System.out.println(buf);
 
-        final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+//        final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
+        final String PAYLOAD = "28|1|foo|29|42|28|1|bar|29|21|28|1|baz|29|7|";
         assertEquals(PAYLOAD, buf.toString());
     }
 
     @Test
     public void testValuesInput ()
     {
-        final String PAYLOAD = "[3,13,\"foo\",14,42,\"bar\",14,21,\"baz\",14,7]";
+//         final String PAYLOAD = "[3,13,\"foo\",14,42,\"bar\",14,21,\"baz\",14,7]";
+        final String PAYLOAD = "[3,28,\"foo\",29,42,\"bar\",29,21,\"baz\",29,7]";
         Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
         List<Widget> into = new ArrayList<Widget>();
         in.<Widget>readValues(into);
@@ -147,7 +150,8 @@ public class GWTIOTest extends GWTTestCase
         out.writeValues(WS.size(), WS.iterator());
         // System.out.println(buf);
 
-        final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+//        final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
+        final String PAYLOAD = "3|28|1|foo|29|42|1|bar|29|21|1|baz|29|7|";
         assertEquals(PAYLOAD, buf.toString());
     }
 
