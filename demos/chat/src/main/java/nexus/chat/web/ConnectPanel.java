@@ -5,6 +5,7 @@ package nexus.chat.web;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
@@ -42,7 +43,7 @@ public class ConnectPanel extends FlowPanel
         connect.addClickHandler(onConnect);
 
         // try connecting to localhost straight away
-        address.setText("localhost");
+        address.setText(Window.Location.getHostName());
         onConnect.onClick(null);
     }
 
