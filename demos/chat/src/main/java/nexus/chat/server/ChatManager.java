@@ -24,6 +24,7 @@ import nexus.chat.distrib.Factory_ChatService;
 import nexus.chat.distrib.RoomObject;
 
 import static com.samskivert.nexus.distrib.NexusException.require;
+import static com.samskivert.nexus.util.Log.log;
 
 /**
  * Manages the global chat services.
@@ -92,6 +93,7 @@ public class ChatManager implements ChatService, Singleton
     {
         Chatter chatter = SessionLocal.get(Chatter.class);
         if (chatter == null) {
+            log.info("New chatter " + SessionLocal.getSession().getIPAddress());
             String nickname = "{anonymous@" + SessionLocal.getSession().getIPAddress() + "}";
             SessionLocal.set(Chatter.class, chatter = new Chatter(_nexus, nickname));
 
