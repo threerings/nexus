@@ -1,0 +1,39 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+             xmlns:g="urn:import:com.google.gwt.user.client.ui"
+             ui:generateFormat="com.google.gwt.i18n.rebind.format.PropertiesFormat"
+             ui:generateKeys="com.google.gwt.i18n.rebind.keygen.MD5KeyGenerator"
+             ui:generateLocales="default">
+  <ui:style type="nexus.chat.web.ChatPanel.Styles" field="_styles">
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    .inline {
+      display: inline;
+    }
+    .chat {
+      padding: 5px;
+      height: 400px;
+      border: 1px solid;
+      overflow-y: auto;
+    }
+  </ui:style>
+
+  <g:HTMLPanel>
+    <table cellpadding="0" cellspacing="5">
+    <tr><td><g:Label styleName="{_styles.inline}"><ui:msg>Nickname:</ui:msg></g:Label>
+            <g:TextBox ui:field="_nickname" visibleLength="20"/>
+            <g:Button ui:field="_upnick"><ui:msg>Update</ui:msg></g:Button></td>
+        <td><g:Label styleName="{_styles.inline}"><ui:msg>Create room:</ui:msg></g:Label>
+            <g:TextBox ui:field="_newroom" visibleLength="20"/>
+            <g:Button ui:field="_crroom"><ui:msg>Create</ui:msg></g:Button></td></tr>
+    <tr><td colspan="2"><g:Label styleName="{_styles.inline}"><ui:msg>Rooms:</ui:msg></g:Label>
+            <g:FlowPanel styleName="{_styles.inline}" ui:field="_rooms"/></td></tr>
+    </table>
+
+    <g:FlowPanel styleName="{_styles.chat}" ui:field="_chat"/>
+    <g:Label styleName="{_styles.inline}"><ui:msg>Chat here:</ui:msg></g:Label>
+    <g:TextBox ui:field="_entry" visibleLength="60"/>
+    <g:Button ui:field="_send"><ui:msg>Send</ui:msg></g:Button>
+  </g:HTMLPanel>
+</ui:UiBinder>

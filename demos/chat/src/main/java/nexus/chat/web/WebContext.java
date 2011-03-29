@@ -3,7 +3,7 @@
 
 package nexus.chat.web;
 
-import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.samskivert.nexus.client.NexusClient;
 
@@ -18,7 +18,7 @@ public interface WebContext
     NexusClient getClient ();
 
     /**
-     * Makes the supplied panel the main display.
+     * Makes the supplied widget the main display.
      */
-    void setMainPanel (Panel panel);
+    void setMainPanel (Widget panel);
 }

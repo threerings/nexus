@@ -4,8 +4,8 @@
 package nexus.chat.web;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.samskivert.nexus.client.GWTClient;
 import com.samskivert.nexus.client.NexusClient;
@@ -22,14 +22,14 @@ public class ChatEntryPoint implements EntryPoint
             public NexusClient getClient () {
                 return _client;
             }
-            public void setMainPanel (Panel panel) {
+            public void setMainPanel (Widget main) {
                 if (_main != null) {
                     RootPanel.get(CLIENT_DIV).remove(_main);
                 }
-                RootPanel.get(CLIENT_DIV).add(_main = panel);
+                RootPanel.get(CLIENT_DIV).add(_main = main);
             }
             protected NexusClient _client = GWTClient.create(6502, new ChatSerializer());
-            protected Panel _main;
+            protected Widget _main;
         };
         ctx.setMainPanel(new ConnectPanel(ctx));
     }
