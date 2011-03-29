@@ -53,11 +53,13 @@ public class GWTIOJettyServlet extends WebSocketServlet
 
         // from interface WebSocket
         public void onConnect (Outbound outbound) {
+            _outbound = outbound;
             _input = _smgr.createSession(_ipaddress, this);
         }
 
         // from interface WebSocket
         public void onMessage (byte frame, byte[] data, int offset, int length) {
+            log.info("Got binary message " + frame);
             // TODO: is this really supported?
         }
 
@@ -77,6 +79,7 @@ public class GWTIOJettyServlet extends WebSocketServlet
 
         // from interface WebSocket
         public void onFragment (boolean more, byte opcode, byte[] data, int offset, int length) {
+            log.info("Got fragment " + more + "/" + opcode);
             // nada
         }
 
