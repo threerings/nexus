@@ -11,6 +11,11 @@ import com.samskivert.nexus.io.Streamer;
  */
 public class Streamer_ChatObject implements Streamer<ChatObject>
 {
+    public Class<?> getObjectClass ()
+    {
+        return ChatObject.class;
+    }
+
     public void writeObject (Streamable.Output out, ChatObject obj)
     {
         out.writeService(ChatService.class);

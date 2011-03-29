@@ -11,6 +11,11 @@ import com.samskivert.nexus.io.Streamer;
  */
 public class Streamer_RoomObject implements Streamer<RoomObject>
 {
+    public Class<?> getObjectClass ()
+    {
+        return RoomObject.class;
+    }
+
     public void writeObject (Streamable.Output out, RoomObject obj)
     {
         out.writeString(obj.name);
@@ -27,6 +32,9 @@ public class Streamer_RoomObject implements Streamer<RoomObject>
 
     /** Handles the streaming of {@link RoomObject.ChatEvent} instances. */
     public static class ChatEvent implements Streamer<RoomObject.ChatEvent> {
+        public Class<?> getObjectClass () {
+            return RoomObject.ChatEvent.class;
+        }
         public void writeObject (Streamable.Output out, RoomObject.ChatEvent obj) {
             out.writeInt(obj.targetId);
             out.writeShort(obj.index);
