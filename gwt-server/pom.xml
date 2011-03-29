@@ -60,8 +60,13 @@
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>8.0.0.M2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-websocket</artifactId>
-      <version>7.3.1.v20110307</version>
+      <version>8.0.0.M2</version>
     </dependency>
     <dependency>
       <groupId>com.google.gwt</groupId>
