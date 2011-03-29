@@ -3,6 +3,7 @@
 
 package com.samskivert.nexus.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
@@ -10,8 +11,11 @@ import org.eclipse.jetty.http.HttpException;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.nio.SelectChannelEndPoint;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConnection;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -39,17 +43,23 @@ public class GWTConnectionManager
             new SaneChannelConnector(hostname, port)
         });
 
-//         // this will magically cause addHandler() to work and dispatch to our contexts
-//         _jetty.setHandler(new ContextHandlerCollection());
+        ServletContextHandler shandler = new ServletContextHandler();
+        shandler.setContextPath("/");
+        shandler.addServlet(new ServletHolder(new GWTIOJettyServlet(smgr, szer)),
+                            "/" + GWTConnection.WS_PATH);
 
-        ServletContextHandler context = new ServletContextHandler();
-        context.setContextPath("/");
-        GWTIOJettyServlet servlet = new GWTIOJettyServlet(smgr, szer);
-        context.addServlet(new ServletHolder(servlet), "/" + GWTConnection.WS_PATH);
+        _rhandler = new ResourceHandler();
+        _rhandler.setResourceBase("disabled");
+        _rhandler.setWelcomeFiles(new String[] { "index.html" });
 
-        // context.setResourceBase(new File(_config.getAppRoot(), "samsara").getPath());
-        // context.setWelcomeFiles(new String[] { "index.html" });
-        _jetty.setHandler(context);
+        HandlerList handlers = new HandlerList();
+        handlers.setHandlers(new Handler[] { _rhandler, shandler });
+        _jetty.setHandler(handlers);
+    }
+
+    public void setDocRoot (File docroot)
+    {
+        _rhandler.setResourceBase(docroot.getAbsolutePath());
     }
 
     public void start ()
@@ -101,4 +111,5 @@ public class GWTConnectionManager
     }
 
     protected Server _jetty;
+    protected ResourceHandler _rhandler;
 }
