@@ -10,9 +10,12 @@ import java.util.concurrent.Executors;
 
 import com.samskivert.util.OneLineLogFormatter;
 
+import com.samskivert.nexus.server.GWTConnectionManager;
 import com.samskivert.nexus.server.JVMConnectionManager;
 import com.samskivert.nexus.server.NexusConfig;
 import com.samskivert.nexus.server.NexusServer;
+
+import nexus.chat.web.ChatSerializer;
 
 /**
  * Operates the chat server.
@@ -39,8 +42,13 @@ public class ChatServer
         new ChatManager(server);
 
         // set up a connection manager and listen on a port
-        final JVMConnectionManager conmgr = new JVMConnectionManager(server.getSessionManager());
-        conmgr.listen(config.publicHostname, 1234);
-        conmgr.start();
+        final JVMConnectionManager jvmmgr = new JVMConnectionManager(server.getSessionManager());
+        jvmmgr.listen(config.publicHostname, 1234);
+        jvmmgr.start();
+
+        // set up a Jetty instance and our GWTIO servlet
+        final GWTConnectionManager gwtmgr = new GWTConnectionManager(
+            server.getSessionManager(), new ChatSerializer(), config.publicHostname, 6502);
+        gwtmgr.start();
     }
 }

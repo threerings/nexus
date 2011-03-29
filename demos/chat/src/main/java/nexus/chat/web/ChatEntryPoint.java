@@ -28,7 +28,7 @@ public class ChatEntryPoint implements EntryPoint
                 }
                 RootPanel.get(CLIENT_DIV).add(_main = panel);
             }
-            protected NexusClient _client = GWTClient.create(new ChatSerializer());
+            protected NexusClient _client = GWTClient.create(6502, new ChatSerializer());
             protected Panel _main;
         };
         ctx.setMainPanel(new ConnectPanel(ctx));
