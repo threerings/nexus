@@ -23,6 +23,9 @@ public class Streamers
 {
     /** A streamer for null instances. */
     public static class Streamer_Null implements Streamer<Void> {
+        public Class<?> getObjectClass () {
+            return Void.class;
+        }
         public void writeObject (Streamable.Output out, Void value) {
             // nothing need be written
         }
@@ -33,6 +36,9 @@ public class Streamers
 
     /** A streamer for {@link Boolean}. */
     public static class Streamer_Boolean implements Streamer<Boolean> {
+        public Class<?> getObjectClass () {
+            return Boolean.class;
+        }
         public void writeObject (Streamable.Output out, Boolean value) {
             out.writeBoolean(value);
         }
@@ -43,6 +49,9 @@ public class Streamers
 
     /** A streamer for {@link Byte}. */
     public static class Streamer_Byte implements Streamer<Byte> {
+        public Class<?> getObjectClass () {
+            return Byte.class;
+        }
         public void writeObject (Streamable.Output out, Byte value) {
             out.writeByte(value);
         }
@@ -53,6 +62,9 @@ public class Streamers
 
     /** A streamer for {@link Character}. */
     public static class Streamer_Character implements Streamer<Character> {
+        public Class<?> getObjectClass () {
+            return Character.class;
+        }
         public void writeObject (Streamable.Output out, Character value) {
             out.writeChar(value);
         }
@@ -63,6 +75,9 @@ public class Streamers
 
     /** A streamer for {@link Short}. */
     public static class Streamer_Short implements Streamer<Short> {
+        public Class<?> getObjectClass () {
+            return Short.class;
+        }
         public void writeObject (Streamable.Output out, Short value) {
             out.writeShort(value);
         }
@@ -73,6 +88,9 @@ public class Streamers
 
     /** A streamer for {@link Integer}. */
     public static class Streamer_Integer implements Streamer<Integer> {
+        public Class<?> getObjectClass () {
+            return Integer.class;
+        }
         public void writeObject (Streamable.Output out, Integer value) {
             out.writeInt(value);
         }
@@ -83,6 +101,9 @@ public class Streamers
 
     /** A streamer for {@link Long}. */
     public static class Streamer_Long implements Streamer<Long> {
+        public Class<?> getObjectClass () {
+            return Long.class;
+        }
         public void writeObject (Streamable.Output out, Long value) {
             out.writeLong(value);
         }
@@ -93,6 +114,9 @@ public class Streamers
 
     /** A streamer for {@link Float}. */
     public static class Streamer_Float implements Streamer<Float> {
+        public Class<?> getObjectClass () {
+            return Float.class;
+        }
         public void writeObject (Streamable.Output out, Float value) {
             out.writeFloat(value);
         }
@@ -103,6 +127,9 @@ public class Streamers
 
     /** A streamer for {@link Double}. */
     public static class Streamer_Double implements Streamer<Double> {
+        public Class<?> getObjectClass () {
+            return Double.class;
+        }
         public void writeObject (Streamable.Output out, Double value) {
             out.writeDouble(value);
         }
@@ -115,6 +142,9 @@ public class Streamers
 
     /** A streamer for {@link String}. */
     public static class Streamer_String implements Streamer<String> {
+        public Class<?> getObjectClass () {
+            return String.class;
+        }
         public void writeObject (Streamable.Output out, String value) {
             out.writeString(value);
         }
@@ -125,6 +155,9 @@ public class Streamers
 
     /** A streamer for {@link List}. */
     public static class Streamer_List<T> implements Streamer<List<T>> {
+        public Class<?> getObjectClass () {
+            return ArrayList.class; // special handling catches other List impls
+        }
         public void writeObject (Streamable.Output out, List<T> values) {
             writeSequence(out, values);
         }
@@ -137,6 +170,9 @@ public class Streamers
 
     /** A streamer for {@link Set}. */
     public static class Streamer_Set<T> implements Streamer<Set<T>> {
+        public Class<?> getObjectClass () {
+            return HashSet.class; // special handling catches other Set impls
+        }
         public void writeObject (Streamable.Output out, Set<T> values) {
             writeSequence(out, values);
         }
@@ -149,6 +185,9 @@ public class Streamers
 
     /** A streamer for {@link Map}. */
     public static class Streamer_Map<K,V> implements Streamer<Map<K,V>> {
+        public Class<?> getObjectClass () {
+            return HashMap.class; // special handling catches other Map impls
+        }
         public void writeObject (Streamable.Output out, Map<K,V> values) {
             writeSequence(out, values.keySet());
             writeSequence(out, values.values());

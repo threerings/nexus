@@ -20,6 +20,9 @@ public class Streamer_Upstream
 {
     public static class Subscribe implements Streamer<Upstream.Subscribe>
     {
+        public Class<?> getObjectClass () {
+            return Upstream.Subscribe.class;
+        }
         public void writeObject (Streamable.Output out, Upstream.Subscribe obj) {
             out.writeValue(obj.addr);
         }
@@ -30,6 +33,9 @@ public class Streamer_Upstream
 
     public static class Unsubscribe implements Streamer<Upstream.Unsubscribe>
     {
+        public Class<?> getObjectClass () {
+            return Upstream.Unsubscribe.class;
+        }
         public void writeObject (Streamable.Output out, Upstream.Unsubscribe obj) {
             out.writeInt(obj.id);
         }
@@ -40,6 +46,9 @@ public class Streamer_Upstream
 
     public static class PostEvent implements Streamer<Upstream.PostEvent>
     {
+        public Class<?> getObjectClass () {
+            return Upstream.PostEvent.class;
+        }
         public void writeObject (Streamable.Output out, Upstream.PostEvent obj) {
             out.writeValue(obj.event);
         }
@@ -50,6 +59,9 @@ public class Streamer_Upstream
 
     public static class ServiceCall implements Streamer<Upstream.ServiceCall>
     {
+        public Class<?> getObjectClass () {
+            return Upstream.ServiceCall.class;
+        }
         public void writeObject (Streamable.Output out, Upstream.ServiceCall obj) {
             out.writeInt(obj.callId);
             out.writeInt(obj.objectId);

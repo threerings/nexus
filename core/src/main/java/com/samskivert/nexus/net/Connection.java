@@ -204,6 +204,7 @@ public abstract class Connection
      */
     protected void onReceive (Downstream message)
     {
+        log.info("Received "+ message);
         message.dispatch(this);
     }
 

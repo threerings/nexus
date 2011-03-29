@@ -19,6 +19,9 @@ public class Streamer_Downstream
 {
     public static class Subscribe implements Streamer<Downstream.Subscribe>
     {
+        public Class<?> getObjectClass () {
+            return Downstream.Subscribe.class;
+        }
         public void writeObject (Streamable.Output out, Downstream.Subscribe obj) {
             out.writeValue(obj.object);
         }
@@ -29,6 +32,9 @@ public class Streamer_Downstream
 
     public static class SubscribeFailure implements Streamer<Downstream.SubscribeFailure>
     {
+        public Class<?> getObjectClass () {
+            return Downstream.SubscribeFailure.class;
+        }
         public void writeObject (Streamable.Output out, Downstream.SubscribeFailure obj) {
             out.writeValue(obj.addr);
             out.writeString(obj.cause);
@@ -40,6 +46,9 @@ public class Streamer_Downstream
 
     public static class DispatchEvent implements Streamer<Downstream.DispatchEvent>
     {
+        public Class<?> getObjectClass () {
+            return Downstream.DispatchEvent.class;
+        }
         public void writeObject (Streamable.Output out, Downstream.DispatchEvent obj) {
             out.writeValue(obj.event);
         }
@@ -50,6 +59,9 @@ public class Streamer_Downstream
 
     public static class ServiceResponse implements Streamer<Downstream.ServiceResponse>
     {
+        public Class<?> getObjectClass () {
+            return Downstream.ServiceResponse.class;
+        }
         public void writeObject (Streamable.Output out, Downstream.ServiceResponse obj) {
             out.writeInt(obj.callId);
             out.writeValue(obj.result);
@@ -61,6 +73,9 @@ public class Streamer_Downstream
 
     public static class ServiceFailure implements Streamer<Downstream.ServiceFailure>
     {
+        public Class<?> getObjectClass () {
+            return Downstream.ServiceFailure.class;
+        }
         public void writeObject (Streamable.Output out, Downstream.ServiceFailure obj) {
             out.writeInt(obj.callId);
             out.writeString(obj.cause);

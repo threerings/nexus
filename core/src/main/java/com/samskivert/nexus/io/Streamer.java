@@ -12,6 +12,11 @@ package com.samskivert.nexus.io;
 public interface Streamer<T>
 {
     /**
+     * Returns the concrete class handled by this streamer.
+     */
+    Class<?> getObjectClass ();
+
+    /**
      * Writes the supplied instance to the supplied output.
      */
     void writeObject (Streamable.Output out, T obj);
