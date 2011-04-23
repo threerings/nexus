@@ -36,12 +36,6 @@
   </target>
 
   <target name="clean" description="Cleans out build results.">
-    <delete dir="${classes.dir}"/>
-    <delete dir="${tclasses.dir}"/>
-    <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
-  </target>
-
-  <target name="distclean" description="Completely removes build result directory.">
     <delete dir="${deploy.dir}"/>
   </target>
 
