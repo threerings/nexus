@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="nexus" default="maven-deploy" xmlns:artifact="urn:maven-artifact-ant">
+<project name="nexus" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <!-- hey Ant, how do I iterate over a list in a way that doesn't require an extension? -->
   <target name="clean">
     <ant dir="core" target="clean"/>
@@ -9,6 +9,18 @@
     <ant dir="jvm-server" target="clean"/>
     <ant dir="gwt-io" target="clean"/>
     <ant dir="gwt-server" target="clean"/>
+    <ant dir="demos/chat" target="clean"/>
+  </target>
+
+  <target name="compile">
+    <ant dir="core" target="compile"/>
+    <ant dir="test-support" target="compile"/>
+    <ant dir="server" target="compile"/>
+    <ant dir="jvm-io" target="compile"/>
+    <ant dir="jvm-server" target="compile"/>
+    <ant dir="gwt-io" target="compile"/>
+    <ant dir="gwt-server" target="compile"/>
+    <ant dir="demos/chat" target="compile"/>
   </target>
 
   <target name="maven-deploy">
