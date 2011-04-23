@@ -3,7 +3,7 @@
 
 package nexus.chat.web;
 
-import com.samskivert.nexus.io.AbstractSerializer;
+import com.threerings.nexus.io.AbstractSerializer;
 
 import nexus.chat.distrib.ChatObject;
 import nexus.chat.distrib.ChatService;

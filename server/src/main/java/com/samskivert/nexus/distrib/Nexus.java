@@ -2,9 +2,9 @@
 // $Id$
 //
 // Nexus Server - server-side support for Nexus distributed application framework
-// http://github.com/samskivert/nexus/blob/master/LICENSE
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
-package com.samskivert.nexus.distrib;
+package com.threerings.nexus.distrib;
 
 /**
  * The main source for Nexus services.

@@ -11,20 +11,20 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.Nexus;
-import com.samskivert.nexus.distrib.Singleton;
-import com.samskivert.nexus.server.Session;
-import com.samskivert.nexus.server.SessionLocal;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.distrib.Nexus;
+import com.threerings.nexus.distrib.Singleton;
+import com.threerings.nexus.server.Session;
+import com.threerings.nexus.server.SessionLocal;
+import com.threerings.nexus.util.Callback;
 
 import nexus.chat.distrib.ChatObject;
 import nexus.chat.distrib.ChatService;
 import nexus.chat.distrib.Factory_ChatService;
 import nexus.chat.distrib.RoomObject;
 
-import static com.samskivert.nexus.distrib.NexusException.require;
-import static com.samskivert.nexus.util.Log.log;
+import static com.threerings.nexus.distrib.NexusException.require;
+import static com.threerings.nexus.util.Log.log;
 
 /**
  * Manages the global chat services.

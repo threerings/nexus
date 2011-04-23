@@ -1,5 +1,5 @@
 <module rename-to="chat">
-  <inherits name="com.samskivert.nexus.GWTIO"/>
+  <inherits name="com.threerings.nexus.GWTIO"/>
   <inherits name="com.threerings.gwt.Utils"/>
 
   <source path="distrib"/>

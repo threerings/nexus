@@ -2,15 +2,15 @@
 // $Id$
 //
 // Nexus Server - server-side support for Nexus distributed application framework
-// http://github.com/samskivert/nexus/blob/master/LICENSE
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
-package com.samskivert.nexus.server;
+package com.threerings.nexus.server;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
-import static com.samskivert.nexus.util.Log.log;
+import static com.threerings.nexus.util.Log.log;
 
 /**
  * Contains an execution queue for one or more Nexus entities. Distributed events, actions and

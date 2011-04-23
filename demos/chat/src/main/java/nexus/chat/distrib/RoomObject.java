@@ -3,11 +3,11 @@
 
 package nexus.chat.distrib;
 
-import com.samskivert.nexus.distrib.DAttribute;
-import com.samskivert.nexus.distrib.DCustom;
-import com.samskivert.nexus.distrib.DService;
-import com.samskivert.nexus.distrib.Keyed;
-import com.samskivert.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.DAttribute;
+import com.threerings.nexus.distrib.DCustom;
+import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.NexusObject;
 
 /**
  * Models an instance of a chat room.

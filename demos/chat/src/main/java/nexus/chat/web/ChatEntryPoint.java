@@ -7,8 +7,8 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.samskivert.nexus.client.GWTClient;
-import com.samskivert.nexus.client.NexusClient;
+import com.threerings.nexus.client.GWTClient;
+import com.threerings.nexus.client.NexusClient;
 
 /**
  * The main entry point for the GWT chat app.

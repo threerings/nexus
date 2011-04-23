@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.samskivert</groupId>
+  <groupId>com.threerings</groupId>
   <artifactId>nexus-test-support</artifactId>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>nexus-test-support</name>
   <description>Provides code shared by the tests for various Nexus libraries.</description>
-  <url>http://github.com/samskivert/nexus</url>
+  <url>http://github.com/threerings/nexus</url>
   <issueManagement>
-    <url>http://github.com/samskivert/nexus/issues</url>
+    <url>http://github.com/threerings/nexus/issues</url>
   </issueManagement>
 
   <parent>
@@ -35,14 +35,14 @@
   </developers>
 
   <scm>
-    <connection>scm:git://github.com/samskivert/nexus.git</connection>
-    <developerConnection>scm:git@github.com:samskivert/nexus.git</developerConnection>
-    <url>http://github.com/samskivert/nexus</url>
+    <connection>scm:git://github.com/threerings/nexus.git</connection>
+    <developerConnection>scm:git@github.com:threerings/nexus.git</developerConnection>
+    <url>http://github.com/threerings/nexus</url>
   </scm>
 
   <dependencies>
     <dependency>
-      <groupId>com.samskivert</groupId>
+      <groupId>com.threerings</groupId>
       <artifactId>nexus-core</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>

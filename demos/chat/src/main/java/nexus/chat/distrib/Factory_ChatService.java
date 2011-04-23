@@ -5,10 +5,10 @@ package nexus.chat.distrib;
 
 import java.util.List;
 
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.DService;
-import com.samskivert.nexus.io.ServiceFactory;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.io.ServiceFactory;
+import com.threerings.nexus.util.Callback;
 
 /**
  * Creates {@link ChatService} marshaller instances.

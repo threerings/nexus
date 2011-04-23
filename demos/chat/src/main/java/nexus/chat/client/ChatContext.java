@@ -5,7 +5,7 @@ package nexus.chat.client;
 
 import javax.swing.JPanel;
 
-import com.samskivert.nexus.client.NexusClient;
+import com.threerings.nexus.client.NexusClient;
 
 /**
  * Provides services to the chat app.

@@ -3,8 +3,8 @@
 
 package nexus.chat.server;
 
-import com.samskivert.nexus.distrib.Action;
-import com.samskivert.nexus.distrib.Nexus;
+import com.threerings.nexus.distrib.Action;
+import com.threerings.nexus.distrib.Nexus;
 
 import nexus.chat.client.ChatPanel;
 

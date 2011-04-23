@@ -3,8 +3,8 @@
 
 package nexus.chat.distrib;
 
-import com.samskivert.nexus.distrib.NexusService;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.NexusService;
+import com.threerings.nexus.util.Callback;
 
 /**
  * Defines distributed services available in a room.

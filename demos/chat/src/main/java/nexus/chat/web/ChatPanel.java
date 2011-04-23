@@ -22,13 +22,13 @@ import com.threerings.gwt.ui.EnterClickAdapter;
 import com.threerings.gwt.ui.FluentTable;
 import com.threerings.gwt.ui.Widgets;
 
-import com.samskivert.nexus.distrib.DCustom;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.DCustom;
+import com.threerings.nexus.util.Callback;
 
 import nexus.chat.distrib.ChatObject;
 import nexus.chat.distrib.RoomObject;
 
-import static com.samskivert.nexus.util.Log.log;
+import static com.threerings.nexus.util.Log.log;
 
 /**
  * Displays the main chat interface, once connected.

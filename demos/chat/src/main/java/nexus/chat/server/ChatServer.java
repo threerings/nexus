@@ -11,10 +11,10 @@ import java.util.concurrent.Executors;
 
 import com.samskivert.util.OneLineLogFormatter;
 
-import com.samskivert.nexus.server.GWTConnectionManager;
-import com.samskivert.nexus.server.JVMConnectionManager;
-import com.samskivert.nexus.server.NexusConfig;
-import com.samskivert.nexus.server.NexusServer;
+import com.threerings.nexus.server.GWTConnectionManager;
+import com.threerings.nexus.server.JVMConnectionManager;
+import com.threerings.nexus.server.NexusConfig;
+import com.threerings.nexus.server.NexusServer;
 
 import nexus.chat.web.ChatSerializer;
 

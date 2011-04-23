@@ -2,9 +2,9 @@
 // $Id$
 //
 // Nexus Server - server-side support for Nexus distributed application framework
-// http://github.com/samskivert/nexus/blob/master/LICENSE
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
-package com.samskivert.nexus.server;
+package com.threerings.nexus.server;
 
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -13,8 +13,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import com.samskivert.nexus.net.Downstream;
-import com.samskivert.nexus.net.Upstream;
+import com.threerings.nexus.net.Downstream;
+import com.threerings.nexus.net.Upstream;
 
 /**
  * Manages active client sessions. Actual communication is handled by external entities so that

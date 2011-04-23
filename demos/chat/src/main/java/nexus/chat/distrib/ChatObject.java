@@ -3,10 +3,10 @@
 
 package nexus.chat.distrib;
 
-import com.samskivert.nexus.distrib.DAttribute;
-import com.samskivert.nexus.distrib.DService;
-import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.distrib.Singleton;
+import com.threerings.nexus.distrib.DAttribute;
+import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.Singleton;
 
 /**
  * A singleton object that vends the chat service.

@@ -5,9 +5,9 @@ package nexus.chat.distrib;
 
 import java.util.List;
 
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.NexusService;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.distrib.NexusService;
+import com.threerings.nexus.util.Callback;
 
 /**
  * Defines global chat services.

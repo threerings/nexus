@@ -2,18 +2,18 @@
 // $Id$
 //
 // Nexus Server - server-side support for Nexus distributed application framework
-// http://github.com/samskivert/nexus/blob/master/LICENSE
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
-package com.samskivert.nexus.server;
+package com.threerings.nexus.server;
 
 import java.util.concurrent.ExecutorService;
 
-import com.samskivert.nexus.distrib.Action;
-import com.samskivert.nexus.distrib.Keyed;
-import com.samskivert.nexus.distrib.Nexus;
-import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.distrib.Request;
-import com.samskivert.nexus.distrib.Singleton;
+import com.threerings.nexus.distrib.Action;
+import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.Nexus;
+import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.Request;
+import com.threerings.nexus.distrib.Singleton;
 
 /**
  * Implements the Nexus services and coordinates communication between nodes.

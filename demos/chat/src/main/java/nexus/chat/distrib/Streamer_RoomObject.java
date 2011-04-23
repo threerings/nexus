@@ -3,8 +3,8 @@
 
 package nexus.chat.distrib;
 
-import com.samskivert.nexus.io.Streamable;
-import com.samskivert.nexus.io.Streamer;
+import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.io.Streamer;
 
 /**
  * Streams {@link RoomObject} and its internal classes.

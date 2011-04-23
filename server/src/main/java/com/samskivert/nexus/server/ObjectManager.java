@@ -2,9 +2,9 @@
 // $Id$
 //
 // Nexus Server - server-side support for Nexus distributed application framework
-// http://github.com/samskivert/nexus/blob/master/LICENSE
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
-package com.samskivert.nexus.server;
+package com.threerings.nexus.server;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -19,20 +19,20 @@ import java.util.concurrent.FutureTask;
 
 import com.google.common.collect.Maps;
 
-import com.samskivert.nexus.distrib.Action;
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.distrib.DService;
-import com.samskivert.nexus.distrib.DistribUtil;
-import com.samskivert.nexus.distrib.EventSink;
-import com.samskivert.nexus.distrib.Keyed;
-import com.samskivert.nexus.distrib.NexusEvent;
-import com.samskivert.nexus.distrib.NexusException;
-import com.samskivert.nexus.distrib.NexusObject;
-import com.samskivert.nexus.distrib.Request;
-import com.samskivert.nexus.distrib.Singleton;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Action;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.distrib.DistribUtil;
+import com.threerings.nexus.distrib.EventSink;
+import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.NexusEvent;
+import com.threerings.nexus.distrib.NexusException;
+import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.Request;
+import com.threerings.nexus.distrib.Singleton;
+import com.threerings.nexus.util.Callback;
 
-import static com.samskivert.nexus.util.Log.log;
+import static com.threerings.nexus.util.Log.log;
 
 /**
  * Maintains metadata for all registered entities including their contexts. Contexts are action

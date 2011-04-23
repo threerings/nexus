@@ -14,8 +14,8 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.threerings.gwt.ui.EnterClickAdapter;
 import com.threerings.gwt.ui.Widgets;
 
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.util.Callback;
 
 import nexus.chat.distrib.ChatObject;
 

@@ -3,10 +3,10 @@
 
 package nexus.chat.server;
 
-import com.samskivert.nexus.distrib.Keyed;
-import com.samskivert.nexus.distrib.Nexus;
-import com.samskivert.nexus.server.SessionLocal;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.Nexus;
+import com.threerings.nexus.server.SessionLocal;
+import com.threerings.nexus.util.Callback;
 
 import nexus.chat.distrib.Factory_RoomService;
 import nexus.chat.distrib.RoomObject;

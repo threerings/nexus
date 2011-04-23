@@ -1,0 +1,3 @@
+<module>
+  <inherits name="com.threerings.nexus.Core"/>
+</module>

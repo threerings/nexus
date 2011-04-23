@@ -11,8 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.samskivert.nexus.distrib.Address;
-import com.samskivert.nexus.util.Callback;
+import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.util.Callback;
 import com.samskivert.swing.GroupLayout;
 import com.samskivert.swing.VGroupLayout;
 

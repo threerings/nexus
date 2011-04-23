@@ -5,7 +5,7 @@ package nexus.chat.web;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.samskivert.nexus.client.NexusClient;
+import com.threerings.nexus.client.NexusClient;
 
 /**
  * Provides services to the chat webapp.

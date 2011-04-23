@@ -9,8 +9,8 @@ import javax.swing.JPanel;
 
 import com.samskivert.util.OneLineLogFormatter;
 
-import com.samskivert.nexus.client.JVMClient;
-import com.samskivert.nexus.client.NexusClient;
+import com.threerings.nexus.client.JVMClient;
+import com.threerings.nexus.client.NexusClient;
 
 /**
  * The main entry point for the chat demo client.
