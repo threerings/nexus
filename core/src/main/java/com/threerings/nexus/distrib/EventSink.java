@@ -1,6 +1,4 @@
 //
-// $Id$
-//
 // Nexus Core - a framework for developing distributed applications
 // http://github.com/threerings/nexus/blob/master/LICENSE
 

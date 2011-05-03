@@ -1,7 +1,5 @@
 //
-// $Id$
-//
-// Nexus JVMIO - I/O and network services for Nexus built on java.nio
+// Nexus Test Support - shared test infrastructure for Nexus framework
 // http://github.com/threerings/nexus/blob/master/LICENSE
 
 package com.threerings.nexus.io;

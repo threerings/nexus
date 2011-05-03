@@ -1,6 +1,4 @@
 //
-// $Id$
-//
 // Nexus GWTIO - I/O and network services for Nexus built on GWT and WebSockets
 // http://github.com/threerings/nexus/blob/master/LICENSE
 

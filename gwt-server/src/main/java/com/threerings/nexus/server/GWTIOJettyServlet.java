@@ -1,5 +1,6 @@
 //
-// $Id$
+// Nexus GWTServer - server-side support for Nexus GWT/WebSockets services
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
 package com.threerings.nexus.server;
 

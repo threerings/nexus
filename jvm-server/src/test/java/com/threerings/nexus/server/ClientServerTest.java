@@ -1,7 +1,5 @@
 //
-// $Id$
-//
-// Nexus Server - server-side support for Nexus distributed application framework
+// Nexus JVMServer - server-side support for Nexus java.nio-based services
 // http://github.com/threerings/nexus/blob/master/LICENSE
 
 package com.threerings.nexus.server;

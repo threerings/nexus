@@ -1,7 +1,5 @@
 //
-// $Id$
-//
-// Nexus Server - server-side support for Nexus distributed application framework
+// Nexus Test Support - shared test infrastructure for Nexus framework
 // http://github.com/threerings/nexus/blob/master/LICENSE
 
 package com.threerings.nexus.distrib;
