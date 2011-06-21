@@ -23,13 +23,13 @@
     <ant dir="demos/chat" target="compile"/>
   </target>
 
-  <target name="maven-deploy">
-    <ant dir="core" target="maven-deploy"/>
-    <ant dir="test-support" target="maven-deploy"/>
-    <ant dir="server" target="maven-deploy"/>
-    <ant dir="jvm-io" target="maven-deploy"/>
-    <ant dir="jvm-server" target="maven-deploy"/>
-    <ant dir="gwt-io" target="maven-deploy"/>
-    <ant dir="gwt-server" target="maven-deploy"/>
+  <target name="install">
+    <ant dir="core" target="install"/>
+    <ant dir="test-support" target="install"/>
+    <ant dir="server" target="install"/>
+    <ant dir="jvm-io" target="install"/>
+    <ant dir="jvm-server" target="install"/>
+    <ant dir="gwt-io" target="install"/>
+    <ant dir="gwt-server" target="install"/>
   </target>
 </project>

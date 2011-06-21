@@ -3,9 +3,9 @@
 <project name="build-support" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
   <property name="src.dir"      value="src/main/java"/>
   <property name="test.dir"     value="src/test/java"/>
-  <property name="deploy.dir"   value="dist"/>
-  <property name="classes.dir"  value="${deploy.dir}/classes"/>
-  <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
+  <property name="target.dir"   value="target"/>
+  <property name="classes.dir"  value="${target.dir}/classes"/>
+  <property name="tclasses.dir" value="${target.dir}/test-classes"/>
 
   <property name="maven-ant.vers" value="2.1.1"/>
   <property name="maven-ant.dir" value="${user.home}/.m2/ant-support"/>
@@ -32,11 +32,11 @@
   </target>
 
   <target name="-prepare" depends="-init-maven-ant">
-    <mkdir dir="${deploy.dir}"/>
+    <mkdir dir="${target.dir}"/>
   </target>
 
   <target name="clean" description="Cleans out build results.">
-    <delete dir="${deploy.dir}"/>
+    <delete dir="${target.dir}"/>
   </target>
 
   <target name="-prep-gwt" if="build.copy-gwt-sources">
@@ -81,8 +81,8 @@
     <!-- allows passing -Dgwt.mode=-prod to obtain GWT debug logging -->
     <property name="gwt.mode" value=""/>
 
-    <mkdir dir="${deploy.dir}/test-reports"/>
-    <property name="war.dir" value="${deploy.dir}/test-war"/>
+    <mkdir dir="${target.dir}/test-reports"/>
+    <property name="war.dir" value="${target.dir}/test-war"/>
     <!-- we have to fork, otherwise the classloader will not work for GWT -->
     <junit printsummary="off" haltonfailure="yes" fork="yes">
       <classpath refid="test.classpath"/>
@@ -91,24 +91,24 @@
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
-      <batchtest todir="${deploy.dir}/test-reports">
+      <batchtest todir="${target.dir}/test-reports">
         <fileset dir="${test.dir}" includes="**/${test}*Test.java"/>
       </batchtest>
     </junit>
   </target>
 
-  <target name="dist" depends="compile" description="Compiles code and builds jar file.">
-    <jar destfile="${deploy.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
+  <target name="package" depends="compile" description="Compiles code and builds jar file.">
+    <jar destfile="${target.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
   <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
-  <target name="maven-deploy" depends="dist,tests" 
+  <target name="install" depends="package,tests"
           description="Deploys our build artifacts to a Maven repository.">
-    <jar basedir="${src.dir}" destfile="${deploy.dir}/${ant.project.name}-sources.jar"/>
-    <artifact:deploy file="${deploy.dir}/${ant.project.name}.jar" uniqueVersion="false">
+    <jar basedir="${src.dir}" destfile="${target.dir}/${ant.project.name}-sources.jar"/>
+    <artifact:deploy file="${target.dir}/${ant.project.name}.jar" uniqueVersion="false">
       <remoteRepository url="${maven.deploy.repo}"/>
       <pom refid="pom"/>
-      <attach file="${deploy.dir}/${ant.project.name}-sources.jar" classifier="sources"/>
+      <attach file="${target.dir}/${ant.project.name}-sources.jar" classifier="sources"/>
     </artifact:deploy>
   </target>
 </project>
