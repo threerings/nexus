@@ -137,6 +137,7 @@ public class DMap<K,V> extends DAttribute
     // from interface Map<K,V>
     public void putAll (Map<? extends K, ? extends V> map)
     {
+        // TODO: this surely doesn't work
         _impl.putAll(map); // this will call many put()s
     }
 
