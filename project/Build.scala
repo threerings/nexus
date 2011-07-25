@@ -1,5 +1,6 @@
 import sbt._
 import Keys._
+import java.io.File
 
 object ForPlayBuild extends Build {
   // common build configuration
@@ -15,13 +16,34 @@ object ForPlayBuild extends Build {
  	    "com.novocode" % "junit-interface" % "0.7" % "test->default"
     )
   )
+
+  // GWT bits
   val gwtVers = "2.3.0"
+  System.setProperty("gwt.args", "-war target/test-war")
+
+  // define a task for copying sources into classes directory + jar file
+  val copySources = TaskKey[Seq[(File,File)]](
+    "copy-sources", "Copies sources to the output directory.")
+  def copySourcesTask = (classDirectory, cacheDirectory, javaSource,
+                         defaultExcludes in unmanagedSources, streams) map {
+    (target, cache, srcdir, excls, s) =>
+    val dirs = Seq(srcdir)
+    val srcs = dirs.descendentsExcept("*.java", excls)
+    val mappings = srcs x (rebase(dirs, target) | flat(target))
+    s.log.debug("Copy source mappings: " + mappings.mkString("\n\t","\n\t",""))
+    Sync(cache / "copy-sources")( mappings )
+    mappings
+  }
+  val csBareSettings = Seq(
+    copySources <<= copySourcesTask,
+    copyResources <<= copyResources.dependsOn(copySources)
+  )
+  val csSettings = inConfig(Compile)(csBareSettings) ++ inConfig(Test)(csBareSettings)
 
   // sub-project definitions
   def subProject (id :String, extraSettings :Seq[Setting[_]] = Seq()) = Project(
-    id, file(id), settings = buildSettings ++ extraSettings ++ Seq(
-      name := "nexus-" + id,
-      unmanagedResourceDirectories in Compile <+= baseDirectory(_ / "src/main/java")
+    id, file(id), settings = buildSettings ++ csSettings ++ extraSettings ++ Seq(
+      name := "nexus-" + id
     )
   )
 
