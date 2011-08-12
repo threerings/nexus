@@ -1,5 +1,6 @@
 <module>
   <inherits name="com.google.gwt.user.User"/>
+  <inherits name="react"/>
   <source path="client"/>
   <source path="distrib"/>
   <source path="io"/>

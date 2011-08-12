@@ -12,18 +12,18 @@ import com.threerings.nexus.io.Streamer;
  */
 public class Streamer_DValue
 {
-    /** Handles the streaming of {@link DValue.ChangedEvent} instances. */
-    public static class ChangedEvent<T> implements Streamer<DValue.ChangedEvent<T>> {
+    /** Handles the streaming of {@link DValue.ChangeEvent} instances. */
+    public static class ChangeEvent<T> implements Streamer<DValue.ChangeEvent<T>> {
         public Class<?> getObjectClass () {
-            return DValue.ChangedEvent.class;
+            return DValue.ChangeEvent.class;
         }
-        public void writeObject (Streamable.Output out, DValue.ChangedEvent<T> obj) {
+        public void writeObject (Streamable.Output out, DValue.ChangeEvent<T> obj) {
             out.writeInt(obj.targetId);
             out.writeShort(obj.index);
             out.writeValue(obj._value);
         }
-        public DValue.ChangedEvent<T> readObject (Streamable.Input in) {
-            return new DValue.ChangedEvent<T>(in.readInt(), in.readShort(), in.<T>readValue());
+        public DValue.ChangeEvent<T> readObject (Streamable.Input in) {
+            return new DValue.ChangeEvent<T>(in.readInt(), in.readShort(), in.<T>readValue());
         }
     }
 }

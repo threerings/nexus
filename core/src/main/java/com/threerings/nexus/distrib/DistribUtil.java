@@ -27,16 +27,17 @@ public class DistribUtil
     public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args)
     {
         Object cb = args[args.length-1];
-        DService.Dispatcher disp = null;
+        DService.Dispatcher<?> disp = null;
         try {
-            disp = (DService.Dispatcher)object.getAttribute(attrIdx);
+            disp = (DService.Dispatcher<?>)object.getAttribute(attrIdx);
             disp.dispatchCall(methId, args);
 
         } catch (NexusException ne) {
             if (cb instanceof Callback<?>) {
                 ((Callback<?>)cb).onFailure(ne);
             } else {
-                log.warning("Service call failed", "obj", object, "attr", disp, "methId", methId, ne);
+                log.warning("Service call failed", "obj", object, "attr", disp,
+                            "methId", methId, ne);
             }
 
         } catch (Throwable t) {
@@ -47,5 +48,17 @@ public class DistribUtil
         }
     }
 
+    /**
+     * Returns a sentinel value for use by events in tracking unset values.
+     */
+    public static <T> T sentinelValue ()
+    {
+        @SuppressWarnings("unchecked") T value = (T)SENTINEL_VALUE;
+        return value;
+    }
+
     private DistribUtil () {} // no constructsky
+
+    /** Used by {@link #sentinelValue}. */
+    private static final Object SENTINEL_VALUE = new Object();
 }

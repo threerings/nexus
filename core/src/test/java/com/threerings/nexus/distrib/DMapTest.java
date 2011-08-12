@@ -56,18 +56,18 @@ public class DMapTest
         assertEquals(1, obj.map.size());
 
         // test remove
-        prepRemovedCheck(obj.map, 1, "Two");
+        prepRemoveCheck(obj.map, 1, "Two");
         obj.map.remove(1);
-        checkRemovedEvent(sink, 1);
+        checkRemoveEvent(sink, 1);
         assertEquals(0, obj.map.size());
 
         // test clear
         obj.map.put(1, "One");
         checkPutEvent(sink, 1, "One");
         assertEquals(1, obj.map.size());
-        prepRemovedCheck(obj.map, 1, "One");
+        prepRemoveCheck(obj.map, 1, "One");
         obj.map.clear();
-        checkRemovedEvent(sink, 1);
+        checkRemoveEvent(sink, 1);
         assertEquals(0, obj.map.size());
     }
 
@@ -86,16 +86,16 @@ public class DMapTest
         assertEquals(obj.map.size(), keySet.size());
 
         // remove via the key set
-        prepRemovedCheck(obj.map, 1, "One");
+        prepRemoveCheck(obj.map, 1, "One");
         keySet.remove(1);
-        checkRemovedEvent(sink, 1);
+        checkRemoveEvent(sink, 1);
 
         // remove via the key set iterator
         Iterator<Integer> iter = keySet.iterator();
         Integer key = iter.next();
-        prepRemovedCheck(obj.map, key, obj.map.get(key));
+        prepRemoveCheck(obj.map, key, obj.map.get(key));
         iter.remove();
-        checkRemovedEvent(sink, key);
+        checkRemoveEvent(sink, key);
 
         // clear via the key set (should get two more removed events)
         keySet.clear();
@@ -135,15 +135,15 @@ public class DMapTest
         // remove via the entry set iterator
         Iterator<Map.Entry<Integer,String>> iter = entrySet.iterator();
         Map.Entry<Integer,String> entry = iter.next();
-        prepRemovedCheck(obj.map, entry.getKey(), entry.getValue());
+        prepRemoveCheck(obj.map, entry.getKey(), entry.getValue());
         iter.remove();
-        checkRemovedEvent(sink, entry.getKey());
+        checkRemoveEvent(sink, entry.getKey());
 
         // remove via the entry set
         entry = iter.next();
-        prepRemovedCheck(obj.map, entry.getKey(), entry.getValue());
+        prepRemoveCheck(obj.map, entry.getKey(), entry.getValue());
         entrySet.remove(entry);
-        checkRemovedEvent(sink, entry.getKey());
+        checkRemoveEvent(sink, entry.getKey());
 
         // clear via the entry set (should get two more removed events)
         entrySet.clear();
@@ -178,16 +178,16 @@ public class DMapTest
         assertEquals(obj.map.size(), values.size());
 
         // remove via the values
-        prepRemovedCheck(obj.map, 1, "One");
+        prepRemoveCheck(obj.map, 1, "One");
         values.remove("One");
-        checkRemovedEvent(sink, 1);
+        checkRemoveEvent(sink, 1);
 
         // remove via the values iterator
         Iterator<String> iter = values.iterator();
         String value = iter.next();
-        prepRemovedCheck(obj.map, fromValue(value), value);
+        prepRemoveCheck(obj.map, fromValue(value), value);
         iter.remove();
-        checkRemovedEvent(sink, fromValue(value));
+        checkRemoveEvent(sink, fromValue(value));
 
         // clear via the values (should get two more removed events)
         values.clear();
@@ -235,26 +235,24 @@ public class DMapTest
     protected <K, V> void prepPutCheck (
         final DMap<K, V> map, final K ekey, final V evalue, final V eoldValue)
     {
-        map.addListener(new DMap.PutListener<K, V>() {
-            public void entryPut (K key, V value, V oldValue) {
+        map.listen(new DMap.Listener<K, V>() {
+            public void onPut (K key, V value, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(evalue, value);
                 assertEquals(eoldValue, oldValue);
-                map.removeListener(this);
             }
-        });
+        }).once();
     }
 
-    protected <K, V> void prepRemovedCheck (
+    protected <K, V> void prepRemoveCheck (
         final DMap<K, V> map, final K ekey, final V eoldValue)
     {
-        map.addListener(new DMap.RemovedListener<K, V>() {
-            public void entryRemoved (K key, V oldValue) {
+        map.listen(new DMap.Listener<K, V>() {
+            public void onRemove (K key, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(eoldValue, oldValue);
-                map.removeListener(this);
             }
-        });
+        }).once();
     }
 
     protected <K, V> void checkPutEvent (TestSink sink, K key, V value)
@@ -265,10 +263,10 @@ public class DMapTest
         assertEquals(value, event._value);
     }
 
-    protected <K, V> void checkRemovedEvent (TestSink sink, K key)
+    protected <K, V> void checkRemoveEvent (TestSink sink, K key)
     {
-        @SuppressWarnings("unchecked") DMap.RemovedEvent<K, V> event =
-            (DMap.RemovedEvent<K, V>)sink.assertPosted(DMap.RemovedEvent.class);
+        @SuppressWarnings("unchecked") DMap.RemoveEvent<K, V> event =
+            (DMap.RemoveEvent<K, V>)sink.assertPosted(DMap.RemoveEvent.class);
         assertEquals(key, event._key);
     }
 }

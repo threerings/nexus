@@ -15,17 +15,6 @@ public abstract class NexusObject
     implements Streamable
 {
     /**
-     * An interface implemented by Nexus object attributes, so that they may be supplied with a
-     * reference to their owning object. This takes place when the owning object is registered with
-     * the Nexus system, or when it is unstreamed from the network.
-     */
-    public static interface Attribute
-    {
-        /** Configures this attribute with its owning object reference and index. */
-        void init (NexusObject owner, short index);
-    }
-
-    /**
      * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.
      */
     public int getId ()

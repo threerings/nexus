@@ -1,16 +1,33 @@
 import sbt._
 import Keys._
-import java.io.File
+
+// allows projects to be symlinked into the current directory for a direct dependency,
+// or fall back to obtaining the project from Maven otherwise
+class Locals (locals :(String, String, ModuleID)*) {
+  def addDeps (p :Project) = (locals collect {
+    case (id, subp, dep) if (file(id).exists) => symproj(file(id), subp)
+  }).foldLeft(p) { _ dependsOn _ }
+  def libDeps = locals collect {
+    case (id, subp, dep) if (!file(id).exists) => dep
+  }
+  private def symproj (dir :File, subproj :String = null) =
+    if (subproj == null) RootProject(dir) else ProjectRef(dir, subproj)
+}
 
 object ForPlayBuild extends Build {
+  val locals = new Locals(
+    ("react",      null,  "com.threerings" % "react" % "1.0-SNAPSHOT")
+  )
+
   // common build configuration
   val buildSettings = Defaults.defaultSettings ++ Seq(
-    organization    := "com.threerings",
-    version         := "1.0-SNAPSHOT",
-    crossPaths      := false,
-    javacOptions    ++= Seq("-Xlint", "-Xlint:-serial"),
-    fork in Compile := true,
-    resolvers       += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository",
+    organization     := "com.threerings",
+    version          := "1.0-SNAPSHOT",
+    crossPaths       := false,
+    javacOptions     ++= Seq("-Xlint", "-Xlint:-serial"),
+    fork in Compile  := true,
+    resolvers        += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository",
+    autoScalaLibrary := false, // no scala-library dependency
     libraryDependencies ++= Seq(
       "junit" % "junit" % "4.+" % "test",
  	    "com.novocode" % "junit-interface" % "0.7" % "test->default"
@@ -33,7 +50,9 @@ object ForPlayBuild extends Build {
   )
 
   // core projects
-  lazy val core = subProject("core")
+  lazy val core = locals.addDeps(subProject("core", Seq(
+    libraryDependencies ++= locals.libDeps
+  )))
   lazy val testSupport = subProject("test-support") dependsOn(core)
   lazy val server = subProject("server", Seq(
     libraryDependencies ++= Seq(

@@ -41,8 +41,8 @@ public class ObjectManagerTest
         final String ovalue = test.value.get();
         final String nvalue = "newValue";
         final boolean[] triggered = new boolean[1];
-        test.value.addListener(new DValue.Listener<String>() {
-            public void valueChanged (String value, String oldValue) {
+        test.value.listen(new DValue.Listener<String>() {
+            public void onChange (String value, String oldValue) {
                 assertEquals(ovalue, oldValue);
                 assertEquals(nvalue, value);
                 triggered[0] = true;

@@ -82,8 +82,8 @@ public class ClientServerTest
 
                 // add a listener for changes to the test value
                 final String ovalue = test.value.get();
-                test.value.addListener(new DValue.Listener<String>() {
-                    public void valueChanged (String value, String oldValue) {
+                test.value.listen(new DValue.Listener<String>() {
+                    public void onChange (String value, String oldValue) {
                         assertEquals("updated", value);
                         assertEquals(ovalue, oldValue);
                         testComplete();

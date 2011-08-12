@@ -127,8 +127,8 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         mapStreamer(new com.threerings.nexus.distrib.Streamer_Address.OfSingleton());
         mapStreamer(new com.threerings.nexus.distrib.Streamer_Address.OfAnonymous());
         mapStreamer(new com.threerings.nexus.distrib.Streamer_DMap.PutEvent());
-        mapStreamer(new com.threerings.nexus.distrib.Streamer_DMap.RemovedEvent());
-        mapStreamer(new com.threerings.nexus.distrib.Streamer_DValue.ChangedEvent());
+        mapStreamer(new com.threerings.nexus.distrib.Streamer_DMap.RemoveEvent());
+        mapStreamer(new com.threerings.nexus.distrib.Streamer_DValue.ChangeEvent());
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.Subscribe());
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.SubscribeFailure());
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.DispatchEvent());

@@ -9,7 +9,7 @@ import com.threerings.nexus.io.Streamable;
 /**
  * An attribute that contains a Nexus service reference.
  */
-public abstract class DService<T extends NexusService> extends DAttribute
+public abstract class DService<T extends NexusService> implements DAttribute
 {
     /** An implementation detail used by service dispatchers. */
     public static abstract class Dispatcher<T extends NexusService> extends DService<T> {
@@ -30,23 +30,29 @@ public abstract class DService<T extends NexusService> extends DAttribute
     /** Returns the service encapsulated by this attribute. */
     public abstract T get ();
 
-    @Override // from DAttribute
-    public void readContents (Streamable.Input in)
-    {
+    @Override public void init (NexusObject owner, short index) {
+        _owner = owner;
+        _index = index;
+    }
+
+    @Override public void readContents (Streamable.Input in) {
         // NOOP
     }
 
-    @Override // from DAttribute
-    public void writeContents (Streamable.Output out)
-    {
+    @Override public void writeContents (Streamable.Output out) {
         // NOOP
     }
 
     /**
      * Used by marshallers to dispatch calls over the network.
      */
-    protected void postCall (short methodId, Object... args)
-    {
+    protected void postCall (short methodId, Object... args) {
         _owner.postCall(_index, methodId, args);
     }
+
+    /** The object that owns this attribute. */
+    protected NexusObject _owner;
+
+    /** The index of this attribute in its containing object. */
+    protected short _index;
 }

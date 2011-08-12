@@ -29,18 +29,18 @@ public class Streamer_DMap
         }
     }
 
-    /** Handles streaming of {@link DMap.RemovedEvent} instances. */
-    public static class RemovedEvent<K,V> implements Streamer<DMap.RemovedEvent<K,V>> {
+    /** Handles streaming of {@link DMap.RemoveEvent} instances. */
+    public static class RemoveEvent<K,V> implements Streamer<DMap.RemoveEvent<K,V>> {
         public Class<?> getObjectClass () {
-            return DMap.RemovedEvent.class;
+            return DMap.RemoveEvent.class;
         }
-        public void writeObject (Streamable.Output out, DMap.RemovedEvent<K,V> obj) {
+        public void writeObject (Streamable.Output out, DMap.RemoveEvent<K,V> obj) {
             out.writeInt(obj.targetId);
             out.writeShort(obj.index);
             out.writeValue(obj._key);
         }
-        public DMap.RemovedEvent<K,V> readObject (Streamable.Input in) {
-            return new DMap.RemovedEvent<K,V>(in.readInt(), in.readShort(), in.<K>readValue());
+        public DMap.RemoveEvent<K,V> readObject (Streamable.Input in) {
+            return new DMap.RemoveEvent<K,V>(in.readInt(), in.readShort(), in.<K>readValue());
         }
     }
 }
