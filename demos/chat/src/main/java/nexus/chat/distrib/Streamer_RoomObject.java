@@ -36,14 +36,11 @@ public class Streamer_RoomObject implements Streamer<RoomObject>
             return RoomObject.ChatEvent.class;
         }
         public void writeObject (Streamable.Output out, RoomObject.ChatEvent obj) {
-            out.writeInt(obj.targetId);
-            out.writeShort(obj.index);
             out.writeString(obj.nickname);
             out.writeString(obj.message);
         }
         public RoomObject.ChatEvent readObject (Streamable.Input in) {
-            return new RoomObject.ChatEvent(in.readInt(), in.readShort(),
-                                            in.readString(), in.readString());
+            return new RoomObject.ChatEvent(in.readString(), in.readString());
         }
     }
 }

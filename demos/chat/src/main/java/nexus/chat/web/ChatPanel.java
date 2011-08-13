@@ -22,7 +22,8 @@ import com.threerings.gwt.ui.EnterClickAdapter;
 import com.threerings.gwt.ui.FluentTable;
 import com.threerings.gwt.ui.Widgets;
 
-import com.threerings.nexus.distrib.DCustom;
+import react.Slot;
+
 import com.threerings.nexus.util.Callback;
 
 import nexus.chat.distrib.ChatObject;
@@ -161,8 +162,8 @@ public class ChatPanel extends Composite
             _ctx.getClient().unsubscribe(_roomobj);
         }
         _roomobj = room;
-        _roomobj.chatEvent.addListener(new DCustom.Listener<RoomObject.ChatEvent>() {
-            public void onEvent (RoomObject.ChatEvent event) {
+        _roomobj.chatEvent.connect(new Slot<RoomObject.ChatEvent>() {
+            public void onEmit (RoomObject.ChatEvent event) {
                 if (event.nickname == null) {
                     appendLine(event.message); // from the server
                 } else {

@@ -37,17 +37,17 @@ public class RoomManager implements RoomService, Keyed
 
     public void chatterEntered (String nickname)
     {
-        roomObj.chatEvent.emit(null, nickname + " entered.");
+        emitChatEvent(null, nickname + " entered.");
     }
 
     public void chatterLeft (String nickname)
     {
-        roomObj.chatEvent.emit(null, nickname + " left.");
+        emitChatEvent(null, nickname + " left.");
     }
 
     public void chatterChangedNick (String oldname, String newname)
     {
-        roomObj.chatEvent.emit(null, oldname + " is now known as <" + newname + ">.");
+        emitChatEvent(null, oldname + " is now known as <" + newname + ">.");
     }
 
     // from interface RoomService
@@ -56,7 +56,7 @@ public class RoomManager implements RoomService, Keyed
         // here we might do things like access control, etc.
 
         // send the chat event to all subscribers to the room
-        roomObj.chatEvent.emit(SessionLocal.get(Chatter.class).nickname, message);
+        emitChatEvent(SessionLocal.get(Chatter.class).nickname, message);
 
         // tell the caller their chat message was sent
         callback.onSuccess(null);
@@ -66,5 +66,9 @@ public class RoomManager implements RoomService, Keyed
     public Comparable<?> getKey ()
     {
         return roomObj.name;
+    }
+
+    protected void emitChatEvent (String nickname, String message) {
+        roomObj.chatEvent.emit(new RoomObject.ChatEvent(nickname, message));
     }
 }

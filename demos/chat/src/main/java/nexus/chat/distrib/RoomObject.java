@@ -4,10 +4,11 @@
 package nexus.chat.distrib;
 
 import com.threerings.nexus.distrib.DAttribute;
-import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.distrib.DSignal;
 import com.threerings.nexus.distrib.Keyed;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.io.Streamable;
 
 /**
  * Models an instance of a chat room.
@@ -16,7 +17,7 @@ public class RoomObject extends NexusObject
     implements Keyed
 {
     /** An event emitted when a chat message is sent. */
-    public static class ChatEvent extends DCustom.Event
+    public static class ChatEvent implements Streamable
     {
         /** The nickname of the sender of this message. */
         public final String nickname;
@@ -24,18 +25,9 @@ public class RoomObject extends NexusObject
         /** The text of the message. */
         public final String message;
 
-        public ChatEvent (int targetId, short index, String nickname, String message) {
-            super(targetId, index);
+        public ChatEvent (String nickname, String message) {
             this.nickname = nickname;
             this.message = message;
-        }
-    }
-
-    /** Used to emit and listen for chat events. */
-    public static class ChatEventSlot extends DCustom<ChatEvent>
-    {
-        public void emit (String nickname, String message) {
-            postEvent(new ChatEvent(_owner.getId(), _index, nickname, message));
         }
     }
 
@@ -46,7 +38,7 @@ public class RoomObject extends NexusObject
     public final DService<RoomService> roomSvc;
 
     /** A slot by which chat events can be listened for, and (on the server), emitted. */
-    public final ChatEventSlot chatEvent = new ChatEventSlot();
+    public final DSignal<ChatEvent> chatEvent = DSignal.create();
 
     // from interface Keyed
     public Comparable<?> getKey ()

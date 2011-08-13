@@ -16,8 +16,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import react.Slot;
+
 import com.threerings.nexus.distrib.Address;
-import com.threerings.nexus.distrib.DCustom;
 import com.threerings.nexus.util.Callback;
 import com.samskivert.swing.GroupLayout;
 
@@ -194,8 +195,8 @@ public class ChatPanel extends JPanel
             _ctx.getClient().unsubscribe(_roomobj);
         }
         _roomobj = room;
-        _roomobj.chatEvent.addListener(new DCustom.Listener<RoomObject.ChatEvent>() {
-            public void onEvent (RoomObject.ChatEvent event) {
+        _roomobj.chatEvent.connect(new Slot<RoomObject.ChatEvent>() {
+            public void onEmit (RoomObject.ChatEvent event) {
                 if (event.nickname == null) {
                     _chat.append(event.message + "\n"); // from the server
                 } else {
