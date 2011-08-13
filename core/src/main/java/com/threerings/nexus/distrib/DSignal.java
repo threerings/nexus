@@ -29,9 +29,16 @@ import static com.threerings.nexus.util.Log.log;
  * obj.myEvent.emit(new MyEvent("answer", 42));
  * </pre>
  */
-public abstract class DSignal<T> extends react.AbstractSignal<T>
+public class DSignal<T> extends react.AbstractSignal<T>
     implements DAttribute
 {
+    /**
+     * Convenience method for creating a signal without repeating the type parameter.
+     */
+    public static <T> DSignal<T> create () {
+        return new DSignal<T>();
+    }
+
     /**
      * Causes this signal to emit the supplied event.
      */
