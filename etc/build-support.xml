@@ -81,7 +81,7 @@
     </javac>
   </target>
 
-  <target name="tests" depends="compile-tests" description="Runs the unit tests.">
+  <target name="test" depends="compile-tests" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
     <!-- allows passing -Dgwt.log=TRACE to obtain GWT debug logging -->
