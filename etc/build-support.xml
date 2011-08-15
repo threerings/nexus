@@ -2,7 +2,7 @@
 <!-- defines a standard build script used by all of the nexus subprojects -->
 <project name="build-support" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
   <property name="src.dir"      value="src/main/java"/>
-  <property name="test.dir"     value="src/test/java"/>
+  <property name="tsrc.dir"     value="src/test/java"/>
   <property name="target.dir"   value="target"/>
   <property name="classes.dir"  value="${target.dir}/classes"/>
   <property name="tclasses.dir" value="${target.dir}/test-classes"/>
@@ -49,7 +49,7 @@
       <fileset dir="${src.dir}" includes="**/*.java"/>
     </copy>
     <copy todir="${tclasses.dir}">
-      <fileset dir="${test.dir}" includes="**/*.java"/>
+      <fileset dir="${tsrc.dir}" includes="**/*.java"/>
     </copy>
   </target>
 
@@ -100,7 +100,7 @@
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
       <batchtest todir="${target.dir}/test-reports">
-        <fileset dir="${test.dir}" includes="**/${test}*Test.java"/>
+        <fileset dir="${tsrc.dir}" includes="**/${test}*Test.java"/>
       </batchtest>
     </junit>
   </target>
