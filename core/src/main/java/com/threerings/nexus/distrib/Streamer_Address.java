@@ -12,7 +12,8 @@ import com.threerings.nexus.io.Streamer;
  */
 public class Streamer_Address
 {
-    public static class OfKeyed<T extends NexusObject & Keyed> implements Streamer<Address.OfKeyed<T>>
+    public static class OfKeyed<T extends NexusObject & Keyed>
+        implements Streamer<Address.OfKeyed<T>>
     {
         public Class<?> getObjectClass () {
             return Address.OfKeyed.class;
