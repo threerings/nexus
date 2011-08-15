@@ -25,5 +25,5 @@ public interface EventSink
      * Posts a service request originating from the specified object. It will be distributed
      * upstream.
      */
-    void postCall (int objectId, short attrIndex, short methodId, Object[] args);
+    void postCall (NexusObject source, short attrIndex, short methodId, Object[] args);
 }

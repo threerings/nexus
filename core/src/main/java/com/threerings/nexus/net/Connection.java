@@ -73,7 +73,7 @@ public abstract class Connection
     }
 
     // from interface EventSink
-    public void postCall (int objectId, short attrIndex, short methodId, Object[] args)
+    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
     {
         // determine whether we have a callback (which the service generator code will enforce is
         // always the final argument of the method)
@@ -90,7 +90,8 @@ public abstract class Connection
         }
 
         // finally send the service call
-        send(new Upstream.ServiceCall(callId, objectId, attrIndex, methodId, Arrays.asList(args)));
+        send(new Upstream.ServiceCall(callId, source.getId(), attrIndex,
+                                      methodId, Arrays.asList(args)));
     }
 
     // from interface Downstream.Handler

@@ -322,8 +322,8 @@ public class ObjectManager
      * Dispatches the supplied service call on the appropriate object, on the appropriate thread.
      * @param source the session from which the call originated, or null.
      */
-    public void dispatchCall (int objId, final short attrIdx, final short methId, final Object[] args,
-                              final Session source)
+    public void dispatchCall (int objId, final short attrIdx, final short methId,
+                              final Object[] args, final Session source)
     {
         invoke(objId, new Action<NexusObject>() {
             public void invoke (NexusObject object) {
@@ -348,10 +348,10 @@ public class ObjectManager
     }
 
     // from interface EventSink
-    public void postCall (int objId, short attrIdx, short methId, Object[] args)
+    public void postCall (NexusObject source, short attrIdx, short methId, Object[] args)
     {
         // calls that originate on the server are dispatched directly
-        dispatchCall(objId, attrIdx, methId, args, null);
+        dispatchCall(source.getId(), attrIdx, methId, args, null);
     }
 
     // from interface EventSink

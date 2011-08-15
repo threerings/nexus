@@ -123,7 +123,7 @@ public abstract class NexusObject
      */
     protected void postCall (short attrIndex, short methodId, Object[] args)
     {
-        _sink.postCall(getId(), attrIndex, methodId, args);
+        _sink.postCall(this, attrIndex, methodId, args);
     }
 
     /** Used by {@link #getAddress} for type jockeying. */
