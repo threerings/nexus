@@ -28,7 +28,7 @@ public class TestSink implements EventSink
     }
 
     // from interface EventSink
-    public void postCall (int objectId, short attrIndex, short methodId, Object[] args)
+    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
     {
         throw new UnsupportedOperationException();
     }
