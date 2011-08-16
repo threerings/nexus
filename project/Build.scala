@@ -85,9 +85,15 @@ object ForPlayBuild extends Build {
   )) dependsOn(testSupport)
   lazy val jvmServer = subProject("jvm-server") dependsOn(server, jvmIO)
 
+  // tools project
+  lazy val tools = subProject("tools", Seq(
+    scalacOptions    ++= Seq("-unchecked", "-deprecation"),
+    autoScalaLibrary := true // we want scala-library back
+  )) dependsOn(core)
+
   // one giant fruit roll-up to bring them all together
   lazy val nexus = Project("nexus", file(".")) aggregate(
-    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer)
+    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer, tools)
 
   // demo projects
 
