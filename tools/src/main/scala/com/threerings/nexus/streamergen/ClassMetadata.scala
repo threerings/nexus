@@ -12,8 +12,14 @@ import javax.lang.model.`type`.TypeMirror
  * Contains metadata for a single {@code Streamable} class.
  */
 class ClassMetadata (
+  /** This class's fully qualified name. */
+  val name :Name,
+
   /** This class's parent type. */
-  val parent : TypeMirror,
+  val parent :TypeMirror,
+
+  /** The fqName of the outermost enclosing class (which may be the class itself). */
+  val encloser :Name,
 
   /** Whether or not this type is abstract. */
   val isAbstract :Boolean)
@@ -31,7 +37,8 @@ class ClassMetadata (
   val argToField = MMap[Name,Name]()
 
   override def toString () = {
-    "[parent=" + parent + ", isAbstract=" + isAbstract + ", typeParams=" + typeParams +
-    ", ctorArgs=" + ctorArgs + ", fields=" + fields + ", argToField=" + argToField + "]"
+    "[name=" + name + ", parent=" + parent + ", encloser=" + encloser +
+    ", isAbstract=" + isAbstract + ", typeParams=" + typeParams + ", ctorArgs=" + ctorArgs +
+    ", fields=" + fields + ", argToField=" + argToField + "]"
   }
 }
