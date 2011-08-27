@@ -5,7 +5,8 @@ package com.threerings.nexus.streamergen
 
 import java.io.Writer
 
-import javax.lang.model.element.Name
+import javax.annotation.processing.{Filer}
+import javax.lang.model.element.{Name, TypeElement}
 
 /**
  * Generates streamer source files from extracted metadata.
@@ -26,6 +27,23 @@ object Generator
   //         return new DSignal.EmitEvent<T>(in.readInt(), in.readShort(), in.<T>readValue());
   //     }
   // }
-  def generate (outer :Name, metas :List[ClassMetadata], out :Writer) {
+  def generate (filer :Filer, outer :TypeElement, metas :Seq[ClassMetadata]) {
+    val outerName = outer.getQualifiedName.toString
+    val splitIdx = outerName.lastIndexOf(".")+1
+    val streamerName =
+      outerName.substring(0, splitIdx) + "Streamer_" + outerName.substring(splitIdx)
+    val out = filer.createSourceFile(streamerName, outer)
+    System.out.println("Creating " + out)
+
+    val w = out.openWriter
+    try {
+      generate(outer, metas, w)
+    } finally {
+      w.close
+    }
+  }
+
+  def generate (outer :TypeElement, metas :Seq[ClassMetadata], out :Writer) {
+    // TODO
   }
 }

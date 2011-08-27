@@ -1,0 +1,36 @@
+package {{package}};
+
+import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.io.Streamer;
+{{imports}}
+
+/**
+ * Handles the streaming of {@link {{outerName}}} instances.
+ */
+public class Streamer_{{outerName}}{{outerParams}}
+{{#outerIsStreamable}}
+    implements Streamer<{{outerType}}>
+{{/outerIsStreamable}}
+{
+{{#inner}
+    public static class {{name}}{{params}}
+        implements Streamer<{{type}}>
+    {
+        public Class<?> getObjectClass () {
+            return {{outerName}}.{{name}}.class;
+        }
+        public void writeObject (Streamable.Output out, {{type}} obj) {
+{{#writes}}
+            out.write{{ftype}}(obj.{{field}});
+{{/writes}}
+        }
+        public {{type}} readObject (Streamable.Input in) {
+            return new {{type}}(
+{{#reads}}
+                in.{{fparams}}read{{ftype}}(){{^-last}}, {{/-last}}
+{{/reads}}
+            );
+        }
+    }
+{{/inner}
+}

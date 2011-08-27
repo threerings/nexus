@@ -88,7 +88,10 @@ object ForPlayBuild extends Build {
   // tools project
   lazy val tools = subProject("tools", Seq(
     scalacOptions    ++= Seq("-unchecked", "-deprecation"),
-    autoScalaLibrary := true // we want scala-library back
+    autoScalaLibrary := true, // we want scala-library back
+    libraryDependencies ++= Seq(
+      "com.samskivert" % "jmustache" % "1.3"
+    )
   )) dependsOn(core)
 
   // one giant fruit roll-up to bring them all together

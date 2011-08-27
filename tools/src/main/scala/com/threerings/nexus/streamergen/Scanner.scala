@@ -4,7 +4,6 @@
 package com.threerings.nexus.streamergen;
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.{Seq => MSeq}
 
 import javax.annotation.processing.{Messager, ProcessingEnvironment}
 
@@ -28,7 +27,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
       scan(e)
       _metas
     } finally {
-      _metas.clear()
+      _metas = Seq()
     }
   }
 
@@ -39,7 +38,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
     e.getTypeParameters foreach { tpe => meta.typeParams.put(tpe.getSimpleName, tpe.asType) }
     // only add this class if it's streamable, but let it be processed regardless, as it may
     // contain nested types which are themselves streamable
-    if (isStreamable(e)) _metas += meta
+    if (isStreamable(e)) _metas = _metas :+ meta
     _mstack = meta :: _mstack
     super.visitType(e, p)
     _mstack = _mstack.tail
@@ -82,6 +81,6 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
   protected val _msgr = env.getMessager
   protected val _types = env.getTypeUtils
 
-  protected val _metas = MSeq[ClassMetadata]()
+  protected var _metas = Seq[ClassMetadata]()
   protected var _mstack :List[ClassMetadata] = Nil
 }
