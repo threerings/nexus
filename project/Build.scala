@@ -90,7 +90,7 @@ object ForPlayBuild extends Build {
     scalacOptions    ++= Seq("-unchecked", "-deprecation"),
     autoScalaLibrary := true, // we want scala-library back
     libraryDependencies ++= Seq(
-      "com.samskivert" % "jmustache" % "1.3"
+      "com.samskivert" % "jmustache" % "1.4-SNAPSHOT"
     )
   )) dependsOn(core)
 

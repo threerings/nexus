@@ -1,5 +1,7 @@
+{{#package}}
 package {{package}};
 
+{{/package}}
 import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 {{#imports}}
@@ -12,36 +14,82 @@ import {{.}};
 /**
  * Handles the streaming of {@link {{outerName}}} and/or nested classes.
  */
-public class Streamer_{{outerName}}{{outerParams}}
-{{#outerIsStreamable}}
-    implements Streamer<{{outerType}}>
-{{/outerIsStreamable}}
+public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
+{{#outer}}
+{{^isAbstract}}
+    implements Streamer<{{typeUse}}>
+{{/isAbstract}}
+{{/outer}}
 {
-{{#inner}}
+{{#inners}}
     /**
      * Handles the streaming of {@link {{outerName}}.{{name}}} instances.
      */
-    public static class {{name}}{{params}}
-        implements Streamer<{{outerName}}.{{type}}>
+    public static class {{name}}{{typeBounds}}
+{{^isAbstract}}
+        implements Streamer<{{typeUse}}>
+{{/isAbstract}}
     {
+{{^isAbstract}}
+        @Override
         public Class<?> getObjectClass () {
             return {{outerName}}.{{name}}.class;
         }
-        public void writeObject (Streamable.Output out, {{outerName}}.{{type}} obj) {
+
+        @Override
+{{/isAbstract}}
+        public void writeObject (Streamable.Output out, {{typeUse}} obj) {
+{{#hasSuperWrite}}
+            super.writeObject(out, obj);
+{{/hasSuperWrite}}
 {{#writes}}
-            out.write{{ftype}}(obj.{{field}});
+            out.write{{fkind}}(obj.{{fname}});
 {{/writes}}
         }
-        public {{outerName}}.{{type}} readObject (Streamable.Input in) {
-            return new {{outerName}}.{{type}}(
+{{^isAbstract}}
+
+        @Override
+        public {{typeUse}} readObject (Streamable.Input in) {
+            return new {{typeUse}}(
 {{#reads}}
-                in.{{fparams}}read{{ftype}}(){{^-last}}, {{/-last}}
+                in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
 {{/reads}}
             );
         }
+{{/isAbstract}}
     }
-{{^-last}}
 
-{{/-last}}
-{{/inner}}
+{{/inners}}
+{{#outer}}
+{{^isAbstract}}
+    @Override
+    public Class<?> getObjectClass () {
+        return {{name}}.class;
+    }
+
+    @Override
+{{/isAbstract}}
+    public void writeObject (Streamable.Output out, {{typeUse}} obj) {
+{{#hasSuperWrite}}
+        super.writeObject(out, obj);
+{{/hasSuperWrite}}
+{{#writes}}
+        out.write{{fkind}}(obj.{{fname}});
+{{/writes}}
+    }
+{{^isAbstract}}
+
+    @Override
+    public {{typeUse}} readObject (Streamable.Input in) {
+        return new {{typeUse}}(
+{{#reads}}
+            in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
+{{/reads}}
+        );
+    }
+{{/isAbstract}}
+{{/outer}}
+{{^outer}}
+    // no streamer for non-Streamable enclosing class: {{outerName}}
+{{/outer}}
 }

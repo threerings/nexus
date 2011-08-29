@@ -29,12 +29,21 @@ class StreamerGenTest
   @Test def testBox {
     val metas = TestCompiler.genMetas("Box.java", """
       public class Box<T> implements com.threerings.nexus.io.Streamable {
-        public final T value;
-        public Box (T value) {
-          this.value = value;
+        public final T value1;
+        public final T _value2;
+        public final T value3_;
+        public final T value4;
+        public final T value5;
+        public Box (T value1, T value2, T value3, T _value4, T value5_) {
+          this.value1 = value1;
+          this._value2 = value2;
+          this.value3_ = value3;
+          this.value4 = _value4;
+          this.value5 = value5_;
         }
       }
       """)
+    // System.err.println(metas.head.argToField)
   }
 
   @Test def testNested {
@@ -45,11 +54,11 @@ class StreamerGenTest
         public class Inner2 implements com.threerings.nexus.io.Streamable {}
       }
       """)
-    System.err.println(source)
+    // System.err.println(source)
   }
 
   @Test def testNestedInStreamable {
-    val metas = TestCompiler.genMetas("Outer.java", """
+    val source = TestCompiler.genSource("Outer.java", """
       package foo.bar;
       import com.threerings.nexus.io.Streamable;
       public class Outer implements Streamable {
@@ -57,7 +66,62 @@ class StreamerGenTest
         public class Inner2 implements Streamable {}
       }
       """)
-    metas foreach System.err.println
+    // System.err.println(source)
+  }
+
+  @Test def testInherit {
+    val source = TestCompiler.genSource("Container.java", """
+      package foo.bar;
+      public class Container {
+        public class Parent implements com.threerings.nexus.io.Streamable {
+          public final String first, last;
+          public Parent (String first, String last) {
+            this.first = first;
+            this.last = last;
+          }
+        }
+        public class Child extends Parent {
+          public Child (String first, String last, int one, int two) {
+            super(first, last);
+            _one = one;
+            _two = two;
+          }
+          // fields are written in ctor arg order, not field declaration order
+          protected int _two;
+          protected int _one;
+        }
+      }
+      """)
+    // System.err.println(source)
+  }
+
+  @Test def testParameterized {
+    val source = TestCompiler.genSource("Box.java", """
+      import java.util.Map;
+      public class Box<A,B,K,V> implements com.threerings.nexus.io.Streamable {
+        public final A valueA;
+        public final Class<B> classB;
+        public final Map<K,V> map;
+        public Box (A valueA, Class<B> classB, Map<K,V> map) {
+          this.valueA = valueA;
+          this.classB = classB;
+          this.map = map;
+        }
+      }
+      """)
+    // System.err.println(source)
+  }
+
+  @Test def testBounded {
+    val source = TestCompiler.genSource("Box.java", """
+      public class Box<T extends Comparable<T>> implements com.threerings.nexus.io.Streamable {
+        public final T value;
+        public Box (T value) {
+          this.value = value;
+        }
+      }
+      """)
+    System.err.println(source)
   }
 }
 

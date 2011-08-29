@@ -3,45 +3,89 @@
 
 package com.threerings.nexus.streamergen
 
-import scala.collection.mutable.{Map => MMap, LinkedHashMap => LHMap}
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{Map => MMap, LinkedHashMap => LHMap, Set => MSet}
 
-import javax.lang.model.element.Name
-import javax.lang.model.`type`.TypeMirror
+import java.lang.{Iterable => JIterable}
+import javax.lang.model.element.{Modifier, Name, TypeElement}
+import javax.lang.model.`type`.{DeclaredType, TypeMirror}
 
 /**
- * Contains metadata for a single {@code Streamable} class.
+ * Contains metadata for a single `Streamable` class.
+ * @param elem the class's type element.
  */
-class ClassMetadata (
-  /** This class's fully qualified name. */
-  val fqName :Name,
-
-  /** This class's simple name. */
-  val name :Name,
-
-  /** This class's parent type. */
-  val parent :TypeMirror,
-
-  /** The fqName of the outermost enclosing class (which may be the class itself). */
-  val encloser :Name,
-
-  /** Whether or not this type is abstract. */
-  val isAbstract :Boolean)
-{
-  /** An ordered mapping from type parameters to bounds. */
-  var typeParams = LHMap[Name,TypeMirror]()
+class ClassMetadata (val elem :TypeElement) {
+  /** The number of args to our supertype constructor. */
+  def superCtorArgs :Int = Utils.countSuperCtorArgs(elem)
 
   /** An ordered mapping from constructor argument name to type. */
-  var ctorArgs =  LHMap[Name,TypeMirror]()
+  var ctorArgs = LHMap[String,TypeMirror]()
 
-  /** An unordered mapping from field name to type. */
-  val fields = MMap[Name,TypeMirror]()
+  /** The constructor arguments with the first `superCtorArgs` arguments dropped.
+   * These arguments should correspond to fields declared by this class. */
+  lazy val localCtorArgs :Map[String,TypeMirror] = ctorArgs.drop(superCtorArgs).toMap
 
-  /** A mapping from constructor arg name to field name. Computed by {@link #mapArgsToFields}. */
-  val argToField = MMap[Name,Name]()
+  /** An unordered mapping from field name to type. Includes supertype fields. */
+  val fields = MMap[String,TypeMirror]()
 
-  override def toString () = {
-    "[name=" + name + ", parent=" + parent + ", encloser=" + encloser +
-    ", isAbstract=" + isAbstract + ", typeParams=" + typeParams + ", ctorArgs=" + ctorArgs +
-    ", fields=" + fields + ", argToField=" + argToField + "]"
+  /** A mapping from constructor arg name to field name. */
+  lazy val argToField :Map[String,String] = (for {
+    field <- fields keys;
+    arg <- variants(field) find(localCtorArgs.contains)
+  } yield (arg -> field)) toMap
+
+  /** Returns info on any unmatched constructor args. */
+  lazy val unmatchedCtorArgs :Seq[String] =
+    (localCtorArgs.keySet -- argToField.keySet) map { n => localCtorArgs(n) + " " + n } toSeq
+
+  /** This class's type. */
+  def typ = elem.asType.asInstanceOf[DeclaredType]
+
+  /** This class's simple name. */
+  def name = elem.getSimpleName
+
+  /** Whether or not this type is abstract. */
+  def isAbstract = elem.getModifiers.contains(Modifier.ABSTRACT)
+
+  /** Returns the type name for this class (including type parameters without bounds). */
+  def typeUse = Utils.toString(typ, false)
+
+  /** Returns just this type's type parameters (including type bounds). */
+  def typeBounds =
+    if (typ.getTypeArguments.isEmpty) ""
+    else typ.getTypeArguments.map(ta => Utils.toString(ta, true)).mkString("<", ",", ">")
+
+  /** The field names in the order defined by their corresponding constructor argument. */
+  def orderedFieldNames :Seq[String] = localCtorArgs.keys.toSeq map(argToField)
+
+  /** Whether or not this class needs to call `super.writeObject` (used in template). */
+  def hasSuperWrite = ctorArgs.size > fields.size
+
+  /** Returns a list of objects used by the template to format the field writes. */
+  def writes :JIterable[AnyRef] = orderedFieldNames map(f => fieldToWrite(f, fields(f)))
+
+  /** Returns a list of objects used by the template to format the field reads. */
+  def reads :JIterable[AnyRef] = ctorArgs.values.toSeq map(fieldToRead)
+
+  override def toString () = String.format(
+    "[type=%s, ctorArgs=%s, fields=%s]", typ, ctorArgs, fields)
+
+  private def fieldToWrite (name :String, field :TypeMirror) = new AnyRef {
+    val fname = name
+    val fkind = Utils.fieldKind(field)
   }
+
+  private def fieldToRead (field :TypeMirror) = new AnyRef {
+    val fkind = Utils.fieldKind(field)
+    val vtype = Utils.valueType(field)
+  }
+
+  /** Generates all variants of a field name that we allow as a matching constructor arg. */
+  private def variants (field :String) = Iterator(
+    field,                      // the field name itself
+    field.replaceAll("^_", ""), // the field name minus leading _
+    field.replaceAll("_$", ""), // the field name minus trailing _
+    "_" + field,                // the field name plus leading _
+    field + "_"                 // the field name plus trailing _
+  )
 }

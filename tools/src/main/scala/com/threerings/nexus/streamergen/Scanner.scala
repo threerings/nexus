@@ -6,10 +6,11 @@ package com.threerings.nexus.streamergen;
 import scala.collection.JavaConversions._
 
 import javax.annotation.processing.{Messager, ProcessingEnvironment}
+import javax.tools.Diagnostic
 
-import javax.lang.model.element.{Element, ElementKind, ExecutableElement, Modifier}
+import javax.lang.model.element.{Element, ElementKind, ExecutableElement}
 import javax.lang.model.element.{Name, TypeElement, TypeParameterElement, VariableElement}
-import javax.lang.model.`type`.{DeclaredType, TypeKind, TypeMirror, TypeVariable}
+import javax.lang.model.`type`.{DeclaredType, TypeKind, TypeMirror, TypeVariable, NoType}
 import javax.lang.model.util.{ElementScanner6, Types}
 
 /**
@@ -32,31 +33,34 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
   }
 
   override def visitType (e :TypeElement, p :Unit) {
-    val meta = new ClassMetadata(e.getQualifiedName, e.getSimpleName, e.getSuperclass,
-                                 getEncloser(e).getQualifiedName,
-                                 e.getModifiers.contains(Modifier.ABSTRACT))
-    e.getTypeParameters foreach { tpe => meta.typeParams.put(tpe.getSimpleName, tpe.asType) }
-    // only add this class if it's streamable, but let it be processed regardless, as it may
-    // contain nested types which are themselves streamable
-    if (isStreamable(e)) _metas = _metas :+ meta
+    val meta = new ClassMetadata(e)
     _mstack = meta :: _mstack
     super.visitType(e, p)
     _mstack = _mstack.tail
-    // System.err.println("Processed type " + e.getSimpleName + " -> " + meta)
+
+    // if this class was streamable, add it to the list of scanned metadatas; also check that we
+    // extracted valid metadata
+    if (isStreamable(e)) {
+      if (meta.unmatchedCtorArgs.isEmpty) _metas = _metas :+ meta
+      else env.getMessager.printMessage(
+        Diagnostic.Kind.ERROR, "Failed to match one or more ctor fields in " + meta.typ + ": " +
+        meta.unmatchedCtorArgs.mkString(", "))
+    }
   }
 
   override def visitExecutable (e :ExecutableElement, p :Unit) {
     super.visitExecutable(e, p)
     if (e.getKind == ElementKind.CONSTRUCTOR) {
-      e.getParameters foreach { arg => _mstack.head.ctorArgs.put(arg.getSimpleName, arg.asType) }
+      for (arg <- e.getParameters) {
+        _mstack.head.ctorArgs += (arg.getSimpleName.toString -> arg.asType)
+      }
     }
   }
 
   override def visitVariable (e :VariableElement, p :Unit) {
     super.visitVariable(e, p)
     if (e.getKind == ElementKind.FIELD) {
-      // System.err.println("Noting field " + e)
-      _mstack.head.fields.put(e.getSimpleName, e.asType)
+      _mstack.head.fields += (e.getSimpleName.toString -> e.asType)
     }
   }
 
@@ -72,14 +76,6 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
       "com.threerings.nexus.io.Streamable"
     case _ => false
   }
-
-  protected def getEncloser (e :TypeElement) :TypeElement = e.getEnclosingElement match {
-    case ee :TypeElement if (ee != null) => getEncloser(ee)
-    case _ => e
-  }
-
-  protected val _msgr = env.getMessager
-  protected val _types = env.getTypeUtils
 
   protected var _metas = Seq[ClassMetadata]()
   protected var _mstack :List[ClassMetadata] = Nil
