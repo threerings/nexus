@@ -13,6 +13,9 @@ import javax.lang.model.`type`.TypeMirror
  */
 class ClassMetadata (
   /** This class's fully qualified name. */
+  val fqName :Name,
+
+  /** This class's simple name. */
   val name :Name,
 
   /** This class's parent type. */

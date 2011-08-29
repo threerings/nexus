@@ -6,6 +6,7 @@ package com.threerings.nexus.streamergen
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{Seq => MSeq}
 
+import java.io.StringWriter
 import java.net.URI
 
 import javax.annotation.processing.SupportedAnnotationTypes
@@ -20,6 +21,11 @@ import org.junit.Test
  */
 class StreamerGenTest
 {
+  @Test def testStreamerName {
+    assertEquals("Streamer_Foo", Generator.streamerName("Foo"))
+    assertEquals("foo.bar.Streamer_Foo", Generator.streamerName("foo.bar.Foo"))
+  }
+
   @Test def testBox {
     val metas = TestCompiler.genMetas("Box.java", """
       public class Box<T> implements com.threerings.nexus.io.Streamable {

@@ -32,7 +32,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
   }
 
   override def visitType (e :TypeElement, p :Unit) {
-    val meta = new ClassMetadata(e.getQualifiedName, e.getSuperclass,
+    val meta = new ClassMetadata(e.getQualifiedName, e.getSimpleName, e.getSuperclass,
                                  getEncloser(e).getQualifiedName,
                                  e.getModifiers.contains(Modifier.ABSTRACT))
     e.getTypeParameters foreach { tpe => meta.typeParams.put(tpe.getSimpleName, tpe.asType) }
