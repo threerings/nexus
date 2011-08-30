@@ -2,7 +2,9 @@
 <!-- defines a standard build script used by all of the nexus subprojects -->
 <project name="build-support" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
   <property name="src.dir"      value="src/main/java"/>
+  <property name="ssrc.dir"     value="src/main/scala"/>
   <property name="tsrc.dir"     value="src/test/java"/>
+  <property name="stsrc.dir"    value="src/test/scala"/>
   <property name="target.dir"   value="target"/>
   <property name="classes.dir"  value="${target.dir}/classes"/>
   <property name="tclasses.dir" value="${target.dir}/test-classes"/>
@@ -34,9 +36,24 @@
   <target name="-prepare" depends="-init-maven-ant">
     <mkdir dir="${target.dir}"/>
 
+    <!-- check whether we have java main source -->
+    <condition property="have.java">
+      <resourceexists><file file="${src.dir}"/></resourceexists>
+    </condition>
+
+    <!-- check whether we have scala main source -->
+    <condition property="have.scala">
+      <resourceexists><file file="${ssrc.dir}"/></resourceexists>
+    </condition>
+
     <!-- check whether we have test source -->
-    <condition property="have.tests">
+    <condition property="have.javatests">
       <resourceexists><file file="${tsrc.dir}"/></resourceexists>
+    </condition>
+
+    <!-- check whether we have scala test source -->
+    <condition property="have.scalatests">
+      <resourceexists><file file="${stsrc.dir}"/></resourceexists>
     </condition>
   </target>
 
@@ -53,11 +70,22 @@
     </copy>
   </target>
 
-  <target name="compile" depends="-prepare,-prep-gwt" description="Compiles the code.">
+  <target name="-prep-scala">
+    <artifact:dependencies pathId="scalac.classpath">
+      <dependency groupId="org.scala-lang" artifactId="scala-compiler" version="2.9.0"/>
+      <dependency groupId="org.scala-lang" artifactId="scala-library" version="2.9.0"/>
+    </artifact:dependencies>
+    <taskdef resource="scala/tools/ant/antlib.xml" classpathref="scalac.classpath"/>
+  </target>
+
+  <target name="-prep-compile">
     <mkdir dir="${classes.dir}"/>
     <copy todir="${classes.dir}" failonerror="false">
       <fileset dir="src/main/resources" includes="**"/>
     </copy>
+  </target>
+
+  <target name="-compile-java" depends="-prep-compile" if="have.java">
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.6" target="1.6" encoding="utf-8">
       <classpath refid="classpath"/>
@@ -67,12 +95,21 @@
     </javac>
   </target>
 
-  <target name="compile-tests" depends="compile" if="have.tests"
-          description="Compiles test code.">
+  <target name="-compile-scala" depends="-prep-compile,-prep-scala" if="have.scala">
+    <scalac srcdir="${ssrc.dir}" destdir="${classes.dir}" classpathref="classpath"/>
+  </target>
+
+  <target name="compile" depends="-prepare,-prep-gwt,-compile-java,-compile-scala"
+          description="Compiles the code."/>
+
+  <target name="-prep-test">
     <mkdir dir="${tclasses.dir}"/>
     <copy todir="${classes.dir}" failonerror="false">
       <fileset dir="src/test/resources" includes="**"/>
     </copy>
+  </target>
+
+  <target name="-compile-java-tests" depends="-prep-test" if="hava.javatests">
     <javac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
            debug="on" deprecation="on" source="1.6" target="1.6" encoding="utf-8">
       <classpath refid="test.classpath"/>
@@ -80,6 +117,13 @@
       <compilerarg value="-Xlint:-serial"/>
     </javac>
   </target>
+
+  <target name="-compile-scala-tests" depends="-prep-test,-prep-scala" if="have.scalatests">
+    <scalac srcdir="${stsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
+  </target>
+
+  <target name="compile-tests" depends="compile,-compile-java-tests,-compile-scala-tests"
+          description="Compiles test code."/>
 
   <target name="test" depends="compile-tests" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
@@ -100,7 +144,7 @@
       <formatter type="brief" usefile="false"/>
       <formatter type="xml"/>
       <batchtest todir="${target.dir}/test-reports">
-        <fileset dir="${tsrc.dir}" includes="**/${test}*Test.java"/>
+        <fileset dir="${tclasses.dir}" includes="**/${test}*Test.class"/>
       </batchtest>
     </junit>
   </target>
@@ -112,7 +156,10 @@
   <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
   <target name="install" depends="package,test"
           description="Deploys our build artifacts to a Maven repository.">
-    <jar basedir="${src.dir}" destfile="${target.dir}/${ant.project.name}-sources.jar"/>
+    <jar destfile="${target.dir}/${ant.project.name}-sources.jar">
+      <fileset dir="${src.dir}" includes="**/*.java" erroronmissingdir="false"/>
+      <fileset dir="${ssrc.dir}" includes="**/*.scala" erroronmissingdir="false"/>
+    </jar>
     <artifact:deploy file="${target.dir}/${ant.project.name}.jar" uniqueVersion="false">
       <remoteRepository url="${maven.deploy.repo}"/>
       <pom refid="pom"/>
