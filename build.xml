@@ -9,6 +9,7 @@
     <ant dir="jvm-server" target="clean"/>
     <ant dir="gwt-io" target="clean"/>
     <ant dir="gwt-server" target="clean"/>
+    <ant dir="tools" target="clean"/>
     <ant dir="demos/chat" target="clean"/>
   </target>
 
@@ -20,6 +21,7 @@
     <ant dir="jvm-server" target="compile"/>
     <ant dir="gwt-io" target="compile"/>
     <ant dir="gwt-server" target="compile"/>
+    <ant dir="tools" target="compile"/>
     <ant dir="demos/chat" target="compile"/>
   </target>
 
@@ -31,5 +33,6 @@
     <ant dir="jvm-server" target="install"/>
     <ant dir="gwt-io" target="install"/>
     <ant dir="gwt-server" target="install"/>
+    <ant dir="tools" target="install"/>
   </target>
 </project>
