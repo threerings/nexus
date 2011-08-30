@@ -1,24 +1,4 @@
 <?xml version="1.0"?>
 <project name="nexus-tools" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <import file="../etc/build-support.xml"/>
-
-  <target name="test-streamergen" depends="compile"
-          description="Tests the Streamer generator javac plugin.">
-    <javac fork="yes" debug="on" source="1.6" target="1.6" encoding="utf-8" includeAntRuntime="no"
-           srcdir="${tsrc.dir}">
-      <classpath>
-        <path refid="test.classpath"/>
-      </classpath>
-      <compilerarg value="-J-ea"/>
-      <compilerarg value="-Xlint"/>
-      <compilerarg value="-Xlint:-serial"/>
-      <!--<compilerarg value="-XprintProcessorInfo"/>-->
-      <compilerarg value="-implicit:class"/>
-      <compilerarg value="-processor"/>
-      <compilerarg value="com.threerings.nexus.streamergen.Processor"/>
-      <compilerarg value="-proc:only"/>
-      <include name="com/threerings/nexus/streamergen/Streamables.java"/>
-    </javac>
-  </target>
-
 </project>
