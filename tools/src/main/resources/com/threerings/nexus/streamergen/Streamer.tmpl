@@ -55,11 +55,11 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
 {{#reads}}
                 in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
 {{/reads}}
+            );
 {{#isNexusObject}}
             obj.readContents(in);
             return obj;
 {{/isNexusObject}}
-            );
         }
 
 {{/isAbstract}}
@@ -100,6 +100,7 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
 {{#reads}}
             in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
 {{/reads}}
+        );
 {{#isNexusObject}}
         obj.readContents(in);
         return obj;
