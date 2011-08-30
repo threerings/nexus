@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <project name="nexus-core" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <property name="build.copy-gwt-sources" value="true"/>
+  <property name="genstreamer.excludes" value="**/NexusException.java"/>
   <import file="../etc/build-support.xml"/>
 </project>

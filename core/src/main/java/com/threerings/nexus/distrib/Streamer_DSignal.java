@@ -8,22 +8,40 @@ import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 
 /**
- * Contains streamers for {@link DSignal} inner classes.
+ * Handles the streaming of {@link DSignal} and/or nested classes.
  */
 public class Streamer_DSignal
 {
-    /** Handles streaming of {@link DSignal.EmitEvent} instances. */
-    public static class EmitEvent<T> implements Streamer<DSignal.EmitEvent<T>> {
+    /**
+     * Handles the streaming of {@link DSignal.EmitEvent} instances.
+     */
+    public static class EmitEvent<T>
+        implements Streamer<DSignal.EmitEvent<T>>
+    {
+        @Override
         public Class<?> getObjectClass () {
             return DSignal.EmitEvent.class;
         }
+
+        @Override
         public void writeObject (Streamable.Output out, DSignal.EmitEvent<T> obj) {
-            out.writeInt(obj.targetId);
-            out.writeShort(obj.index);
+            writeObjectImpl(out, obj);
+        }
+
+        @Override
+        public DSignal.EmitEvent<T> readObject (Streamable.Input in) {
+            return new DSignal.EmitEvent<T>(
+                in.readInt(),
+                in.readShort(),
+                in.<T>readValue()
+            );
+        }
+
+        public static <T> void writeObjectImpl (Streamable.Output out, DSignal.EmitEvent<T> obj) {
+            Streamer_DAttribute.Event.writeObjectImpl(out, obj);
             out.writeValue(obj._event);
         }
-        public DSignal.EmitEvent<T> readObject (Streamable.Input in) {
-            return new DSignal.EmitEvent<T>(in.readInt(), in.readShort(), in.<T>readValue());
-        }
     }
+
+    // no streamer for non-Streamable enclosing class: DSignal
 }
