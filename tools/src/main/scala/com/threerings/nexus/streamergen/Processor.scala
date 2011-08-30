@@ -4,11 +4,12 @@
 package com.threerings.nexus.streamergen
 
 import scala.collection.JavaConversions._
+import scala.io.Source
 
 import java.util.Set
 
 import javax.annotation.processing.{AbstractProcessor, Filer, ProcessingEnvironment}
-import javax.annotation.processing.{RoundEnvironment, SupportedAnnotationTypes}
+import javax.annotation.processing.{SupportedAnnotationTypes, SupportedOptions, RoundEnvironment}
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.{Element, TypeElement, Name}
 import javax.tools.Diagnostic
@@ -16,12 +17,24 @@ import javax.tools.Diagnostic
 /**
  * Generates {@code Streamer} implementations for {@link Streamable} classes.
  */
+@SupportedOptions(Array(ProcessorOpts.Header))
 @SupportedAnnotationTypes(Array("*"))
 class Processor extends AbstractProcessor {
   override def init (procenv :ProcessingEnvironment) {
     super.init(procenv)
     _filer = procenv.getFiler
     _scanner = new Scanner(procenv)
+
+    // if a source header was specified, read it in and configure the generator
+    val header = procenv.getOptions().get(ProcessorOpts.Header)
+    if (header != null) {
+      try {
+        Generator.setSourceHeader(Source.fromFile(header).mkString)
+      } catch {
+        case e => procenv.getMessager.printMessage(
+          Diagnostic.Kind.WARNING, "Unable to read source header at '" + header + "': " + e)
+      }
+    }
   }
 
   override def getSupportedSourceVersion :SourceVersion = SourceVersion.latest
@@ -46,4 +59,8 @@ class Processor extends AbstractProcessor {
 
   protected var _scanner :Scanner = _
   protected var _filer :Filer = _
+}
+
+object ProcessorOpts {
+  final val Header = "com.threerings.nexus.streamergen.header"
 }

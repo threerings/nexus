@@ -19,6 +19,10 @@ import com.samskivert.mustache.Mustache
  */
 object Generator
 {
+  def setSourceHeader (header :String) {
+    _header = header
+  }
+
   def generate (filer :Filer, outer :TypeElement, metas :Seq[ClassMetadata]) {
     val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
     val w = out.openWriter
@@ -50,6 +54,7 @@ object Generator
       finally source.close
     }
 
+    out.write(_header)
     template.execute(ctx, out)
   }
 
@@ -58,5 +63,7 @@ object Generator
     fqName.substring(0, dotIdx) + "Streamer_" + fqName.substring(dotIdx)
   }
 
-  private val StreamerTmpl = "com/threerings/nexus/streamergen/Streamer.tmpl"
+  private var _header = ""
+
+  private final val StreamerTmpl = "com/threerings/nexus/streamergen/Streamer.tmpl"
 }

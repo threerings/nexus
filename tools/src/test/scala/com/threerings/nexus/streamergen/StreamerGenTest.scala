@@ -221,6 +221,25 @@ class StreamerGenTest
       """)
     assertEquals(Set("Box", "java.util.Map"), metas.head.imports)
   }
+
+  @Test def testSourceHeader {
+    val header = "// foo bar baz!\n\n"
+    Generator.setSourceHeader(header)
+    try {
+      val source = TestCompiler.genSource("Box.java", """
+        package foo.bar;
+        public class Box<T> implements com.threerings.nexus.io.Streamable {
+          public final T value;
+          public Box (T value) {
+            this.value = value;
+          }
+        }
+        """)
+      assertTrue(source.startsWith(header))
+    } finally {
+      Generator.setSourceHeader("")
+    }
+  }
 }
 
 object TestCompiler {
