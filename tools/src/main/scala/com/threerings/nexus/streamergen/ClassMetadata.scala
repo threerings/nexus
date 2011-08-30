@@ -23,7 +23,7 @@ class ClassMetadata (val elem :TypeElement) {
 
   /** The constructor arguments with the first `superCtorArgs` arguments dropped.
    * These arguments should correspond to fields declared by this class. */
-  lazy val localCtorArgs :Map[String,TypeMirror] = ctorArgs.drop(superCtorArgs).toMap
+  lazy val localCtorArgs :Seq[String] = ctorArgs.keys.toSeq.drop(superCtorArgs)
 
   /** An unordered mapping from field name to type. Includes supertype fields. */
   val fields = MMap[String,TypeMirror]()
@@ -31,12 +31,12 @@ class ClassMetadata (val elem :TypeElement) {
   /** A mapping from constructor arg name to field name. */
   lazy val argToField :Map[String,String] = (for {
     field <- fields keys;
-    arg <- variants(field) find(localCtorArgs.contains)
+    arg <- variants(field) find(ctorArgs.contains)
   } yield (arg -> field)) toMap
 
   /** Returns info on any unmatched constructor args. */
   lazy val unmatchedCtorArgs :Seq[String] =
-    (localCtorArgs.keySet -- argToField.keySet) map { n => localCtorArgs(n) + " " + n } toSeq
+    (localCtorArgs.toSet -- argToField.keySet) map { n => ctorArgs(n) + " " + n } toSeq
 
   /** This class's type. */
   def typ = elem.asType.asInstanceOf[DeclaredType]
@@ -70,7 +70,7 @@ class ClassMetadata (val elem :TypeElement) {
     else typ.getTypeArguments.map(ta => Utils.toString(ta, true)).mkString("<", ",", ">")
 
   /** The field names in the order defined by their corresponding constructor argument. */
-  def orderedFieldNames :Seq[String] = localCtorArgs.keys.toSeq map(argToField)
+  def orderedFieldNames :Seq[String] = localCtorArgs map(argToField)
 
   /** Whether or not this class needs to call `super.writeObject` (used in template). */
   def hasSuperWrite = ctorArgs.size > fields.size

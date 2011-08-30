@@ -240,6 +240,34 @@ class StreamerGenTest
       Generator.setSourceHeader("")
     }
   }
+
+  @Test def testFoo {
+    val metas = TestCompiler.genMetas("Upstream.java", """
+      package foo.bar;
+      import java.util.List;
+      import com.threerings.nexus.io.Streamable;
+      public interface Upstream extends Streamable {
+        public static class ServiceCall implements Upstream {
+          public final int callId;
+          public final int objectId;
+          public final short attrIndex;
+          public final short methodId;
+          public final List<Object> args;
+          public ServiceCall (int callId, int objectId, short attrIndex,
+                              short methodId, List<Object> args) {
+              this.callId = callId;
+              this.objectId = objectId;
+              this.attrIndex = attrIndex;
+              this.methodId = methodId;
+              this.args = args;
+          }
+        }
+      }
+      """)
+    // make sure our ctorArgs are not reordered due to LocalHashMap.keys funny biz
+    assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.localCtorArgs)
+    assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.orderedFieldNames)
+  }
 }
 
 object TestCompiler {
