@@ -14,9 +14,9 @@ class Locals (locals :(String, String, ModuleID)*) {
     if (subproj == null) RootProject(dir) else ProjectRef(dir, subproj)
 }
 
-object ForPlayBuild extends Build {
+object NexusBuild extends Build {
   val locals = new Locals(
-    ("react",      null,  "com.threerings" % "react" % "1.0-SNAPSHOT")
+    ("react", null,  "com.threerings" % "react" % "1.0-SNAPSHOT")
   )
 
   // common build configuration
@@ -27,6 +27,7 @@ object ForPlayBuild extends Build {
     javacOptions     ++= Seq("-Xlint", "-Xlint:-serial"),
     fork in Compile  := true,
     resolvers        += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository",
+    scalaVersion     := "2.9.0-1",
     autoScalaLibrary := false, // no scala-library dependency
     libraryDependencies ++= Seq(
       "junit" % "junit" % "4.+" % "test",
