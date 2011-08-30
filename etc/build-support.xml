@@ -149,6 +149,31 @@
     </junit>
   </target>
 
+  <property name="genstreamer.excludes" value="notused"/>
+  <target name="genstreamer" depends="-prepare" description="Generates Streamer code.">
+    <artifact:dependencies pathId="tools.classpath">
+      <dependency groupId="com.threerings" artifactId="nexus-tools" version="1.0-SNAPSHOT"/>
+    </artifact:dependencies>
+    <javac srcdir="${src.dir}" includeAntRuntime="false"
+           source="1.6" target="1.6" encoding="utf-8">
+      <classpath>
+        <path refid="classpath"/>
+        <path refid="tools.classpath"/>
+      </classpath>
+      <compilerarg value="-processor"/>
+      <compilerarg value="com.threerings.nexus.streamergen.Processor"/>
+      <compilerarg value="-proc:only"/>
+      <compilerarg value="-Acom.threerings.nexus.streamergen.header=lib/SOURCE_HEADER"/>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+      <compilerarg value="-Xlint:rawtypes"/>
+      <compilerarg value="-s"/>
+      <compilerarg value="${src.dir}"/>
+      <exclude name="**/Streamer_*.java"/>
+      <exclude name="${genstreamer.excludes}"/>
+    </javac>
+  </target>
+
   <target name="package" depends="compile" description="Compiles code and builds jar file.">
     <jar destfile="${target.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
