@@ -12,6 +12,8 @@ import javax.lang.model.`type`.{DeclaredType, NoType, WildcardType}
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
+import com.threerings.nexus.distrib.NexusObject
+
 /**
  * Various utility bits.
  */
@@ -59,6 +61,15 @@ object Utils
         ", encl=" + e + ", kind=" + e.getKind + "]")
     }
     addName(elem, new StringBuilder).toString
+  }
+
+  /**
+   * Returns true if the supplied type extends `NexusObject`.
+   */
+  def isNexusObject (t :TypeMirror) :Boolean = t match {
+    case dt :DeclaredType => (qualifiedName(dt) == classOf[NexusObject].getName ||
+                              isNexusObject(dt.asElement.asInstanceOf[TypeElement].getSuperclass))
+    case _ => false
   }
 
   /**

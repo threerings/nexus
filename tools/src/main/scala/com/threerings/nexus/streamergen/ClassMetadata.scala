@@ -42,18 +42,20 @@ class ClassMetadata (val elem :TypeElement) {
   def typ = elem.asType.asInstanceOf[DeclaredType]
 
   /** This class's simple name. */
-  def name = elem.getSimpleName
+  def name = elem.getSimpleName.toString
 
   /** Whether or not this type is abstract. */
   def isAbstract = elem.getModifiers.contains(Modifier.ABSTRACT)
+
+  /** Whether or not this is metadata for a `NexusObject` derivative. */
+  def isNexusObject = Utils.isNexusObject(elem.asType)
 
   /** Returns the imports needed by this class metadata. */
   def imports :Set[String] = {
     val self = Utils.collectImports(elem.asType)
     val cimps = ctorArgs.values.map(Utils.collectImports)
     val fimps = fields.values.map(Utils.collectImports)
-    val all = (self /: (cimps ++ fimps)) { _ ++ _ }
-    all
+    (self /: (cimps ++ fimps)) { _ ++ _ } // look Ma, it's like APL!
   }
 
   /** Returns the name of our parent class, including enclosing classes, not including type

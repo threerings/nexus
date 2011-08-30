@@ -39,14 +39,26 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
         @Override
         public void writeObject (Streamable.Output out, {{typeUse}} obj) {
             writeObjectImpl(out, obj);
+{{#isNexusObject}}
+            obj.writeContents(out);
+{{/isNexusObject}}
         }
 
         @Override
         public {{typeUse}} readObject (Streamable.Input in) {
+{{#isNexusObject}}
+            {{typeUse}} obj = new {{typeUse}}(
+{{/isNexusObject}}
+{{^isNexusObject}}
             return new {{typeUse}}(
+{{/isNexusObject}}
 {{#reads}}
                 in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
 {{/reads}}
+{{#isNexusObject}}
+            obj.readContents(in);
+            return obj;
+{{/isNexusObject}}
             );
         }
 
@@ -72,15 +84,26 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
     @Override
     public void writeObject (Streamable.Output out, {{typeUse}} obj) {
         writeObjectImpl(out, obj);
+{{#isNexusObject}}
+        obj.writeContents(out);
+{{/isNexusObject}}
     }
 
     @Override
     public {{typeUse}} readObject (Streamable.Input in) {
+{{#isNexusObject}}
+        {{typeUse}} obj = new {{typeUse}}(
+{{/isNexusObject}}
+{{^isNexusObject}}
         return new {{typeUse}}(
+{{/isNexusObject}}
 {{#reads}}
             in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
 {{/reads}}
-        );
+{{#isNexusObject}}
+        obj.readContents(in);
+        return obj;
+{{/isNexusObject}}
     }
 
 {{/isAbstract}}

@@ -81,8 +81,8 @@ class StreamerGenTest
       }
       """)
     // make sure we correctly generate the type name of a type enclosed in an interface
-    assertEquals("OuterIface.Inner1", metas.find(_.name.toString == "Inner1").get.typeUse)
-    assertEquals("OuterIface.Inner2<T>", metas.find(_.name.toString == "Inner2").get.typeUse)
+    assertEquals("OuterIface.Inner1", metas.find(_.name == "Inner1").get.typeUse)
+    assertEquals("OuterIface.Inner2<T>", metas.find(_.name == "Inner2").get.typeUse)
   }
 
   @Test def testInherit {
@@ -137,8 +137,7 @@ class StreamerGenTest
       }
       """)
     // make sure we correctly generate the enclosed name of a type that's nested in an iface
-    assertEquals("OuterIface.Parent",
-                 metas.find(_.name.toString == "Child").get.parentEnclosedName)
+    assertEquals("OuterIface.Parent", metas.find(_.name == "Child").get.parentEnclosedName)
   }
 
   @Test def testParameterized {
@@ -241,7 +240,7 @@ class StreamerGenTest
     }
   }
 
-  @Test def testFoo {
+  @Test def testFieldOrdering {
     val metas = TestCompiler.genMetas("Upstream.java", """
       package foo.bar;
       import java.util.List;
@@ -268,12 +267,37 @@ class StreamerGenTest
     assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.localCtorArgs)
     assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.orderedFieldNames)
   }
+
+  @Test def testObject {
+    val source = TestCompiler.genSource("FooObject.java", """
+      public class FooObject extends com.threerings.nexus.distrib.NexusObject {
+        public final String name;
+        public FooObject (String name) {
+          this.name = name;
+        }
+      }
+      """)
+    assertTrue(source.contains("readContents"))
+    assertTrue(source.contains("writeContents"))
+    // System.err.println(source)
+  }
 }
 
 object TestCompiler {
   val streamObj = mkTestObject("Streamable.java", """
     package com.threerings.nexus.io;
-    public interface Streamable {}
+    public interface Streamable {
+      public interface Input {}
+      public interface Output {}
+    }
+  """)
+  val nexobjObj = mkTestObject("NexusObject.java", """
+    package com.threerings.nexus.distrib;
+    import com.threerings.nexus.io.Streamable;
+    public abstract class NexusObject implements Streamable {
+      public void readContents (Streamable.Input in) {}
+      public void writeContents (Streamable.Output out) {}
+    }
   """)
 
   def genSource (filename :String, content :String) :String =
@@ -297,7 +321,8 @@ object TestCompiler {
   class GenMetasProcessor extends TestProcessor[Seq[ClassMetadata]] {
     override def result = _tmetas
     override protected def generate (elem :TypeElement, metas :Seq[ClassMetadata]) {
-      _tmetas ++= metas
+      // we don't want the metadata for the, always included, NexusObject skeleton
+      _tmetas ++= metas.filterNot(_.name == "NexusObject")
     }
     protected var _tmetas = MSeq[ClassMetadata]()
   }
@@ -307,7 +332,7 @@ object TestCompiler {
   }
 
   private def process[R] (filename :String, content :String, proc :TestProcessor[R]) :R = {
-    val files = List(streamObj, mkTestObject(filename, content))
+    val files = List(streamObj, nexobjObj, mkTestObject(filename, content))
     val options = List("-processor", "com.threerings.nexus.streamergen.Processor", "-proc:only")
     val task = _compiler.getTask(null, null, null, options, null, files)
     task.setProcessors(List(proc))
