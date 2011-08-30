@@ -4,10 +4,12 @@
 package com.threerings.nexus.streamergen
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.{Set => MSet}
 
-import javax.lang.model.element.{TypeElement, ExecutableElement, ElementKind}
+import javax.lang.model.element.{Element, ExecutableElement, PackageElement, TypeElement}
+import javax.lang.model.element.{Name, ElementKind}
 import javax.lang.model.`type`.{DeclaredType, NoType, WildcardType}
-import javax.lang.model.`type`.{TypeKind, TypeVariable, TypeMirror}
+import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
 /**
@@ -40,6 +42,24 @@ object Utils
    */
   def qualifiedName (dt :DeclaredType) =
     dt.asElement.asInstanceOf[TypeElement].getQualifiedName.toString
+
+  /**
+   * Returns the name of the supplied element, qualified by its enclosing types, if any.
+   */
+  def enclosedName (elem :Element) :String = {
+    def addName (e :Element, buf :StringBuilder) :StringBuilder = e match {
+      case te :TypeElement => {
+        addName(te.getEnclosingElement, buf)
+        if (buf.length > 0) buf.append(".")
+        buf.append(te.getSimpleName)
+      }
+      case pe :PackageElement => buf // stop when we hit the package
+      case _ => throw new IllegalArgumentException(
+        "Unexpected type when generating enclosedName [elem=" + elem + ", kind=" + elem.getKind +
+        ", encl=" + e + ", kind=" + e.getKind + "]")
+    }
+    addName(elem, new StringBuilder).toString
+  }
 
   /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
@@ -101,16 +121,47 @@ object Utils
     case _ :NoType => 0 // Object's "supertype" takes zero arguments
   }
 
+  /**
+   * Returns the qualified names of all outermost types that appear in the supplied type (java.lang
+   * types are omitted).
+   */
+  def collectImports (t :TypeMirror) :Set[String] = {
+    val imports = MSet[String]()
+    new ImportCollector().visit(t, imports)
+    imports.toSet
+  }
+
+  /**
+   * Returns true if the supplied fully-qualified class name is in the supplied package. Note: this
+   * only works on outermost types, a fully-qualified nested type will return invalid values.
+   */
+  def inPackage (fqName :String, pkgName :String) =
+    fqName.substring(0, fqName.lastIndexOf(".")+1) == (pkgName + ".")
+
   private class ToString (boundVars :Boolean) extends SimpleTypeVisitor6[Unit,StringBuilder] {
     override def visitDeclared (t :DeclaredType, buf :StringBuilder) {
-      if (t.getEnclosingType.getKind != TypeKind.NONE) {
-        visit(t.getEnclosingType, buf)
-        buf.append(".")
-      }
-      val cname = t.asElement.getSimpleName.toString
+      val te = t.asElement.asInstanceOf[TypeElement]
+
       // if the name is empty, this is a union type bound and the bounds in question are the
       // supertype and interfaces implemented by this synthetic type hack-a-saurus!
-      if (cname.length > 0) {
+      val cname = t.asElement.getSimpleName.toString
+      if (cname.isEmpty) {
+        // we don't do the enclosing elem check because union type bounds have a spurious encloser
+        visit(te.getSuperclass, buf)
+        for (ie <- te.getInterfaces) {
+          buf.append(" & ")
+          visit(ie, buf)
+        }
+
+      } else {
+        // if we have an enclosing element, prepend it (and any of its enclosing elements);
+        // we don't want the type parameters of the enclosers (because streamables can never be
+        // non-static inner classes), so we just climb the element hierarchy
+        val encl = te.getEnclosingElement
+        if (encl != null && encl.getKind != ElementKind.PACKAGE) {
+          buf.append(enclosedName(encl)).append(".");
+        }
+
         buf.append(cname)
         val tas = t.getTypeArguments
         if (!tas.isEmpty) {
@@ -121,13 +172,6 @@ object Utils
               visit(ta, buf)
           }
           buf.append(">")
-        }
-      } else {
-        val te = t.asElement.asInstanceOf[TypeElement]
-        visit(te.getSuperclass, buf)
-        for (ie <- te.getInterfaces) {
-          buf.append(" & ")
-          visit(ie, buf)
         }
       }
     }
@@ -159,6 +203,59 @@ object Utils
       } else if (t.getExtendsBound != null) {
         buf.append(" extends ")
         visit(t.getExtendsBound, buf)
+      }
+    }
+
+    private var _seenVars = Set[TypeVariable]()
+  }
+
+  private class ImportCollector extends SimpleTypeVisitor6[Unit,MSet[String]] {
+    override def visitDeclared (t :DeclaredType, imports :MSet[String]) {
+      val te = t.asElement.asInstanceOf[TypeElement]
+
+      // if the name is empty, this is a union type bound and the bounds in question are the
+      // supertype and interfaces implemented by this synthetic type hack-a-saurus!
+      val cname = t.asElement.getSimpleName.toString
+      if (cname.isEmpty) {
+        visit(te.getSuperclass, imports)
+        for (ie <- te.getInterfaces) {
+          visit(ie, imports)
+        }
+
+      } else {
+        // if we have an enclosing element, we'll be importing that rather than this type directly,
+        // as we render all types qualified by their enclosing classes
+        val encl = te.getEnclosingElement
+        if (encl != null && encl.getKind != ElementKind.PACKAGE) {
+          visit(encl.asType, imports)
+        } else {
+          val fqName = te.getQualifiedName.toString
+          if (!inPackage(fqName, "java.lang")) imports += fqName
+          t.getTypeArguments foreach { ta => visit(ta, imports) }
+        }
+      }
+    }
+
+    override def visitTypeVariable (t :TypeVariable, imports :MSet[String]) {
+      // we may encounter cycles in the type graph where the same type variable appears multiple
+      // times, as in "T extends Comparable<T>"; in such cases, we need to avoid infinite loops
+      if (!_seenVars(t)) {
+        _seenVars += t
+        if (t.getUpperBound.getKind != TypeKind.NULL) {
+          if (!isLang(t.getUpperBound, "Object")) {
+            visit(t.getUpperBound, imports)
+          }
+        } else if (t.getLowerBound.getKind != TypeKind.NULL) {
+          visit(t.getUpperBound, imports)
+        }
+      }
+    }
+
+    override def visitWildcard (t :WildcardType, imports :MSet[String]) {
+      if (t.getSuperBound != null) {
+        visit(t.getSuperBound, imports)
+      } else if (t.getExtendsBound != null) {
+        visit(t.getExtendsBound, imports)
       }
     }
 

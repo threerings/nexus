@@ -9,9 +9,9 @@ import java.util.Set
 
 import javax.annotation.processing.{AbstractProcessor, Filer, ProcessingEnvironment}
 import javax.annotation.processing.{RoundEnvironment, SupportedAnnotationTypes}
-
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.{Element, TypeElement, Name}
+import javax.tools.Diagnostic
 
 /**
  * Generates {@code Streamer} implementations for {@link Streamable} classes.
@@ -26,14 +26,15 @@ class Processor extends AbstractProcessor {
 
   override def getSupportedSourceVersion :SourceVersion = SourceVersion.latest
 
-  override def process (annotations :Set[_ <: TypeElement], roundEnv :RoundEnvironment) :Boolean = {
+  override def process (annotations :Set[_ <: TypeElement], roundEnv :RoundEnvironment) = {
     if (!roundEnv.processingOver) {
       for (elem <- roundEnv.getRootElements) elem match {
         case telem :TypeElement => {
           val metas = _scanner.scanUnit(elem)
           if (!metas.isEmpty) generate(telem, metas)
         }
-        case _ => System.err.println("Weird element? " + elem.getClass)
+        case _ => processingEnv.getMessager.printMessage(
+          Diagnostic.Kind.WARNING, "Weird element? " + elem.getClass)
       }
     }
     false

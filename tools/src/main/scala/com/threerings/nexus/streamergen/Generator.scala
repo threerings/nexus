@@ -27,12 +27,17 @@ object Generator
   }
 
   def generate (oelem :TypeElement, metas :Seq[ClassMetadata], out :Writer) {
+    val pkgName = oelem.getEnclosingElement.toString
     val outerFQName = oelem.getQualifiedName.toString
     val dotIdx = outerFQName.lastIndexOf(".")
 
+    // compute the imports needed for this compilation unit
+    val allImps = (Set[String]() /: metas.map(_.imports)) { _ ++ _ }
+    val prunedImps = allImps.filterNot(fqn => Utils.inPackage(fqn, pkgName))
+
     val ctx = new AnyRef {
       val `package` = if (dotIdx > 0) outerFQName.substring(0, dotIdx) else null
-      val imports :JIterable[String] = Nil // TODO
+      val imports :JIterable[String] = prunedImps.toSeq.sorted
       val outerName = outerFQName.substring(dotIdx+1)
       val outerParams = ""
       val outer = metas find(_.elem == oelem) getOrElse(null)

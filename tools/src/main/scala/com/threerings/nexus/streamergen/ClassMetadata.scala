@@ -47,6 +47,20 @@ class ClassMetadata (val elem :TypeElement) {
   /** Whether or not this type is abstract. */
   def isAbstract = elem.getModifiers.contains(Modifier.ABSTRACT)
 
+  /** Returns the imports needed by this class metadata. */
+  def imports :Set[String] = {
+    val self = Utils.collectImports(elem.asType)
+    val cimps = ctorArgs.values.map(Utils.collectImports)
+    val fimps = fields.values.map(Utils.collectImports)
+    val all = (self /: (cimps ++ fimps)) { _ ++ _ }
+    all
+  }
+
+  /** Returns the name of our parent class, including enclosing classes, not including type
+   * parameters. For example: `Outer.Parent`. */
+  def parentEnclosedName =
+    Utils.enclosedName(elem.getSuperclass.asInstanceOf[DeclaredType].asElement)
+
   /** Returns the type name for this class (including type parameters without bounds). */
   def typeUse = Utils.toString(typ, false)
 

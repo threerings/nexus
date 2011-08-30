@@ -43,22 +43,24 @@ class StreamerGenTest
         }
       }
       """)
-    // System.err.println(metas.head.argToField)
+    // make sure all the ctor arg and field name variants are matched
+    assertEquals(Map("value1" -> "value1", "value2" -> "_value2", "value3" -> "value3_",
+                     "_value4" -> "value4", "value5_" -> "value5"), metas.head.argToField)
   }
 
   @Test def testNested {
-    val source = TestCompiler.genSource("Container.java", """
+    val metas = TestCompiler.genMetas("Container.java", """
       package foo.bar;
       public class Container {
         public class Inner1 implements com.threerings.nexus.io.Streamable {}
         public class Inner2 implements com.threerings.nexus.io.Streamable {}
       }
       """)
-    // System.err.println(source)
+    assertEquals(2, metas.size)
   }
 
   @Test def testNestedInStreamable {
-    val source = TestCompiler.genSource("Outer.java", """
+    val metas = TestCompiler.genMetas("Outer.java", """
       package foo.bar;
       import com.threerings.nexus.io.Streamable;
       public class Outer implements Streamable {
@@ -66,7 +68,21 @@ class StreamerGenTest
         public class Inner2 implements Streamable {}
       }
       """)
-    // System.err.println(source)
+    assertEquals(3, metas.size)
+  }
+
+  @Test def testNestedInStreamableIface {
+    val metas = TestCompiler.genMetas("OuterIface.java", """
+      package foo.bar;
+      import com.threerings.nexus.io.Streamable;
+      public interface OuterIface extends Streamable {
+        public class Inner1 implements Streamable {}
+        public class Inner2<T> implements Streamable {}
+      }
+      """)
+    // make sure we correctly generate the type name of a type enclosed in an interface
+    assertEquals("OuterIface.Inner1", metas.find(_.name.toString == "Inner1").get.typeUse)
+    assertEquals("OuterIface.Inner2<T>", metas.find(_.name.toString == "Inner2").get.typeUse)
   }
 
   @Test def testInherit {
@@ -95,8 +111,38 @@ class StreamerGenTest
     // System.err.println(source)
   }
 
+  @Test def testInheritFromInterface {
+    val metas = TestCompiler.genMetas("OuterClass.java", """
+      package foo.bar;
+      interface OuterIface {
+        class Parent implements com.threerings.nexus.io.Streamable {
+          public final String first, last;
+          public Parent (String first, String last) {
+            this.first = first;
+            this.last = last;
+          }
+        }
+      }
+      public class OuterClass {
+        public class Child extends OuterIface.Parent {
+          public Child (String first, String last, int one, int two) {
+            super(first, last);
+            _one = one;
+            _two = two;
+          }
+          // fields are written in ctor arg order, not field declaration order
+          protected int _two;
+          protected int _one;
+        }
+      }
+      """)
+    // make sure we correctly generate the enclosed name of a type that's nested in an iface
+    assertEquals("OuterIface.Parent",
+                 metas.find(_.name.toString == "Child").get.parentEnclosedName)
+  }
+
   @Test def testParameterized {
-    val source = TestCompiler.genSource("Box.java", """
+    val metas = TestCompiler.genMetas("Box.java", """
       import java.util.Map;
       public class Box<A,B,K,V> implements com.threerings.nexus.io.Streamable {
         public final A valueA;
@@ -109,11 +155,11 @@ class StreamerGenTest
         }
       }
       """)
-    // System.err.println(source)
+    assertEquals("<A,B,K,V>", metas.head.typeBounds)
   }
 
   @Test def testBounded {
-    val source = TestCompiler.genSource("Box.java", """
+    val metas = TestCompiler.genMetas("Box.java", """
       public class Box<T extends Comparable<T>> implements com.threerings.nexus.io.Streamable {
         public final T value;
         public Box (T value) {
@@ -121,7 +167,59 @@ class StreamerGenTest
         }
       }
       """)
-    System.err.println(source)
+    assertEquals("<T extends Comparable<T>>", metas.head.typeBounds)
+  }
+
+  @Test def testUnionBounded {
+    val metas = TestCompiler.genMetas("Box.java", """
+      public class Box<T extends Comparable<T> & Iterable<?>>
+        implements com.threerings.nexus.io.Streamable {
+        public final T value;
+        public Box (T value) {
+          this.value = value;
+        }
+      }
+      """)
+    // TODO: omit Object when to-stringing union bounds with all interfaces
+    assertEquals("<T extends Object & Comparable<T> & Iterable<?>>", metas.head.typeBounds)
+  }
+
+  @Test def testImplementsStreamaerSubIface {
+    val metas = TestCompiler.genMetas("Container.java", """
+      package foo.bar;
+      public class Container {
+        interface Foozle extends com.threerings.nexus.io.Streamable {
+        }
+        public class Name implements Foozle {
+          public final String first, last;
+          public Name (String first, String last) {
+            this.first = first;
+            this.last = last;
+          }
+        }
+      }
+      """)
+    // ensure that Name is identified as a Streamable, even though it implements an interface that
+    // extends Streamable rather than implementing Streamable itself
+    assertEquals(1, metas.size)
+  }
+
+  @Test def testImports {
+    val metas = TestCompiler.genMetas("Box.java", """
+      import java.util.Map;
+      public class Box<A,B extends Comparable<B>,K,V>
+        implements com.threerings.nexus.io.Streamable {
+        public final A valueA;
+        public final Class<B> classB;
+        public final Map<K,V> map;
+        public Box (A valueA, Class<B> classB, Map<K,V> map) {
+          this.valueA = valueA;
+          this.classB = classB;
+          this.map = map;
+        }
+      }
+      """)
+    assertEquals(Set("Box", "java.util.Map"), metas.head.imports)
   }
 }
 

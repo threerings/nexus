@@ -37,16 +37,9 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
         }
 
         @Override
-{{/isAbstract}}
         public void writeObject (Streamable.Output out, {{typeUse}} obj) {
-{{#hasSuperWrite}}
-            super.writeObject(out, obj);
-{{/hasSuperWrite}}
-{{#writes}}
-            out.write{{fkind}}(obj.{{fname}});
-{{/writes}}
+            writeObjectImpl(out, obj);
         }
-{{^isAbstract}}
 
         @Override
         public {{typeUse}} readObject (Streamable.Input in) {
@@ -56,7 +49,16 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
 {{/reads}}
             );
         }
+
 {{/isAbstract}}
+        public static {{typeBounds}} void writeObjectImpl (Streamable.Output out, {{typeUse}} obj) {
+{{#hasSuperWrite}}
+            Streamer_{{parentEnclosedName}}.writeObjectImpl(out, obj);
+{{/hasSuperWrite}}
+{{#writes}}
+            out.write{{fkind}}(obj.{{fname}});
+{{/writes}}
+        }
     }
 
 {{/inners}}
@@ -68,16 +70,9 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
     }
 
     @Override
-{{/isAbstract}}
     public void writeObject (Streamable.Output out, {{typeUse}} obj) {
-{{#hasSuperWrite}}
-        super.writeObject(out, obj);
-{{/hasSuperWrite}}
-{{#writes}}
-        out.write{{fkind}}(obj.{{fname}});
-{{/writes}}
+        writeObjectImpl(out, obj);
     }
-{{^isAbstract}}
 
     @Override
     public {{typeUse}} readObject (Streamable.Input in) {
@@ -87,7 +82,16 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
 {{/reads}}
         );
     }
+
 {{/isAbstract}}
+    public static {{typeBounds}} void writeObjectImpl (Streamable.Output out, {{typeUse}} obj) {
+{{#hasSuperWrite}}
+        Streamer_{{parentEnclosedName}}.writeObjectImpl(out, obj);
+{{/hasSuperWrite}}
+{{#writes}}
+        out.write{{fkind}}(obj.{{fname}});
+{{/writes}}
+    }
 {{/outer}}
 {{^outer}}
     // no streamer for non-Streamable enclosing class: {{outerName}}

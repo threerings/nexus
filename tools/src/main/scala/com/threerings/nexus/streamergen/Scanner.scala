@@ -40,7 +40,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
 
     // if this class was streamable, add it to the list of scanned metadatas; also check that we
     // extracted valid metadata
-    if (isStreamable(e)) {
+    if (e.getKind == ElementKind.CLASS && isStreamable(e)) {
       if (meta.unmatchedCtorArgs.isEmpty) _metas = _metas :+ meta
       else env.getMessager.printMessage(
         Diagnostic.Kind.ERROR, "Failed to match one or more ctor fields in " + meta.typ + ": " +
@@ -71,9 +71,10 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
     })
   }
 
-  protected def isStreamableIfc (t :TypeMirror) = t match {
-    case dt :DeclaredType => dt.asElement.asInstanceOf[TypeElement].getQualifiedName.toString ==
-      "com.threerings.nexus.io.Streamable"
+  protected def isStreamableIfc (t :TypeMirror) :Boolean = t match {
+    case dt :DeclaredType =>
+      (Utils.qualifiedName(dt) == "com.threerings.nexus.io.Streamable" ||
+       dt.asElement.asInstanceOf[TypeElement].getInterfaces.exists(isStreamableIfc))
     case _ => false
   }
 
