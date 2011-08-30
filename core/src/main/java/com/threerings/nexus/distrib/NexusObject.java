@@ -28,11 +28,11 @@ public abstract class NexusObject
     public Address<?> getAddress ()
     {
         if (this instanceof Keyed) {
-            @SuppressWarnings("unchecked") Class<DummyKeyed> clazz = (Class<DummyKeyed>)getClass();
-            return Address.create(_sink.getHost(), clazz, ((Keyed)this).getKey());
+            @SuppressWarnings("unchecked") Class<DummyKeyed> clz = (Class<DummyKeyed>)getClass();
+            return Address.create(_sink.getHost(), clz, ((Keyed)this).getKey());
         } else if (this instanceof Singleton) {
-            @SuppressWarnings("unchecked") Class<DummySingle> clazz = (Class<DummySingle>)getClass();
-            return Address.create(_sink.getHost(), clazz);
+            @SuppressWarnings("unchecked") Class<DummySingle> clz = (Class<DummySingle>)getClass();
+            return Address.create(_sink.getHost(), clz);
         } else {
             return Address.create(_sink.getHost(), getId());
         }
