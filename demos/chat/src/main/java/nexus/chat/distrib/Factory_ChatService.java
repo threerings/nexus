@@ -28,6 +28,10 @@ public class Factory_ChatService implements ServiceFactory<ChatService>
                 return service;
             }
 
+            @Override public Class<ChatService> getServiceClass () {
+                return ChatService.class;
+            }
+
             @Override public void dispatchCall (short methodId, Object[] args) {
                 switch (methodId) {
                 case 1:
@@ -60,6 +64,9 @@ public class Factory_ChatService implements ServiceFactory<ChatService>
     {
         @Override public ChatService get () {
             return this;
+        }
+        @Override public Class<ChatService> getServiceClass () {
+            return ChatService.class;
         }
         @Override public void updateNick (String nickname, Callback<Void> callback) {
             postCall((short)1, nickname, callback);

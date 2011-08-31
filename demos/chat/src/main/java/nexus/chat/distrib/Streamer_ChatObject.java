@@ -7,25 +7,32 @@ import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 
 /**
- * Streams {@link ChatObject}.
+ * Handles the streaming of {@link ChatObject} and/or nested classes.
  */
-public class Streamer_ChatObject implements Streamer<ChatObject>
+public class Streamer_ChatObject
+    implements Streamer<ChatObject>
 {
-    public Class<?> getObjectClass ()
-    {
+    @Override
+    public Class<?> getObjectClass () {
         return ChatObject.class;
     }
 
-    public void writeObject (Streamable.Output out, ChatObject obj)
-    {
-        out.writeService(ChatService.class);
+    @Override
+    public void writeObject (Streamable.Output out, ChatObject obj) {
+        writeObjectImpl(out, obj);
         obj.writeContents(out);
     }
 
-    public ChatObject readObject (Streamable.Input in)
-    {
-        ChatObject obj = new ChatObject(in.<ChatService>readService());
+    @Override
+    public ChatObject readObject (Streamable.Input in) {
+        ChatObject obj = new ChatObject(
+            in.<ChatService>readService()
+        );
         obj.readContents(in);
         return obj;
+    }
+
+    public static  void writeObjectImpl (Streamable.Output out, ChatObject obj) {
+        out.writeService(obj.chatSvc);
     }
 }

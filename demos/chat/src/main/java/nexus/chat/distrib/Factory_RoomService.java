@@ -25,6 +25,10 @@ public class Factory_RoomService implements ServiceFactory<RoomService>
                 return service;
             }
 
+            @Override public Class<RoomService> getServiceClass () {
+                return RoomService.class;
+            }
+
             @Override public void dispatchCall (short methodId, Object[] args) {
                 switch (methodId) {
                 case 1:
@@ -43,6 +47,9 @@ public class Factory_RoomService implements ServiceFactory<RoomService>
     {
         @Override public RoomService get () {
             return this;
+        }
+        @Override public Class<RoomService> getServiceClass () {
+            return RoomService.class;
         }
         @Override public void sendMessage (String message, Callback<Void> callback) {
             postCall((short)1, message, callback);
