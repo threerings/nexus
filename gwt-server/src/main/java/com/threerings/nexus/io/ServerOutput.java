@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.io;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
 
 import com.google.gwt.user.server.Base64Utils;
@@ -82,9 +83,9 @@ public class ServerOutput extends Streamable.Output
         writeShort(_szer.getCode(clazz));
     }
 
-    @Override public void writeService (Class<? extends NexusService> clazz)
+    @Override public void writeService (DService<?> service)
     {
-        writeShort(_szer.getServiceCode(clazz));
+        writeShort(_szer.getServiceCode(service.getServiceClass()));
     }
 
     @Override protected <T> Streamer<T> writeStreamer (T value)

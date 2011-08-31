@@ -25,6 +25,10 @@ public class Factory_TestService implements ServiceFactory<TestService>
                 return service;
             }
 
+            @Override public Class<TestService> getServiceClass () {
+                return TestService.class;
+            }
+
             @Override public void dispatchCall (short methodId, Object[] args) {
                 switch (methodId) {
                 case 1:
@@ -44,6 +48,9 @@ public class Factory_TestService implements ServiceFactory<TestService>
     {
         @Override public TestService get () {
             return this;
+        }
+        @Override public Class<TestService> getServiceClass () {
+            return TestService.class;
         }
         @Override public void addOne (int value, Callback<Integer> callback) {
             postCall((short)1, value, callback);

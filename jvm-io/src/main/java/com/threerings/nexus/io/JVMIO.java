@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.io.StreamException;
 import com.threerings.nexus.io.Streamable;
@@ -276,7 +277,8 @@ public class JVMIO
                 }
             }
 
-            @Override public void writeService (Class<? extends NexusService> clazz) {
+            @Override public void writeService (DService<?> service) {
+                Class<?> clazz = service.getServiceClass();
                 if (_nextServiceCode == Short.MAX_VALUE) {
                     throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
                                               " different service types.");

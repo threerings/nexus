@@ -19,7 +19,7 @@ public class Streamer_TestObject implements Streamer<TestObject>
 
     public void writeObject (Streamable.Output out, TestObject obj)
     {
-        out.writeService(TestService.class);
+        out.writeService(obj.testsvc);
         obj.writeContents(out);
     }
 

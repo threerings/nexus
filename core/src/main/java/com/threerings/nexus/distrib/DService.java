@@ -30,6 +30,9 @@ public abstract class DService<T extends NexusService> implements DAttribute
     /** Returns the service encapsulated by this attribute. */
     public abstract T get ();
 
+    /** Returns the class for the service encapsulated by this attribute. */
+    public abstract Class<T> getServiceClass ();
+
     @Override public void init (NexusObject owner, short index) {
         _owner = owner;
         _index = index;

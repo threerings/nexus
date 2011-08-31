@@ -155,7 +155,7 @@ public interface Streamable
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
         public abstract void writeClass (Class<? extends Streamable> clazz);
-        public abstract void writeService (Class<? extends NexusService> clazz);
+        public abstract void writeService (DService<?> service);
 
         /**
          * Writes a value to the output, which may be of any of the primitive types, String, a
