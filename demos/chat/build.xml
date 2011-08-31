@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="chat-demo" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <import file="../../etc/build-support.xml"/>
-  <property name="webapp.dir" value="${deploy.dir}/webapp"/>
+  <property name="webapp.dir" value="${target.dir}/webapp"/>
 
   <target name="-prep-webapp" depends="-prepare">
     <mkdir dir="${webapp.dir}"/>
@@ -31,12 +31,12 @@
       <arg value="-startupUrl"/>
       <arg value="index.html"/>
       <arg value="-war"/>
-      <arg value="${deploy.dir}/webapp"/>
+      <arg value="${target.dir}/webapp"/>
       <arg value="nexus.chat.Chat"/>
     </java>
   </target>
 
-  <target name="gclient" depends="-prep-webapp,compile" description="Compiles GWT client.">
+  <target name="compile-html" depends="-prep-webapp,compile" description="Compiles HTML client.">
     <java fork="true" maxmemory="1024M" failonerror="true" classname="com.google.gwt.dev.Compiler">
       <classpath>
         <pathelement path="../../core/${src.dir}"/>
@@ -47,10 +47,25 @@
       </classpath>
       <jvmarg value="-Djava.awt.headless=true"/>
       <!--<arg value="-style"/><arg value="pretty"/>-->
-      <!--<arg value="-gen"/><arg value="${deploy.dir}/gwt-gen"/>-->
+      <!--<arg value="-gen"/><arg value="${target.dir}/gwt-gen"/>-->
       <arg value="-war"/>
-      <arg value="${deploy.dir}/webapp"/>
+      <arg value="${target.dir}/webapp"/>
       <arg value="nexus.chat.Chat"/>
     </java>
+  </target>
+
+  <target name="html-client" depends="compile-html" description="Serves up HTML client.">
+    <artifact:dependencies pathId="jetty-ant.classpath">
+      <remoteRepository id="jetty-repo" url="http://oss.sonatype.org/content/groups/jetty/"/>
+      <Dependency groupId="org.mortbay.jetty" artifactId="jetty-ant"
+                  version="7.4.2.v20110526" scope="runtime" />
+    </artifact:dependencies>
+    <taskdef classpathref="jetty-ant.classpath" resource="tasks.properties"/>
+    <echo>=================================================================</echo>
+    <echo>Browse to http://localhost:8080/${ant.project.name}</echo>
+    <echo>=================================================================</echo>
+    <jetty tempDirectory="${target.dir}/jetty-temp">
+      <webApp name="html-server" warfile="${target.dir}/webapp" contextpath="/${ant.project.name}"/>
+    </jetty>
   </target>
 </project>
