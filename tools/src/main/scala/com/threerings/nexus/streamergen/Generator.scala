@@ -14,6 +14,8 @@ import javax.lang.model.`type`.{TypeKind, TypeMirror}
 
 import com.samskivert.mustache.Mustache
 
+import com.threerings.nexus.distrib.DService
+
 /**
  * Generates streamer source files from extracted metadata.
  */
@@ -37,7 +39,11 @@ object Generator
 
     // compute the imports needed for this compilation unit
     val allImps = (Set[String]() /: metas.map(_.imports)) { _ ++ _ }
-    val prunedImps = allImps.filterNot(fqn => Utils.inPackage(fqn, pkgName))
+    val prunedImps = allImps.
+      // filter out classes in the same package as the generated streamer
+      filterNot(fqn => Utils.inPackage(fqn, pkgName)).
+      // filter out DService due to the way it's handled
+      filterNot(_ == DServiceName)
 
     val ctx = new AnyRef {
       val `package` = if (dotIdx > 0) outerFQName.substring(0, dotIdx) else null
@@ -66,4 +72,5 @@ object Generator
   private var _header = ""
 
   private final val StreamerTmpl = "com/threerings/nexus/streamergen/Streamer.tmpl"
+  private final val DServiceName = classOf[DService[_]].getName
 }

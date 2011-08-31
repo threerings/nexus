@@ -12,7 +12,7 @@ import javax.lang.model.`type`.{DeclaredType, NoType, WildcardType}
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
-import com.threerings.nexus.distrib.NexusObject
+import com.threerings.nexus.distrib.{DService, NexusObject}
 
 /**
  * Various utility bits.
@@ -64,13 +64,24 @@ object Utils
   }
 
   /**
-   * Returns true if the supplied type extends `NexusObject`.
+   * Returns true if the supplied type extends, or is, the specified class.
    */
-  def isNexusObject (t :TypeMirror) :Boolean = t match {
-    case dt :DeclaredType => (qualifiedName(dt) == classOf[NexusObject].getName ||
-                              isNexusObject(dt.asElement.asInstanceOf[TypeElement].getSuperclass))
+  def extendsClass (t :TypeMirror, fqName :String) :Boolean = t match {
+    case dt :DeclaredType =>
+      (qualifiedName(dt) == fqName ||
+       extendsClass(dt.asElement.asInstanceOf[TypeElement].getSuperclass, fqName))
     case _ => false
   }
+
+  /**
+   * Returns true if the supplied type extends `NexusObject`.
+   */
+  def isNexusObject (t :TypeMirror) :Boolean = extendsClass(t, classOf[NexusObject].getName)
+
+  /**
+   * Returns true if the supplied type extends `DService`.
+   */
+  def isService (t :TypeMirror) :Boolean = extendsClass(t, classOf[DService[_]].getName)
 
   /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
@@ -87,6 +98,7 @@ object Utils
     case TypeKind.DOUBLE => "Double"
     case TypeKind.DECLARED if (isLang(field, "String")) => "String"
     case TypeKind.DECLARED if (isLang(field, "Class")) => "Class"
+    case TypeKind.DECLARED if (isService(field)) => "Service"
     case TypeKind.DECLARED => "Value"
     case TypeKind.TYPEVAR => "Value"
     case _ => throw new IllegalArgumentException(
@@ -100,7 +112,7 @@ object Utils
    */
   def valueType (field :TypeMirror) = field.getKind match {
     case TypeKind.DECLARED if (isLang(field, "String")) => ""
-    case TypeKind.DECLARED if (isLang(field, "Class")) =>
+    case TypeKind.DECLARED if (isLang(field, "Class") || isService(field)) =>
       "<" + toString(field.asInstanceOf[DeclaredType].getTypeArguments.get(0), false) + ">"
     case TypeKind.DECLARED => "<" + toString(field, false) + ">"
     case TypeKind.TYPEVAR => "<" + toString(field, false) + ">"
