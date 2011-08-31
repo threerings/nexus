@@ -1,5 +1,6 @@
 //
-// $Id$
+// Nexus Chat Demo - demonstrates Nexus with some chattery
+// http://github.com/threerings/nexus/blob/master/LICENSE
 
 package nexus.chat.server;
 
