@@ -32,7 +32,9 @@ public class Factory_TestService implements ServiceFactory<TestService>
             @Override public void dispatchCall (short methodId, Object[] args) {
                 switch (methodId) {
                 case 1:
-                    service.addOne((Integer)args[0], this.<Callback<Integer>>cast(args[1]));
+                    service.addOne(
+                        (Integer)args[0],
+                        this.<Callback<Integer>>cast(args[1]));
                     break;
                 case 2:
                     service.launchMissiles();
