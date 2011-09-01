@@ -379,9 +379,8 @@ public class JVMIO
         }
     }
 
-    protected static final Map<Short,Streamer<?>> STREAMERS = Maps.newHashMap();
-    protected static final Map<Class<?>,Short> CLASSES = Maps.newHashMap();
-    static {
+    @SuppressWarnings("rawtypes")
+    protected static void mapStreamers () {
         // map the streamers for our basic types
         mapStreamer(0, new Streamers.Streamer_Null());
         mapStreamer(1, new Streamers.Streamer_Boolean(), Boolean.class);
@@ -399,4 +398,8 @@ public class JVMIO
         mapStreamer(11, new Streamers.Streamer_Set(), HashSet.class);
         mapStreamer(12, new Streamers.Streamer_Map(), HashMap.class);
     }
+
+    protected static final Map<Short,Streamer<?>> STREAMERS = Maps.newHashMap();
+    protected static final Map<Class<?>,Short> CLASSES = Maps.newHashMap();
+    static { mapStreamers(); }
 }

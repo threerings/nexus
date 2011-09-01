@@ -103,6 +103,7 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         _serviceCodes.put(clazz, code);
     }
 
+    @SuppressWarnings("rawtypes")
     protected AbstractSerializer ()
     {
         // map the streamers for our basic types
