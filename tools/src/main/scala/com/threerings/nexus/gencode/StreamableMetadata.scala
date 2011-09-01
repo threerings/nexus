@@ -14,7 +14,7 @@ import javax.lang.model.`type`.{DeclaredType, TypeMirror}
  * Contains metadata for a single `Streamable` class.
  * @param elem the class's type element.
  */
-class ClassMetadata (val elem :TypeElement) {
+class StreamableMetadata (val elem :TypeElement) extends Metadata {
   /** The number of args to our supertype constructor. */
   def superCtorArgs :Int = Utils.countSuperCtorArgs(elem)
 

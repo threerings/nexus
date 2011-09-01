@@ -12,6 +12,7 @@ import javax.lang.model.`type`.{DeclaredType, NoType, WildcardType}
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
+import com.threerings.nexus.io.{Streamable}
 import com.threerings.nexus.distrib.{DService, NexusObject}
 
 /**
@@ -76,12 +77,28 @@ object Utils
   /**
    * Returns true if the supplied type extends `NexusObject`.
    */
-  def isNexusObject (t :TypeMirror) :Boolean = extendsClass(t, classOf[NexusObject].getName)
+  def isNexusObject (t :TypeMirror) :Boolean = extendsClass(t, NexusObjectName)
 
   /**
    * Returns true if the supplied type extends `DService`.
    */
-  def isService (t :TypeMirror) :Boolean = extendsClass(t, classOf[DService[_]].getName)
+  def isService (t :TypeMirror) :Boolean = extendsClass(t, DServiceName)
+
+  /**
+   * Returns true if the supplied type is a `Streamable`.
+   */
+  def isStreamable (e :TypeElement) :Boolean = {
+    def isStreamableIfc (t :TypeMirror) :Boolean = t match {
+      case dt :DeclaredType =>
+        (qualifiedName(dt) == StreamableName ||
+         dt.asElement.asInstanceOf[TypeElement].getInterfaces.exists(isStreamableIfc))
+      case _ => false
+    }
+    e.getInterfaces.exists(isStreamableIfc) || (e.getSuperclass match {
+      case dt :DeclaredType => isStreamable(dt.asElement.asInstanceOf[TypeElement])
+      case _ => false
+    })
+  }
 
   /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
@@ -284,4 +301,8 @@ object Utils
 
     private var _seenVars = Set[TypeVariable]()
   }
+
+  private final val NexusObjectName = classOf[NexusObject].getName
+  private final val DServiceName = classOf[DService[_]].getName
+  private final val StreamableName = classOf[Streamable].getName
 }

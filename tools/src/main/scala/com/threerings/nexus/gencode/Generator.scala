@@ -25,14 +25,19 @@ object Generator
     _header = header
   }
 
-  def generate (filer :Filer, outer :TypeElement, metas :Seq[ClassMetadata]) {
-    val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
-    val w = out.openWriter
-    try generate(outer, metas, w)
-    finally w.close
+  def generate (filer :Filer, outer :TypeElement, metas :Seq[Metadata]) {
+    metas.head match {
+      case sm :StreamableMetadata => {
+        val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
+        val w = out.openWriter
+        try generateStreamer(outer, metas.map(_.asInstanceOf[StreamableMetadata]), w)
+        finally w.close
+      }
+      case um => System.err.println("What do to with " + um.getClass + "?")
+    }
   }
 
-  def generate (oelem :TypeElement, metas :Seq[ClassMetadata], out :Writer) {
+  def generateStreamer (oelem :TypeElement, metas :Seq[StreamableMetadata], out :Writer) {
     val pkgName = oelem.getEnclosingElement.toString
     val outerFQName = oelem.getQualifiedName.toString
     val dotIdx = outerFQName.lastIndexOf(".")

@@ -306,25 +306,26 @@ object TestCompiler {
   @SupportedAnnotationTypes(Array("*"))
   class GenSourceProcessor extends TestProcessor[String] {
     override def result = _source
-    override protected def generate (elem :TypeElement, metas :Seq[ClassMetadata]) {
+    override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
       val out = new StringWriter
-      Generator.generate(elem, metas, out)
+      Generator.generateStreamer(elem, metas.map(_.asInstanceOf[StreamableMetadata]), out)
       _source = out.toString
     }
     protected var _source = ""
   }
 
-  def genMetas (filename :String, content :String) :Seq[ClassMetadata] =
+  def genMetas (filename :String, content :String) :Seq[StreamableMetadata] =
     process(filename, content, new GenMetasProcessor)
 
   @SupportedAnnotationTypes(Array("*"))
-  class GenMetasProcessor extends TestProcessor[Seq[ClassMetadata]] {
+  class GenMetasProcessor extends TestProcessor[Seq[StreamableMetadata]] {
     override def result = _tmetas
-    override protected def generate (elem :TypeElement, metas :Seq[ClassMetadata]) {
+    override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
+      val smetas = metas.map(_.asInstanceOf[StreamableMetadata])
       // we don't want the metadata for the, always included, NexusObject skeleton
-      _tmetas ++= metas.filterNot(_.name == "NexusObject")
+      _tmetas ++= smetas.filterNot(_.name == "NexusObject")
     }
-    protected var _tmetas = MSeq[ClassMetadata]()
+    protected var _tmetas = MSeq[StreamableMetadata]()
   }
 
   protected abstract class TestProcessor[R] extends Processor {

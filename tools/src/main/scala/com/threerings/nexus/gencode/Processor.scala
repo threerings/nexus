@@ -54,7 +54,7 @@ class Processor extends AbstractProcessor {
     false
   }
 
-  protected def generate (elem :TypeElement, metas :Seq[ClassMetadata]) {
+  protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
     Generator.generate(_filer, elem, metas)
   }
 
