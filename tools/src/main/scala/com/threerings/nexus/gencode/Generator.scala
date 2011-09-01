@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.nexus.streamergen
+package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
 
@@ -17,7 +17,7 @@ import com.samskivert.mustache.Mustache
 import com.threerings.nexus.distrib.DService
 
 /**
- * Generates streamer source files from extracted metadata.
+ * Generates source files from extracted metadata.
  */
 object Generator
 {
@@ -64,13 +64,13 @@ object Generator
     template.execute(ctx, out)
   }
 
-  private[streamergen] def streamerName (fqName :String) = {
+  private[gencode] def streamerName (fqName :String) = {
     val dotIdx = fqName.lastIndexOf(".")+1
     fqName.substring(0, dotIdx) + "Streamer_" + fqName.substring(dotIdx)
   }
 
   private var _header = ""
 
-  private final val StreamerTmpl = "com/threerings/nexus/streamergen/Streamer.tmpl"
+  private final val StreamerTmpl = "com/threerings/nexus/gencode/Streamer.tmpl"
   private final val DServiceName = classOf[DService[_]].getName
 }

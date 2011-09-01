@@ -149,8 +149,8 @@
     </junit>
   </target>
 
-  <property name="genstreamer.excludes" value="notused"/>
-  <target name="genstreamer" depends="-prepare" description="Generates Streamer code.">
+  <property name="gencode.excludes" value="notused"/>
+  <target name="gencode" depends="-prepare" description="Generates marshalling code.">
     <artifact:dependencies pathId="tools.classpath">
       <dependency groupId="com.threerings" artifactId="nexus-tools" version="1.0-SNAPSHOT"/>
     </artifact:dependencies>
@@ -163,11 +163,12 @@
       <compilerarg value="-s"/>
       <compilerarg value="${src.dir}"/>
       <compilerarg value="-processor"/>
-      <compilerarg value="com.threerings.nexus.streamergen.Processor"/>
+      <compilerarg value="com.threerings.nexus.gencode.Processor"/>
       <compilerarg value="-proc:only"/>
-      <compilerarg value="-Acom.threerings.nexus.streamergen.header=lib/SOURCE_HEADER"/>
+      <compilerarg value="-Acom.threerings.nexus.gencode.header=lib/SOURCE_HEADER"/>
       <exclude name="**/Streamer_*.java"/>
-      <exclude name="${genstreamer.excludes}"/>
+      <exclude name="**/Factory_*.java"/>
+      <exclude name="${gencode.excludes}"/>
     </javac>
   </target>
 

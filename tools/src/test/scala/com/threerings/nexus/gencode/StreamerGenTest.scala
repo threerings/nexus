@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.nexus.streamergen
+package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{Seq => MSeq}
@@ -333,7 +333,7 @@ object TestCompiler {
 
   private def process[R] (filename :String, content :String, proc :TestProcessor[R]) :R = {
     val files = List(streamObj, nexobjObj, mkTestObject(filename, content))
-    val options = List("-processor", "com.threerings.nexus.streamergen.Processor", "-proc:only")
+    val options = List("-processor", "com.threerings.nexus.gencode.Processor", "-proc:only")
     val task = _compiler.getTask(null, null, null, options, null, files)
     task.setProcessors(List(proc))
     task.call

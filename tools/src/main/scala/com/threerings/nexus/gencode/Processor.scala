@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.nexus.streamergen
+package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
 import scala.io.Source
@@ -15,7 +15,8 @@ import javax.lang.model.element.{Element, TypeElement, Name}
 import javax.tools.Diagnostic
 
 /**
- * Generates {@code Streamer} implementations for {@link Streamable} classes.
+ * Generates `Streamer` implementations for {@link Streamable} classes, `Factory` implementations
+ * for {@link NexusService} interfaces, and other generated code bits.
  */
 @SupportedOptions(Array(ProcessorOpts.Header))
 @SupportedAnnotationTypes(Array("*"))
@@ -62,5 +63,5 @@ class Processor extends AbstractProcessor {
 }
 
 object ProcessorOpts {
-  final val Header = "com.threerings.nexus.streamergen.header"
+  final val Header = "com.threerings.nexus.gencode.header"
 }

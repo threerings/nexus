@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.nexus.streamergen;
+package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
 
@@ -15,7 +15,7 @@ import javax.lang.model.util.{ElementScanner6, Types}
 
 /**
  * Does the actual AST walking and computes metadata that is used to generate {@code Streamer}
- * source files.
+ * and related source files.
  */
 class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
 {

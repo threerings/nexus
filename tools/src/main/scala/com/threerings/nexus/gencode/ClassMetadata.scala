@@ -1,7 +1,7 @@
 //
 // $Id$
 
-package com.threerings.nexus.streamergen
+package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{Map => MMap, LinkedHashMap => LHMap, Set => MSet}
