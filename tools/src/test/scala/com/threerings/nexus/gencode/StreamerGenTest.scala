@@ -298,9 +298,7 @@ object StreamerTestCompiler extends TestCompiler {
   class GenMetasProcessor extends TestProcessor[Seq[StreamableMetadata]] {
     override def result = _tmetas
     override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
-      val smetas = metas.map(_.asInstanceOf[StreamableMetadata])
-      // we don't want the metadata for the, always included, NexusObject skeleton
-      _tmetas ++= smetas.filterNot(_.name == "NexusObject")
+      _tmetas ++= metas.map(_.asInstanceOf[StreamableMetadata])
     }
     protected var _tmetas = Seq[StreamableMetadata]()
   }

@@ -79,8 +79,7 @@ object FactoryTestCompiler extends TestCompiler {
   class GenMetaProcessor extends TestProcessor[ServiceMetadata] {
     override def result = _meta
     override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
-      (metas.collect { case sm :ServiceMetadata => sm }).filterNot(
-        _.serviceName == "NexusService").map { m => _meta = m }
+      (metas.collect { case sm :ServiceMetadata => sm }).map { m => _meta = m }
     }
     protected var _meta :ServiceMetadata = _
   }

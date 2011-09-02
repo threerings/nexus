@@ -8,7 +8,7 @@ import scala.collection.JavaConversions._
 import javax.annotation.processing.{Messager, ProcessingEnvironment}
 import javax.tools.Diagnostic
 
-import javax.lang.model.element.{Element, ElementKind, ExecutableElement}
+import javax.lang.model.element.{Element, ElementKind, ExecutableElement, Modifier}
 import javax.lang.model.element.{Name, TypeElement, TypeParameterElement, VariableElement}
 import javax.lang.model.`type`.{DeclaredType, TypeKind, TypeMirror, TypeVariable, NoType}
 import javax.lang.model.util.{ElementScanner6, Types}
@@ -82,8 +82,13 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
     }
 
     def validate (msg :Messager) :Option[Metadata] = {
+      // if we're processing NexusObject itself, generate no streamer
+      if (meta.elem.getQualifiedName.toString == Utils.NexusObjectName ||
+          // skip private streamables (which could never be instantiated by a streamer and thus
+          // probably exist only to assuage the type system in some circumstance)
+          meta.elem.getModifiers.contains(Modifier.PRIVATE)) None
       // check that we extracted valid metadata
-      if (meta.unmatchedCtorArgs.isEmpty) Some(meta)
+      else if (meta.unmatchedCtorArgs.isEmpty) Some(meta)
       else {
         msg.printMessage(
           Diagnostic.Kind.ERROR, "Failed to match one or more ctor fields in " + meta.typ + ": " +
@@ -106,7 +111,11 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
       // nada
     }
 
-    def validate (msg :Messager) :Option[Metadata] = Some(meta)
+    def validate (msg :Messager) :Option[Metadata] = {
+      // if we're processing NexusService itself, generate no factory
+      if (meta.elem.getQualifiedName.toString == Utils.NexusServiceName) None
+      else Some(meta)
+    }
   }
 
   protected var _metas = Seq[Metadata]()
