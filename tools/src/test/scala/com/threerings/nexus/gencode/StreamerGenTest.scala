@@ -274,6 +274,36 @@ class StreamerGenTest
     assertTrue(source.contains("writeContents"))
     // System.err.println(source)
   }
+
+  @Test def testArrays {
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
+      public class Box<T> implements com.threerings.nexus.io.Streamable {
+        public final boolean[] booleans;
+        public final byte[] bytes;
+        public final char[] chars;
+        public final short[] shorts;
+        public final int[] ints;
+        public final long[] longs;
+        public final float[] floats;
+        public final double[] doubles;
+        public final String[] strings;
+        public Box (boolean[] booleans, byte[] bytes, char[] chars, short[] shorts, int[] ints,
+                    long[] longs, float[] floats, double[] doubles, String[] strings) {
+            this.booleans = booleans;
+            this.bytes = bytes;
+            this.chars = chars;
+            this.shorts = shorts;
+            this.ints = ints;
+            this.longs = longs;
+            this.floats = floats;
+            this.doubles = doubles;
+            this.strings = strings;
+        }
+      }
+      """)
+    assertEquals(List("Booleans", "Bytes", "Chars", "Shorts", "Ints", "Longs", "Floats",
+                      "Doubles", "Strings"), metas.head.ctorArgs.values.map(Utils.fieldKind))
+  }
 }
 
 object StreamerTestCompiler extends TestCompiler {

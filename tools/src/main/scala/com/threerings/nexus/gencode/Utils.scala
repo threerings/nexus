@@ -8,7 +8,7 @@ import scala.collection.mutable.{Set => MSet}
 
 import javax.lang.model.element.{Element, ExecutableElement, PackageElement, TypeElement}
 import javax.lang.model.element.{Name, ElementKind}
-import javax.lang.model.`type`.{DeclaredType, NoType, PrimitiveType, WildcardType}
+import javax.lang.model.`type`.{ArrayType, DeclaredType, NoType, PrimitiveType, WildcardType}
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
@@ -112,7 +112,7 @@ object Utils
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
    * read or write call for the supplied type.
    */
-  def fieldKind (field :TypeMirror) = field.getKind match {
+  def fieldKind (field :TypeMirror) :String = field.getKind match {
     case TypeKind.BOOLEAN => "Boolean"
     case TypeKind.BYTE => "Byte"
     case TypeKind.CHAR => "Char"
@@ -121,6 +121,11 @@ object Utils
     case TypeKind.LONG => "Long"
     case TypeKind.FLOAT => "Float"
     case TypeKind.DOUBLE => "Double"
+    case TypeKind.ARRAY => field.asInstanceOf[ArrayType].getComponentType match {
+      case pt :PrimitiveType => fieldKind(pt) + "s"
+      case dt :DeclaredType if (isLang(field, "String")) => return fieldKind(dt) + "s"
+      case ct => throw new IllegalArgumentException("Arrays of " + ct + " not supported")
+    }
     case TypeKind.DECLARED if (isLang(field, "String")) => "String"
     case TypeKind.DECLARED if (isLang(field, "Class")) => "Class"
     case TypeKind.DECLARED if (isDService(field)) => "Service"
