@@ -24,7 +24,7 @@ object NexusBuild extends Build {
     organization     := "com.threerings",
     version          := "1.0-SNAPSHOT",
     crossPaths       := false,
-    javacOptions     ++= Seq("-Xlint", "-Xlint:-serial"),
+    javacOptions     ++= Seq("-Xlint", "-Xlint:-serial", "-source", "1.6", "-target", "1.6"),
     fork in Compile  := true,
     resolvers        += "Local Maven Repository" at Path.userHome.asURL + "/.m2/repository",
     scalaVersion     := "2.9.0-1",
