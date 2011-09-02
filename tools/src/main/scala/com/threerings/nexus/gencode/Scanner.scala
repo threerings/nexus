@@ -34,7 +34,8 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
 
   override def visitType (e :TypeElement, p :Unit) {
     val c = e.getKind match {
-      case ElementKind.CLASS if (Utils.isStreamable(e)) => new StreamableCollector(e)
+      case ElementKind.CLASS if (Utils.isStreamable(e.asType)) => new StreamableCollector(e)
+      case ElementKind.INTERFACE if (Utils.isNexusService(e.asType)) => new ServiceCollector(e)
       case _ => DefaultCollector
     }
     _cstack = c :: _cstack
@@ -65,7 +66,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
     def validate (msg :Messager) = None
   }
 
-  protected class StreamableCollector(e :TypeElement) extends Collector {
+  protected class StreamableCollector (e :TypeElement) extends Collector {
     val meta = new StreamableMetadata(e)
 
     def visitExecutable (e :ExecutableElement) {
@@ -92,6 +93,22 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
         None
       }
     }
+  }
+
+  protected class ServiceCollector (e :TypeElement) extends Collector {
+    val meta = new ServiceMetadata(e)
+
+    def visitExecutable (e :ExecutableElement) {
+      if (e.getKind == ElementKind.METHOD) {
+        meta.methods += ServiceMetadata.Method(e)
+      }
+    }
+
+    def visitVariable (e :VariableElement) {
+      // nada
+    }
+
+    def validate (msg :Messager) :Option[Metadata] = Some(meta)
   }
 
   protected var _metas = Seq[Metadata]()

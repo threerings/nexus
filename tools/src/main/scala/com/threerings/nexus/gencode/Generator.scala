@@ -26,21 +26,28 @@ object Generator
   }
 
   def generate (filer :Filer, outer :TypeElement, metas :Seq[Metadata]) {
-    metas.head match {
-      case sm :StreamableMetadata => {
-        val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
-        val w = out.openWriter
-        try generateStreamer(outer, metas.map(_.asInstanceOf[StreamableMetadata]), w)
-        finally w.close
-      }
-      case um => System.err.println("What do to with " + um.getClass + "?")
+
+    // generate a streamer if we have streamable metadata
+    val sables = metas collect { case sm :StreamableMetadata => sm }
+    if (!sables.isEmpty) {
+      val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
+      val w = out.openWriter
+      try generateStreamer(outer, sables, w)
+      finally w.close
+    }
+
+    // generate a factory if we have service metadata
+    val svcs = metas collect { case sm :ServiceMetadata => sm }
+    if (!svcs.isEmpty) {
+      val out = filer.createSourceFile(factoryName(outer.getQualifiedName.toString), outer)
+      val w = out.openWriter
+      try generateFactory(outer, svcs, w)
+      finally w.close
     }
   }
 
   def generateStreamer (oelem :TypeElement, metas :Seq[StreamableMetadata], out :Writer) {
-    val pkgName = oelem.getEnclosingElement.toString
-    val outerFQName = oelem.getQualifiedName.toString
-    val dotIdx = outerFQName.lastIndexOf(".")
+    val (pkgName, className) = splitName(oelem.getQualifiedName.toString)
 
     // compute the imports needed for this compilation unit
     val allImps = (Set[String]() /: metas.map(_.imports)) { _ ++ _ }
@@ -50,32 +57,61 @@ object Generator
       // filter out DService due to the way it's handled
       filterNot(_ == DServiceName)
 
-    val ctx = new AnyRef {
-      val `package` = if (dotIdx > 0) outerFQName.substring(0, dotIdx) else null
+    generate(out, StreamerTmpl, new AnyRef {
+      val `package` = pkgName
       val imports :JIterable[String] = prunedImps.toSeq.sorted
-      val outerName = outerFQName.substring(dotIdx+1)
-      val outerParams = ""
+      val outerName = className
       val outer = metas find(_.elem == oelem) getOrElse(null)
       val inners :JIterable[AnyRef] = metas filterNot(_.elem == oelem)
-    }
+    })
+  }
 
+  def generateFactory (oelem :TypeElement, metas :Seq[ServiceMetadata], out :Writer) {
+    if (metas.size > 1) {
+      System.err.println("Multiple NexusService declarations in a single compilation unit " +
+                         "not supported: " + oelem.getQualifiedName)
+    }
+    val svc = metas.head
+    val (pkgName, className) = splitName(oelem.getQualifiedName.toString)
+
+    // compute the imports needed for this compilation unit (filtering out classes in the same
+    // package as the generated factory)
+    val prunedImps = svc.imports filterNot(fqn => Utils.inPackage(fqn, pkgName))
+
+    generate(out, FactoryTmpl, new AnyRef {
+      val `package` = pkgName
+      val imports :JIterable[String] = prunedImps.toSeq.sorted
+      val serviceName = className
+      val methods = svc.methods
+    })
+  }
+
+  private def generate (out :Writer, tmpl :String, ctx :AnyRef) {
     val template = {
-      val source = new InputStreamReader(getClass.getClassLoader.getResourceAsStream(StreamerTmpl))
+      val source = new InputStreamReader(getClass.getClassLoader.getResourceAsStream(tmpl))
       try Mustache.compiler.escapeHTML(false).compile(source)
       finally source.close
     }
-
     out.write(_header)
     template.execute(ctx, out)
   }
 
-  private[gencode] def streamerName (fqName :String) = {
+  private[gencode] def streamerName (fqName :String) = tagName(fqName, "Streamer")
+  private[gencode] def factoryName (fqName :String) = tagName(fqName, "Factory")
+
+  private def tagName (fqName :String, tag :String) = {
     val dotIdx = fqName.lastIndexOf(".")+1
-    fqName.substring(0, dotIdx) + "Streamer_" + fqName.substring(dotIdx)
+    fqName.substring(0, dotIdx) + tag + "_" + fqName.substring(dotIdx)
+  }
+
+  private def splitName (fqName :String) = {
+    val dotIdx = fqName.lastIndexOf(".")
+    (if (dotIdx > 0) fqName.substring(0, dotIdx) else null, fqName.substring(dotIdx+1))
   }
 
   private var _header = ""
 
   private final val StreamerTmpl = "com/threerings/nexus/gencode/Streamer.tmpl"
+  private final val FactoryTmpl = "com/threerings/nexus/gencode/Factory.tmpl"
   private final val DServiceName = classOf[DService[_]].getName
 }

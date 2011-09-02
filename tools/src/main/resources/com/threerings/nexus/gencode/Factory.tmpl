@@ -1,0 +1,68 @@
+{{#package}}
+package {{package}};
+
+{{/package}}
+import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.io.ServiceFactory;
+{{#imports}}
+{{#-first}}
+
+{{/-first}}
+import {{.}};
+{{/imports}}
+
+/**
+ * Creates {@link {{serviceName}}} marshaller instances.
+ */
+public class Factory_{{serviceName}} implements ServiceFactory<{{serviceName}}>
+{
+    @Override
+    public DService<{{serviceName}}> createService ()
+    {
+        return new Marshaller();
+    }
+
+    public static DService<{{serviceName}}> createDispatcher (final {{serviceName}} service)
+    {
+        return new DService.Dispatcher<{{serviceName}}>() {
+            @Override public {{serviceName}} get () {
+                return service;
+            }
+
+            @Override public Class<{{serviceName}}> getServiceClass () {
+                return {{serviceName}}.class;
+            }
+
+            @Override public void dispatchCall (short methodId, Object[] args) {
+                switch (methodId) {
+{{#methods}}
+                case {{-index}}:
+                    service.{{name}}(
+{{#args}}
+                        this.<{{type}}>cast(args[{{index}}])
+{{/args}}
+                    );
+                    break;
+{{/methods}}
+                default:
+                    super.dispatchCall(methodId, args);
+                }
+            }
+        };
+    }
+
+    protected static class Marshaller extends DService<{{serviceName}}> implements {{serviceName}}
+    {
+        @Override public {{serviceName}} get () {
+            return this;
+        }
+        @Override public Class<{{serviceName}}> getServiceClass () {
+            return {{serviceName}}.class;
+        }
+{{#methods}}
+        @Override public void {{name}} ({{#args}}{{type}} {{name}}{{^-last}}, {{/-last}}{{/args}}) {
+            postCall((short){{-index}}, {{#args}}{{name}}{{^-last}}, {{/-last}}{{/args}});
+        }
+{{/methods}}
+    }
+}

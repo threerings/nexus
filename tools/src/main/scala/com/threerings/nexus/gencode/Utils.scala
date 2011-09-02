@@ -13,7 +13,7 @@ import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
 import com.threerings.nexus.io.{Streamable}
-import com.threerings.nexus.distrib.{DService, NexusObject}
+import com.threerings.nexus.distrib.{DService, NexusObject, NexusService}
 
 /**
  * Various utility bits.
@@ -67,38 +67,26 @@ object Utils
   /**
    * Returns true if the supplied type extends, or is, the specified class.
    */
-  def extendsClass (t :TypeMirror, fqName :String) :Boolean = t match {
-    case dt :DeclaredType =>
-      (qualifiedName(dt) == fqName ||
-       extendsClass(dt.asElement.asInstanceOf[TypeElement].getSuperclass, fqName))
+  def extendsClass (fqName :String, t :TypeMirror) :Boolean = t match {
+    case dt :DeclaredType => (qualifiedName(dt) == fqName || extendsClass(
+      fqName, dt.asElement.asInstanceOf[TypeElement].getSuperclass))
     case _ => false
   }
 
   /**
-   * Returns true if the supplied type extends `NexusObject`.
+   * Returns true if the supplied type implements, or is, the specified interface.
    */
-  def isNexusObject (t :TypeMirror) :Boolean = extendsClass(t, NexusObjectName)
-
-  /**
-   * Returns true if the supplied type extends `DService`.
-   */
-  def isService (t :TypeMirror) :Boolean = extendsClass(t, DServiceName)
-
-  /**
-   * Returns true if the supplied type is a `Streamable`.
-   */
-  def isStreamable (e :TypeElement) :Boolean = {
-    def isStreamableIfc (t :TypeMirror) :Boolean = t match {
-      case dt :DeclaredType =>
-        (qualifiedName(dt) == StreamableName ||
-         dt.asElement.asInstanceOf[TypeElement].getInterfaces.exists(isStreamableIfc))
-      case _ => false
-    }
-    e.getInterfaces.exists(isStreamableIfc) || (e.getSuperclass match {
-      case dt :DeclaredType => isStreamable(dt.asElement.asInstanceOf[TypeElement])
-      case _ => false
-    })
+  def implementsIface (fqName :String, t :TypeMirror) :Boolean = t match {
+    case dt :DeclaredType =>
+      ((qualifiedName(dt) == fqName) ||
+       dt.asElement.asInstanceOf[TypeElement].getInterfaces.exists(implementsIface(fqName, _)))
+    case _ => false
   }
+
+  def isNexusObject (t :TypeMirror) = extendsClass(NexusObjectName, t)
+  def isDService (t :TypeMirror) = extendsClass(DServiceName, t)
+  def isNexusService (t :TypeMirror) = implementsIface(NexusServiceName, t)
+  def isStreamable (t :TypeMirror) = implementsIface(StreamableName, t)
 
   /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
@@ -115,7 +103,7 @@ object Utils
     case TypeKind.DOUBLE => "Double"
     case TypeKind.DECLARED if (isLang(field, "String")) => "String"
     case TypeKind.DECLARED if (isLang(field, "Class")) => "Class"
-    case TypeKind.DECLARED if (isService(field)) => "Service"
+    case TypeKind.DECLARED if (isDService(field)) => "Service"
     case TypeKind.DECLARED => "Value"
     case TypeKind.TYPEVAR => "Value"
     case _ => throw new IllegalArgumentException(
@@ -129,7 +117,7 @@ object Utils
    */
   def valueType (field :TypeMirror) = field.getKind match {
     case TypeKind.DECLARED if (isLang(field, "String")) => ""
-    case TypeKind.DECLARED if (isLang(field, "Class") || isService(field)) =>
+    case TypeKind.DECLARED if (isLang(field, "Class") || isDService(field)) =>
       "<" + toString(field.asInstanceOf[DeclaredType].getTypeArguments.get(0), false) + ">"
     case TypeKind.DECLARED => "<" + toString(field, false) + ">"
     case TypeKind.TYPEVAR => "<" + toString(field, false) + ">"
@@ -303,6 +291,7 @@ object Utils
   }
 
   private final val NexusObjectName = classOf[NexusObject].getName
+  private final val NexusServiceName = classOf[NexusService].getName
   private final val DServiceName = classOf[DService[_]].getName
   private final val StreamableName = classOf[Streamable].getName
 }
