@@ -5,36 +5,59 @@
 package com.threerings.nexus.io;
 
 /**
- * Handles streaming {@link Widget} instances.
+ * Handles the streaming of {@link Widget} and/or nested classes.
  */
-public class Streamer_Widget implements Streamer<Widget>
+public class Streamer_Widget
+    implements Streamer<Widget>
 {
-    public Class<?> getObjectClass ()
+    /**
+     * Handles the streaming of {@link Widget.Wangle} instances.
+     */
+    public static class Wangle
+        implements Streamer<Widget.Wangle>
     {
-        return Widget.class;
-    }
-
-    public void writeObject (Streamable.Output out, Widget obj)
-    {
-        out.writeString(obj.name);
-        out.writeValue(obj._wangle);
-    }
-
-    public Widget readObject (Streamable.Input in)
-    {
-        return new Widget(in.readString(), in.<Widget.Wangle>readValue());
-    }
-
-    public static class Wangle implements Streamer<Widget.Wangle>
-    {
+        @Override
         public Class<?> getObjectClass () {
             return Widget.Wangle.class;
         }
+
+        @Override
         public void writeObject (Streamable.Output out, Widget.Wangle obj) {
+            writeObjectImpl(out, obj);
+        }
+
+        @Override
+        public Widget.Wangle readObject (Streamable.Input in) {
+            return new Widget.Wangle(
+                in.readInt()
+            );
+        }
+
+        public static  void writeObjectImpl (Streamable.Output out, Widget.Wangle obj) {
             out.writeInt(obj.size);
         }
-        public Widget.Wangle readObject (Streamable.Input in) {
-            return new Widget.Wangle(in.readInt());
-        }
+    }
+
+    @Override
+    public Class<?> getObjectClass () {
+        return Widget.class;
+    }
+
+    @Override
+    public void writeObject (Streamable.Output out, Widget obj) {
+        writeObjectImpl(out, obj);
+    }
+
+    @Override
+    public Widget readObject (Streamable.Input in) {
+        return new Widget(
+            in.readString(),
+            in.<Widget.Wangle>readValue()
+        );
+    }
+
+    public static  void writeObjectImpl (Streamable.Output out, Widget obj) {
+        out.writeString(obj.name);
+        out.writeValue(obj._wangle);
     }
 }

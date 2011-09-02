@@ -8,25 +8,32 @@ import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 
 /**
- * Handles streaming of {@link TestObject} instances.
+ * Handles the streaming of {@link TestObject} and/or nested classes.
  */
-public class Streamer_TestObject implements Streamer<TestObject>
+public class Streamer_TestObject
+    implements Streamer<TestObject>
 {
-    public Class<?> getObjectClass ()
-    {
+    @Override
+    public Class<?> getObjectClass () {
         return TestObject.class;
     }
 
-    public void writeObject (Streamable.Output out, TestObject obj)
-    {
-        out.writeService(obj.testsvc);
+    @Override
+    public void writeObject (Streamable.Output out, TestObject obj) {
+        writeObjectImpl(out, obj);
         obj.writeContents(out);
     }
 
-    public TestObject readObject (Streamable.Input in)
-    {
-        TestObject obj = new TestObject(in.<TestService>readService());
+    @Override
+    public TestObject readObject (Streamable.Input in) {
+        TestObject obj = new TestObject(
+            in.<TestService>readService()
+        );
         obj.readContents(in);
         return obj;
+    }
+
+    public static  void writeObjectImpl (Streamable.Output out, TestObject obj) {
+        out.writeService(obj.testsvc);
     }
 }

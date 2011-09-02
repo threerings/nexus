@@ -12,7 +12,7 @@ import com.threerings.nexus.util.Callback;
  */
 public class Factory_TestService implements ServiceFactory<TestService>
 {
-    // from interface ServiceFactory<TestService>
+    @Override
     public DService<TestService> createService ()
     {
         return new Marshaller();
@@ -33,7 +33,7 @@ public class Factory_TestService implements ServiceFactory<TestService>
                 switch (methodId) {
                 case 1:
                     service.addOne(
-                        (Integer)args[0],
+                        this.<Integer>cast(args[0]),
                         this.<Callback<Integer>>cast(args[1]));
                     break;
                 case 2:
