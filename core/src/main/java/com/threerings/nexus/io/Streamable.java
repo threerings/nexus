@@ -34,72 +34,105 @@ public interface Streamable
         public abstract String readString ();
         public abstract <T extends Streamable> Class<T> readClass ();
 
-// not sure whether I want these yet...
+        /**
+         * Reads an array of boolean values from the stream. The result will not be null.
+         */
+        public boolean[] readBooleans () {
+            // TODO: encode into bitmask
+            boolean[] data = new boolean[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readBoolean();
+            }
+            return data;
+        }
 
-//         public boolean[] readBooleans () {
-//             // TODO: encode into bitmask
-//             boolean[] data = new boolean[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readBoolean();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of byte values from the stream. The result will not be null.
+         */
+        public byte[] readBytes () {
+            byte[] data = new byte[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readByte();
+            }
+            return data;
+        }
 
-//         public byte[] readBytes () {
-//             byte[] data = new byte[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readByte();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of short values from the stream. The result will not be null.
+         */
+        public short[] readShorts () {
+            short[] data = new short[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readShort();
+            }
+            return data;
+        }
 
-//         public short[] readShorts () {
-//             short[] data = new short[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readShort();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of char values from the stream. The result will not be null.
+         */
+        public char[] readChars () {
+            char[] data = new char[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readChar();
+            }
+            return data;
+        }
 
-//         public char[] readChars () {
-//             char[] data = new char[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readChar();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of int values from the stream. The result will not be null.
+         */
+        public int[] readInts () {
+            int[] data = new int[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readInt();
+            }
+            return data;
+        }
 
-//         public int[] readInts () {
-//             int[] data = new int[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readInt();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of long values from the stream. The result will not be null.
+         */
+        public long[] readLongs () {
+            long[] data = new long[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readLong();
+            }
+            return data;
+        }
 
-//         public long[] readLongs () {
-//             long[] data = new long[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readLong();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of float values from the stream. The result will not be null.
+         */
+        public float[] readFloats () {
+            float[] data = new float[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readFloat();
+            }
+            return data;
+        }
 
-//         public float[] readFloats () {
-//             float[] data = new float[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readFloat();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of double values from the stream. The result will not be null.
+         */
+        public double[] readDoubles () {
+            double[] data = new double[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readDouble();
+            }
+            return data;
+        }
 
-//         public double[] readDoubles () {
-//             double[] data = new double[readInt()];
-//             for (int ii = 0; ii < data.length; ii++) {
-//                 data[ii] = readDouble();
-//             }
-//             return data;
-//         }
+        /**
+         * Reads an array of strings from the stream. The result will not be null.
+         */
+        public String[] readStrings () {
+            String[] data = new String[readInt()];
+            for (int ii = 0; ii < data.length; ii++) {
+                data[ii] = readString();
+            }
+            return data;
+        }
 
         public <T extends NexusService> DService<T> readService () {
             return this.<T>readServiceFactory().createService();
@@ -156,6 +189,106 @@ public interface Streamable
         public abstract void writeString (String value);
         public abstract void writeClass (Class<? extends Streamable> clazz);
         public abstract void writeService (DService<?> service);
+
+        /**
+         * Writes an array of boolean values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeBooleans (boolean[] values) {
+            // TODO: encode into bitmask
+            writeInt(values.length);
+            for (boolean value : values) {
+                writeBoolean(value);
+            }
+        }
+
+        /**
+         * Writes an array of byte values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeBytes (byte[] values) {
+            writeInt(values.length);
+            for (byte value : values) {
+                writeByte(value);
+            }
+        }
+
+        /**
+         * Writes an array of short values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeShorts (short[] values) {
+            writeInt(values.length);
+            for (short value : values) {
+                writeShort(value);
+            }
+        }
+
+        /**
+         * Writes an array of char values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeChars (char[] values) {
+            writeInt(values.length);
+            for (char value : values) {
+                writeChar(value);
+            }
+        }
+
+        /**
+         * Writes an array of int values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeInts (int[] values) {
+            writeInt(values.length);
+            for (int value : values) {
+                writeInt(value);
+            }
+        }
+
+        /**
+         * Writes an array of long values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeLongs (long[] values) {
+            writeInt(values.length);
+            for (long value : values) {
+                writeLong(value);
+            }
+        }
+
+        /**
+         * Writes an array of float values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeFloats (float[] values) {
+            writeInt(values.length);
+            for (float value : values) {
+                writeFloat(value);
+            }
+        }
+
+        /**
+         * Writes an array of double values to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeDoubles (double[] values) {
+            writeInt(values.length);
+            for (double value : values) {
+                writeDouble(value);
+            }
+        }
+
+        /**
+         * Writes an array of strings to the stream.
+         * @throws NullPointerException if the supplied array is null.
+         */
+        public void writeStrings (String[] values) {
+            writeInt(values.length);
+            for (String value : values) {
+                writeString(value);
+            }
+        }
 
         /**
          * Writes a value to the output, which may be of any of the primitive types, String, a
