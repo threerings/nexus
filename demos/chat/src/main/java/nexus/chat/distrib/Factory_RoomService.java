@@ -13,7 +13,7 @@ import com.threerings.nexus.util.Callback;
  */
 public class Factory_RoomService implements ServiceFactory<RoomService>
 {
-    // from interface ServiceFactory<RoomService>
+    @Override
     public DService<RoomService> createService ()
     {
         return new Marshaller();
@@ -34,7 +34,7 @@ public class Factory_RoomService implements ServiceFactory<RoomService>
                 switch (methodId) {
                 case 1:
                     service.sendMessage(
-                        (String)args[0],
+                        this.<String>cast(args[0]),
                         this.<Callback<Void>>cast(args[1]));
                     break;
                 default:

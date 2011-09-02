@@ -4,10 +4,9 @@
 
 package nexus.chat.distrib;
 
+import com.threerings.nexus.distrib.DSignal;
 import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
-
-import com.threerings.nexus.distrib.DSignal;
 
 /**
  * Handles the streaming of {@link RoomObject} and/or nested classes.

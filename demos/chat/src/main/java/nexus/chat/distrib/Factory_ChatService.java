@@ -16,7 +16,7 @@ import com.threerings.nexus.util.Callback;
  */
 public class Factory_ChatService implements ServiceFactory<ChatService>
 {
-    // from interface ServiceFactory<ChatService>
+    @Override
     public DService<ChatService> createService ()
     {
         return new Marshaller();
@@ -37,7 +37,7 @@ public class Factory_ChatService implements ServiceFactory<ChatService>
                 switch (methodId) {
                 case 1:
                     service.updateNick(
-                        (String)args[0],
+                        this.<String>cast(args[0]),
                         this.<Callback<Void>>cast(args[1]));
                     break;
                 case 2:
@@ -46,12 +46,12 @@ public class Factory_ChatService implements ServiceFactory<ChatService>
                     break;
                 case 3:
                     service.joinRoom(
-                        (String)args[0],
+                        this.<String>cast(args[0]),
                         this.<Callback<Address<RoomObject>>>cast(args[1]));
                     break;
                 case 4:
                     service.createRoom(
-                        (String)args[0],
+                        this.<String>cast(args[0]),
                         this.<Callback<Address<RoomObject>>>cast(args[1]));
                     break;
                 default:
