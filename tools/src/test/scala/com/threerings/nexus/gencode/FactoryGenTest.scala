@@ -18,7 +18,18 @@ class FactoryGenTest {
     assertEquals("foo.bar.Factory_Foo", Generator.factoryName("foo.bar.Foo"))
   }
 
-  @Test def testBox {
+  @Test def testService {
+    val source = FactoryTestCompiler.genSource("TestService.java", """
+      import com.threerings.nexus.util.Callback;
+      public interface TestService extends com.threerings.nexus.distrib.NexusService {
+        void addOne (int value, Callback<Integer> callback);
+        void launchMissiles ();
+      }
+    """)
+    // System.err.println(source)
+  }
+
+  @Test def testMeta {
     val meta = FactoryTestCompiler.genMeta("TestService.java", """
       import com.threerings.nexus.util.Callback;
       public interface TestService extends com.threerings.nexus.distrib.NexusService {
@@ -26,11 +37,15 @@ class FactoryGenTest {
         void launchMissiles ();
       }
     """)
-    System.err.println(meta)
-    System.err.println(meta.imports)
-    // // make sure all the ctor arg and field name variants are matched
-    // assertEquals(Map("value1" -> "value1", "value2" -> "_value2", "value3" -> "value3_",
-    //                  "_value4" -> "value4", "value5_" -> "value5"), metas.head.argToField)
+    assertEquals(meta.serviceName, "TestService")
+    assertEquals(2, meta.methods.size)
+    checkMethod(meta.methods.get(0), "addOne", 2)
+    checkMethod(meta.methods.get(1), "launchMissiles", 0)
+  }
+
+  private def checkMethod (m :ServiceMetadata.Method, name :String, args :Int) {
+    assertEquals(name, m.name)
+    assertEquals(args, m.args.size)
   }
 }
 

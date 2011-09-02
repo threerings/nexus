@@ -37,11 +37,8 @@ public class Factory_{{serviceName}} implements ServiceFactory<{{serviceName}}>
                 switch (methodId) {
 {{#methods}}
                 case {{-index}}:
-                    service.{{name}}(
-{{#args}}
-                        this.<{{type}}>cast(args[{{index}}])
-{{/args}}
-                    );
+                    service.{{name}}({{#args}}{{^-first}},{{/-first}}
+                        this.<{{type}}>cast(args[{{index}}]){{/args}});
                     break;
 {{/methods}}
                 default:
@@ -61,7 +58,7 @@ public class Factory_{{serviceName}} implements ServiceFactory<{{serviceName}}>
         }
 {{#methods}}
         @Override public void {{name}} ({{#args}}{{type}} {{name}}{{^-last}}, {{/-last}}{{/args}}) {
-            postCall((short){{-index}}, {{#args}}{{name}}{{^-last}}, {{/-last}}{{/args}});
+            postCall((short){{-index}}{{#args}}, {{name}}{{/args}});
         }
 {{/methods}}
     }

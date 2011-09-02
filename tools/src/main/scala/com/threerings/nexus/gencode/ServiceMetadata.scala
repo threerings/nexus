@@ -6,7 +6,7 @@ package com.threerings.nexus.gencode
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 
-import java.lang.{Iterable => JIterable}
+import java.util.{List => JList}
 import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
 
 /**
@@ -24,18 +24,24 @@ class ServiceMetadata (val elem :TypeElement) extends Metadata {
     methods.flatMap(_.elem.getParameters.flatMap(p => Utils.collectImports(p.asType)))
 
   /** Returns all of the methods defined for this service. */
-  val methods = ListBuffer[Method]()
+  def methods :JList[Method] = methodsBuf
+
+  /** Adds a method to this metadata. Used when building. */
+  def addMethod (elem :ExecutableElement) { methodsBuf += Method(elem) }
+  private val methodsBuf = ListBuffer[Method]()
 
   override def toString () = String.format("[name=%s, methods=%s]", serviceName, methods)
 }
 
 object ServiceMetadata {
-  case class Arg (elem :VariableElement) {
+  case class Arg (elem :VariableElement, index :Int) {
     def `type` = Utils.toString(elem.asType, true)
     def name = elem.getSimpleName.toString
+    override def toString () = String.format("%s %s", `type`, name)
   }
   case class Method (elem :ExecutableElement) {
     val name = elem.getSimpleName.toString
-    val args :JIterable[Arg] = elem.getParameters.map(Arg)
+    val args :JList[Arg] = elem.getParameters.zipWithIndex.map((Arg.apply _).tupled)
+    override def toString () = String.format("%s(%s)", name, args.mkString(", "))
   }
 }

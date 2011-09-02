@@ -71,9 +71,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
 
     def visitExecutable (e :ExecutableElement) {
       if (e.getKind == ElementKind.CONSTRUCTOR) {
-        for (arg <- e.getParameters) {
-          meta.ctorArgs += (arg.getSimpleName.toString -> arg.asType)
-        }
+        meta.ctorArgs ++= e.getParameters.map(a => (a.getSimpleName.toString -> a.asType))
       }
     }
 
@@ -100,7 +98,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
 
     def visitExecutable (e :ExecutableElement) {
       if (e.getKind == ElementKind.METHOD) {
-        meta.methods += ServiceMetadata.Method(e)
+        meta.addMethod(e)
       }
     }
 

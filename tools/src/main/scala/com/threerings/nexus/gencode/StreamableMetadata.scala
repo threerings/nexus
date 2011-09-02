@@ -19,7 +19,7 @@ class StreamableMetadata (val elem :TypeElement) extends Metadata {
   def superCtorArgs :Int = Utils.countSuperCtorArgs(elem)
 
   /** An ordered mapping from constructor argument name to type. */
-  var ctorArgs = LHMap[String,TypeMirror]()
+  val ctorArgs = LHMap[String,TypeMirror]()
 
   /** The constructor arguments with the first `superCtorArgs` arguments dropped.
    * These arguments should correspond to fields declared by this class. */

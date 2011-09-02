@@ -8,7 +8,7 @@ import scala.collection.mutable.{Set => MSet}
 
 import javax.lang.model.element.{Element, ExecutableElement, PackageElement, TypeElement}
 import javax.lang.model.element.{Name, ElementKind}
-import javax.lang.model.`type`.{DeclaredType, NoType, WildcardType}
+import javax.lang.model.`type`.{DeclaredType, NoType, PrimitiveType, WildcardType}
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
@@ -77,9 +77,11 @@ object Utils
    * Returns true if the supplied type implements, or is, the specified interface.
    */
   def implementsIface (fqName :String, t :TypeMirror) :Boolean = t match {
-    case dt :DeclaredType =>
-      ((qualifiedName(dt) == fqName) ||
-       dt.asElement.asInstanceOf[TypeElement].getInterfaces.exists(implementsIface(fqName, _)))
+    case dt :DeclaredType => (qualifiedName(dt) == fqName) || {
+      val et = dt.asElement.asInstanceOf[TypeElement]
+      implementsIface(fqName, et.getSuperclass) ||
+        et.getInterfaces.exists(implementsIface(fqName, _))
+    }
     case _ => false
   }
 
@@ -232,6 +234,11 @@ object Utils
         buf.append(" extends ")
         visit(t.getExtendsBound, buf)
       }
+    }
+
+    override def visitPrimitive (t :PrimitiveType, buf :StringBuilder) {
+      // this is a bit of a hack, we can fix it up later if need be
+      buf.append(t.getKind.toString.toLowerCase)
     }
 
     private var _seenVars = Set[TypeVariable]()
