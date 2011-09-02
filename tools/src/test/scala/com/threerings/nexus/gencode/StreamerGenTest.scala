@@ -3,15 +3,8 @@
 
 package com.threerings.nexus.gencode
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.{Seq => MSeq}
-
-import java.io.StringWriter
-import java.net.URI
-
 import javax.annotation.processing.SupportedAnnotationTypes
 import javax.lang.model.element.TypeElement
-import javax.tools.{JavaFileObject, SimpleJavaFileObject, ToolProvider}
 
 import org.junit.Assert._
 import org.junit.Test
@@ -27,7 +20,7 @@ class StreamerGenTest
   }
 
   @Test def testBox {
-    val metas = TestCompiler.genMetas("Box.java", """
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
       public class Box<T> implements com.threerings.nexus.io.Streamable {
         public final T value1;
         public final T _value2;
@@ -49,7 +42,7 @@ class StreamerGenTest
   }
 
   @Test def testNested {
-    val metas = TestCompiler.genMetas("Container.java", """
+    val metas = StreamerTestCompiler.genMetas("Container.java", """
       package foo.bar;
       public class Container {
         public class Inner1 implements com.threerings.nexus.io.Streamable {}
@@ -60,7 +53,7 @@ class StreamerGenTest
   }
 
   @Test def testNestedInStreamable {
-    val metas = TestCompiler.genMetas("Outer.java", """
+    val metas = StreamerTestCompiler.genMetas("Outer.java", """
       package foo.bar;
       import com.threerings.nexus.io.Streamable;
       public class Outer implements Streamable {
@@ -72,7 +65,7 @@ class StreamerGenTest
   }
 
   @Test def testNestedInStreamableIface {
-    val metas = TestCompiler.genMetas("OuterIface.java", """
+    val metas = StreamerTestCompiler.genMetas("OuterIface.java", """
       package foo.bar;
       import com.threerings.nexus.io.Streamable;
       public interface OuterIface extends Streamable {
@@ -86,7 +79,7 @@ class StreamerGenTest
   }
 
   @Test def testInherit {
-    val source = TestCompiler.genSource("Container.java", """
+    val source = StreamerTestCompiler.genSource("Container.java", """
       package foo.bar;
       public class Container {
         public class Parent implements com.threerings.nexus.io.Streamable {
@@ -112,7 +105,7 @@ class StreamerGenTest
   }
 
   @Test def testInheritFromInterface {
-    val metas = TestCompiler.genMetas("OuterClass.java", """
+    val metas = StreamerTestCompiler.genMetas("OuterClass.java", """
       package foo.bar;
       interface OuterIface {
         class Parent implements com.threerings.nexus.io.Streamable {
@@ -141,7 +134,7 @@ class StreamerGenTest
   }
 
   @Test def testParameterized {
-    val metas = TestCompiler.genMetas("Box.java", """
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
       import java.util.Map;
       public class Box<A,B,K,V> implements com.threerings.nexus.io.Streamable {
         public final A valueA;
@@ -158,7 +151,7 @@ class StreamerGenTest
   }
 
   @Test def testBounded {
-    val metas = TestCompiler.genMetas("Box.java", """
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
       public class Box<T extends Comparable<T>> implements com.threerings.nexus.io.Streamable {
         public final T value;
         public Box (T value) {
@@ -170,7 +163,7 @@ class StreamerGenTest
   }
 
   @Test def testUnionBounded {
-    val metas = TestCompiler.genMetas("Box.java", """
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
       public class Box<T extends Comparable<T> & Iterable<?>>
         implements com.threerings.nexus.io.Streamable {
         public final T value;
@@ -184,7 +177,7 @@ class StreamerGenTest
   }
 
   @Test def testImplementsStreamaerSubIface {
-    val metas = TestCompiler.genMetas("Container.java", """
+    val metas = StreamerTestCompiler.genMetas("Container.java", """
       package foo.bar;
       public class Container {
         interface Foozle extends com.threerings.nexus.io.Streamable {
@@ -204,7 +197,7 @@ class StreamerGenTest
   }
 
   @Test def testImports {
-    val metas = TestCompiler.genMetas("Box.java", """
+    val metas = StreamerTestCompiler.genMetas("Box.java", """
       import java.util.Map;
       public class Box<A,B extends Comparable<B>,K,V>
         implements com.threerings.nexus.io.Streamable {
@@ -225,7 +218,7 @@ class StreamerGenTest
     val header = "// foo bar baz!\n\n"
     Generator.setSourceHeader(header)
     try {
-      val source = TestCompiler.genSource("Box.java", """
+      val source = StreamerTestCompiler.genSource("Box.java", """
         package foo.bar;
         public class Box<T> implements com.threerings.nexus.io.Streamable {
           public final T value;
@@ -241,7 +234,7 @@ class StreamerGenTest
   }
 
   @Test def testFieldOrdering {
-    val metas = TestCompiler.genMetas("Upstream.java", """
+    val metas = StreamerTestCompiler.genMetas("Upstream.java", """
       package foo.bar;
       import java.util.List;
       import com.threerings.nexus.io.Streamable;
@@ -269,7 +262,7 @@ class StreamerGenTest
   }
 
   @Test def testObject {
-    val source = TestCompiler.genSource("FooObject.java", """
+    val source = StreamerTestCompiler.genSource("FooObject.java", """
       public class FooObject extends com.threerings.nexus.distrib.NexusObject {
         public final String name;
         public FooObject (String name) {
@@ -283,23 +276,7 @@ class StreamerGenTest
   }
 }
 
-object TestCompiler {
-  val streamObj = mkTestObject("Streamable.java", """
-    package com.threerings.nexus.io;
-    public interface Streamable {
-      public interface Input {}
-      public interface Output {}
-    }
-  """)
-  val nexobjObj = mkTestObject("NexusObject.java", """
-    package com.threerings.nexus.distrib;
-    import com.threerings.nexus.io.Streamable;
-    public abstract class NexusObject implements Streamable {
-      public void readContents (Streamable.Input in) {}
-      public void writeContents (Streamable.Output out) {}
-    }
-  """)
-
+object StreamerTestCompiler extends TestCompiler {
   def genSource (filename :String, content :String) :String =
     process(filename, content, new GenSourceProcessor)
 
@@ -307,7 +284,7 @@ object TestCompiler {
   class GenSourceProcessor extends TestProcessor[String] {
     override def result = _source
     override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
-      val out = new StringWriter
+      val out = new java.io.StringWriter
       Generator.generateStreamer(elem, metas.map(_.asInstanceOf[StreamableMetadata]), out)
       _source = out.toString
     }
@@ -325,26 +302,24 @@ object TestCompiler {
       // we don't want the metadata for the, always included, NexusObject skeleton
       _tmetas ++= smetas.filterNot(_.name == "NexusObject")
     }
-    protected var _tmetas = MSeq[StreamableMetadata]()
+    protected var _tmetas = Seq[StreamableMetadata]()
   }
 
-  protected abstract class TestProcessor[R] extends Processor {
-    def result :R
-  }
+  override protected def stockObjects = List(streamObj, nexobjObj)
 
-  private def process[R] (filename :String, content :String, proc :TestProcessor[R]) :R = {
-    val files = List(streamObj, nexobjObj, mkTestObject(filename, content))
-    val options = List("-processor", "com.threerings.nexus.gencode.Processor", "-proc:only")
-    val task = _compiler.getTask(null, null, null, options, null, files)
-    task.setProcessors(List(proc))
-    task.call
-    proc.result
-  }
-
-  private def mkTestObject (file :String, content :String) =
-    new SimpleJavaFileObject(URI.create("test:/" + file), JavaFileObject.Kind.SOURCE) {
-      override def getCharContent (ignoreEncodingErrors :Boolean) :CharSequence = content
+  private val streamObj = mkTestObject("Streamable.java", """
+    package com.threerings.nexus.io;
+    public interface Streamable {
+      public interface Input {}
+      public interface Output {}
     }
-
-  private val _compiler = ToolProvider.getSystemJavaCompiler
+  """)
+  private val nexobjObj = mkTestObject("NexusObject.java", """
+    package com.threerings.nexus.distrib;
+    import com.threerings.nexus.io.Streamable;
+    public abstract class NexusObject implements Streamable {
+      public void readContents (Streamable.Input in) {}
+      public void writeContents (Streamable.Output out) {}
+    }
+  """)
 }
