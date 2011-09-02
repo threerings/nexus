@@ -8,7 +8,7 @@ import scala.io.Source
 
 import java.util.Set
 
-import javax.annotation.processing.{AbstractProcessor, Filer, ProcessingEnvironment}
+import javax.annotation.processing.{AbstractProcessor, Filer, Messager, ProcessingEnvironment}
 import javax.annotation.processing.{SupportedAnnotationTypes, SupportedOptions, RoundEnvironment}
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.{Element, TypeElement, Name}
@@ -24,6 +24,7 @@ class Processor extends AbstractProcessor {
   override def init (procenv :ProcessingEnvironment) {
     super.init(procenv)
     _filer = procenv.getFiler
+    _msgr = procenv.getMessager
     _scanner = new Scanner(procenv)
 
     // if a source header was specified, read it in and configure the generator
@@ -32,7 +33,7 @@ class Processor extends AbstractProcessor {
       try {
         Generator.setSourceHeader(Source.fromFile(header).mkString)
       } catch {
-        case e => procenv.getMessager.printMessage(
+        case e => _msgr.printMessage(
           Diagnostic.Kind.WARNING, "Unable to read source header at '" + header + "': " + e)
       }
     }
@@ -47,19 +48,19 @@ class Processor extends AbstractProcessor {
           val metas = _scanner.scanUnit(elem)
           if (!metas.isEmpty) generate(telem, metas)
         }
-        case _ => processingEnv.getMessager.printMessage(
-          Diagnostic.Kind.WARNING, "Weird element? " + elem.getClass)
+        case _ => _msgr.printMessage(Diagnostic.Kind.WARNING, "Weird element? " + elem.getClass)
       }
     }
     false
   }
 
   protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
-    Generator.generate(_filer, elem, metas)
+    Generator.generate(_msgr, _filer, elem, metas)
   }
 
-  protected var _scanner :Scanner = _
+  protected var _msgr :Messager = _
   protected var _filer :Filer = _
+  protected var _scanner :Scanner = _
 }
 
 object ProcessorOpts {

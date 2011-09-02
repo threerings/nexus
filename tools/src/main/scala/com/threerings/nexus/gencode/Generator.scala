@@ -9,9 +9,10 @@ import scala.collection.immutable.SortedSet
 import java.lang.{Iterable => JIterable}
 import java.io.{InputStreamReader, Writer}
 
-import javax.annotation.processing.{Filer}
+import javax.annotation.processing.{Filer, Messager}
 import javax.lang.model.element.{Name, TypeElement}
 import javax.lang.model.`type`.{TypeKind, TypeMirror}
+import javax.tools.Diagnostic
 
 import com.samskivert.mustache.Mustache
 
@@ -26,11 +27,13 @@ object Generator
     _header = header
   }
 
-  def generate (filer :Filer, outer :TypeElement, metas :Seq[Metadata]) {
+  def generate (msgr :Messager, filer :Filer, outer :TypeElement, metas :Seq[Metadata]) {
     // generate a streamer if we have streamable metadata
     val sables = metas collect { case sm :StreamableMetadata => sm }
     if (!sables.isEmpty) {
-      val out = filer.createSourceFile(streamerName(outer.getQualifiedName.toString), outer)
+      val sname = streamerName(outer.getQualifiedName.toString)
+      msgr.printMessage(Diagnostic.Kind.NOTE, "Generating " + sname + "...")
+      val out = filer.createSourceFile(sname, outer)
       val w = out.openWriter
       try generateStreamer(outer, sables, w)
       finally w.close
@@ -39,7 +42,9 @@ object Generator
     // generate a factory if we have service metadata
     val svcs = metas collect { case sm :ServiceMetadata => sm }
     if (!svcs.isEmpty) {
-      val out = filer.createSourceFile(factoryName(outer.getQualifiedName.toString), outer)
+      val fname = factoryName(outer.getQualifiedName.toString)
+      msgr.printMessage(Diagnostic.Kind.NOTE, "Generating " + fname + "...")
+      val out = filer.createSourceFile(fname, outer)
       val w = out.openWriter
       try generateFactory(outer, svcs, w)
       finally w.close
