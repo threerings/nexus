@@ -4,12 +4,12 @@
 
 package com.threerings.nexus.net;
 
-import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.io.Streamer;
+import java.util.List;
 
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.NexusEvent;
-import java.util.List;
+import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.io.Streamer;
 
 /**
  * Handles the streaming of {@link Upstream} and/or nested classes.

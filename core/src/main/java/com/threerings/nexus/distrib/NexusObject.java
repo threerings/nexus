@@ -127,11 +127,11 @@ public abstract class NexusObject
     }
 
     /** Used by {@link #getAddress} for type jockeying. */
-    protected static class DummyKeyed extends NexusObject implements Keyed {
+    private static class DummyKeyed extends NexusObject implements Keyed {
         public Comparable<?> getKey () { return null; }
     }
     /** Used by {@link #getAddress} for type jockeying. */
-    protected static class DummySingle extends NexusObject implements Singleton {}
+    private static class DummySingle extends NexusObject implements Singleton {}
 
     /** The unique identifier for this object. This value is not available until the object has
      * been registered with the Nexus Manager. The id is unique with respect to the peer on which

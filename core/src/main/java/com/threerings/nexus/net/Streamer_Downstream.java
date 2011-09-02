@@ -4,12 +4,11 @@
 
 package com.threerings.nexus.net;
 
-import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.io.Streamer;
-
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.io.Streamer;
 
 /**
  * Handles the streaming of {@link Downstream} and/or nested classes.
