@@ -2,15 +2,26 @@
 package {{package}};
 
 {{/package}}
-import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.io.Streamer;
 {{#imports}}
-{{#-first}}
-
-{{/-first}}
+{{#java}}
 import {{.}};
-{{/imports}}
+{{#-last}}
 
+{{/-last}}
+{{/java}}
+{{#nexus}}
+import {{.}};
+{{#-last}}
+
+{{/-last}}
+{{/nexus}}
+{{#other}}
+import {{.}};
+{{#-last}}
+
+{{/-last}}
+{{/other}}
+{{/imports}}
 /**
  * Handles the streaming of {@link {{outerName}}} and/or nested classes.
  */

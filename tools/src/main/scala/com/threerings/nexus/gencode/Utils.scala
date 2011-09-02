@@ -12,7 +12,7 @@ import javax.lang.model.`type`.{DeclaredType, NoType, PrimitiveType, WildcardTyp
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
-import com.threerings.nexus.io.{Streamable}
+import com.threerings.nexus.io.{Streamable, Streamer, ServiceFactory}
 import com.threerings.nexus.distrib.{DService, NexusObject, NexusService}
 
 /**
@@ -297,8 +297,10 @@ object Utils
     private var _seenVars = Set[TypeVariable]()
   }
 
-  private final val NexusObjectName = classOf[NexusObject].getName
-  private final val NexusServiceName = classOf[NexusService].getName
-  private final val DServiceName = classOf[DService[_]].getName
-  private final val StreamableName = classOf[Streamable].getName
+  private[gencode] final val NexusObjectName = classOf[NexusObject].getName
+  private[gencode] final val NexusServiceName = classOf[NexusService].getName
+  private[gencode] final val DServiceName = classOf[DService[_]].getName
+  private[gencode] final val StreamableName = classOf[Streamable].getName
+  private[gencode] final val StreamerName = classOf[Streamer[_]].getName
+  private[gencode] final val ServiceFactoryName = classOf[ServiceFactory[_]].getName
 }

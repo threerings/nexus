@@ -4,6 +4,7 @@
 package com.threerings.nexus.gencode
 
 import scala.collection.JavaConversions._
+import scala.collection.immutable.SortedSet
 
 import java.lang.{Iterable => JIterable}
 import java.io.{InputStreamReader, Writer}
@@ -26,7 +27,6 @@ object Generator
   }
 
   def generate (filer :Filer, outer :TypeElement, metas :Seq[Metadata]) {
-
     // generate a streamer if we have streamable metadata
     val sables = metas collect { case sm :StreamableMetadata => sm }
     if (!sables.isEmpty) {
@@ -50,7 +50,8 @@ object Generator
     val (pkgName, className) = splitName(oelem.getQualifiedName.toString)
 
     // compute the imports needed for this compilation unit
-    val allImps = (Set[String]() /: metas.map(_.imports)) { _ ++ _ }
+    val stockImps = Set(Utils.StreamableName, Utils.StreamerName)
+    val allImps = (stockImps /: metas.map(_.imports)) { _ ++ _ }
     val prunedImps = allImps.
       // filter out classes in the same package as the generated streamer
       filterNot(fqn => Utils.inPackage(fqn, pkgName)).
@@ -59,7 +60,7 @@ object Generator
 
     generate(out, StreamerTmpl, new AnyRef {
       val `package` = pkgName
-      val imports :JIterable[String] = prunedImps.toSeq.sorted
+      val imports = orgImports(prunedImps)
       val outerName = className
       val outer = metas find(_.elem == oelem) getOrElse(null)
       val inners :JIterable[AnyRef] = metas filterNot(_.elem == oelem)
@@ -76,14 +77,27 @@ object Generator
 
     // compute the imports needed for this compilation unit (filtering out classes in the same
     // package as the generated factory)
-    val prunedImps = svc.imports filterNot(fqn => Utils.inPackage(fqn, pkgName))
+    val stockImps = Set(Utils.DServiceName, Utils.ServiceFactoryName)
+    val prunedImps = stockImps ++ (svc.imports filterNot(fqn => Utils.inPackage(fqn, pkgName)))
 
     generate(out, FactoryTmpl, new AnyRef {
       val `package` = pkgName
-      val imports :JIterable[String] = prunedImps.toSeq.sorted
+      val imports = orgImports(prunedImps)
       val serviceName = className
       val methods = svc.methods
     })
+  }
+
+  private def orgImports (imports :Set[String]) = {
+    val sortedImps = SortedSet[String]() ++ imports
+    val javaImps = sortedImps filter(_.startsWith("java"))
+    val nexusImps = sortedImps filter(_.startsWith("com.threerings.nexus"))
+    val otherImps = sortedImps -- javaImps -- nexusImps
+    new AnyRef {
+      val java :JIterable[String] = javaImps
+      val nexus :JIterable[String] = nexusImps
+      val other :JIterable[String] = otherImps
+    }
   }
 
   private def generate (out :Writer, tmpl :String, ctx :AnyRef) {

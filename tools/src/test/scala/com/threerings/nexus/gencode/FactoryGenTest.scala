@@ -20,6 +20,7 @@ class FactoryGenTest {
 
   @Test def testService {
     val source = FactoryTestCompiler.genSource("TestService.java", """
+      package foo.bar;
       import com.threerings.nexus.util.Callback;
       public interface TestService extends com.threerings.nexus.distrib.NexusService {
         void addOne (int value, Callback<Integer> callback);

@@ -2,15 +2,26 @@
 package {{package}};
 
 {{/package}}
-import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.io.ServiceFactory;
 {{#imports}}
-{{#-first}}
-
-{{/-first}}
+{{#java}}
 import {{.}};
-{{/imports}}
+{{#-last}}
 
+{{/-last}}
+{{/java}}
+{{#nexus}}
+import {{.}};
+{{#-last}}
+
+{{/-last}}
+{{/nexus}}
+{{#other}}
+import {{.}};
+{{#-last}}
+
+{{/-last}}
+{{/other}}
+{{/imports}}
 /**
  * Creates {@link {{serviceName}}} marshaller instances.
  */
