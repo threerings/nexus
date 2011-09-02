@@ -7,12 +7,12 @@ import scala.collection.JavaConversions._
 import scala.collection.immutable.SortedSet
 
 import java.lang.{Iterable => JIterable}
-import java.io.{InputStreamReader, Writer}
+import java.io.{InputStreamReader, Writer, StringWriter}
 
 import javax.annotation.processing.{Filer, Messager}
 import javax.lang.model.element.{Name, TypeElement}
 import javax.lang.model.`type`.{TypeKind, TypeMirror}
-import javax.tools.Diagnostic
+import javax.tools.{Diagnostic, JavaFileObject}
 
 import com.samskivert.mustache.Mustache
 
@@ -33,10 +33,16 @@ object Generator
     if (!sables.isEmpty) {
       val sname = streamerName(outer.getQualifiedName.toString)
       msgr.printMessage(Diagnostic.Kind.NOTE, "Generating " + sname + "...")
-      val out = filer.createSourceFile(sname, outer)
-      val w = out.openWriter
-      try generateStreamer(outer, sables, w)
-      finally w.close
+      val out = new StringWriter
+      try {
+        generateStreamer(outer, sables, out)
+        writeToFile(filer.createSourceFile(sname, outer), out.toString)
+      } catch {
+        case e => {
+          msgr.printMessage(Diagnostic.Kind.ERROR, "Failure generating " + sname + ": " + e)
+          e.printStackTrace(System.err)
+        }
+      }
     }
 
     // generate a factory if we have service metadata
@@ -44,10 +50,16 @@ object Generator
     if (!svcs.isEmpty) {
       val fname = factoryName(outer.getQualifiedName.toString)
       msgr.printMessage(Diagnostic.Kind.NOTE, "Generating " + fname + "...")
-      val out = filer.createSourceFile(fname, outer)
-      val w = out.openWriter
-      try generateFactory(outer, svcs, w)
-      finally w.close
+      val out = new StringWriter
+      try {
+        generateFactory(outer, svcs, out)
+        writeToFile(filer.createSourceFile(fname, outer), out.toString)
+      } catch {
+        case e => {
+          msgr.printMessage(Diagnostic.Kind.ERROR, "Failure generating " + fname + ": " + e)
+          e.printStackTrace(System.err)
+        }
+      }
     }
   }
 
@@ -113,6 +125,12 @@ object Generator
     }
     out.write(_header)
     template.execute(ctx, out)
+  }
+
+  private def writeToFile (file :JavaFileObject, text :String) {
+    val fout = file.openWriter
+    try fout.write(text)
+    finally fout.close
   }
 
   private[gencode] def streamerName (fqName :String) = tagName(fqName, "Streamer")
