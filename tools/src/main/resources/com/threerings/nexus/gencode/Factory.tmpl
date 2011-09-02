@@ -49,7 +49,7 @@ public class Factory_{{serviceName}} implements ServiceFactory<{{serviceName}}>
 {{#methods}}
                 case {{-index}}:
                     service.{{name}}({{#args}}{{^-first}},{{/-first}}
-                        this.<{{type}}>cast(args[{{index}}]){{/args}});
+                        this.<{{boxedType}}>cast(args[{{index}}]){{/args}});
                     break;
 {{/methods}}
                 default:

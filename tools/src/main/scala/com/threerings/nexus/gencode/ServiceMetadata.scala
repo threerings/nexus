@@ -35,10 +35,12 @@ class ServiceMetadata (val elem :TypeElement) extends Metadata {
 
 object ServiceMetadata {
   case class Arg (elem :VariableElement, index :Int) {
-    def `type` = Utils.toString(elem.asType, true)
     def name = elem.getSimpleName.toString
+    def `type` = Utils.toString(elem.asType, true)
+    def boxedType = Utils.toBoxedString(elem.asType, true)
     override def toString () = String.format("%s %s", `type`, name)
   }
+
   case class Method (elem :ExecutableElement) {
     val name = elem.getSimpleName.toString
     val args :JList[Arg] = elem.getParameters.zipWithIndex.map((Arg.apply _).tupled)

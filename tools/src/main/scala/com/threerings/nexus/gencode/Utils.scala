@@ -26,10 +26,28 @@ object Utils
    *
    * @param boundVars whether or not to print type variable bounds.
    */
-  def toString (elem :TypeMirror, boundVars :Boolean) :String = {
+  def toString (t :TypeMirror, boundVars :Boolean) :String = {
     val buf = new StringBuilder
-    new ToString(boundVars).visit(elem, buf)
+    new ToString(boundVars).visit(t, buf)
     buf.toString
+  }
+
+  /**
+   * Returns a Java source string describing the supplied type, promoting primitive types to their
+   * boxed counterparts. Handles type parameters, type bounds and wildcards.
+   *
+   * @param boundVars whether or not to print type variable bounds.
+   */
+  def toBoxedString (t :TypeMirror, boundVars :Boolean) :String = t.getKind match {
+    case TypeKind.BOOLEAN => "Boolean"
+    case TypeKind.BYTE => "Byte"
+    case TypeKind.CHAR => "Character"
+    case TypeKind.SHORT => "Short"
+    case TypeKind.INT => "Integer"
+    case TypeKind.LONG => "Long"
+    case TypeKind.FLOAT => "Float"
+    case TypeKind.DOUBLE => "Double"
+    case _ => toString(t, true)
   }
 
   /**

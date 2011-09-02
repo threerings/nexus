@@ -41,12 +41,19 @@ class FactoryGenTest {
     assertEquals(meta.serviceName, "TestService")
     assertEquals(2, meta.methods.size)
     checkMethod(meta.methods.get(0), "addOne", 2)
+    checkArg(meta.methods.get(0).args.get(0), "int", "Integer")
+    checkArg(meta.methods.get(0).args.get(1), "Callback<Integer>", "Callback<Integer>")
     checkMethod(meta.methods.get(1), "launchMissiles", 0)
   }
 
   private def checkMethod (m :ServiceMetadata.Method, name :String, args :Int) {
     assertEquals(name, m.name)
     assertEquals(args, m.args.size)
+  }
+
+  private def checkArg (arg :ServiceMetadata.Arg, `type` :String, boxedType :String) {
+    assertEquals(`type`, arg.`type`)
+    assertEquals(boxedType, arg.boxedType)
   }
 }
 
