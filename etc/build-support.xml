@@ -176,7 +176,7 @@
     <jar destfile="${target.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
-  <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
+  <property name="maven.install.repo" value="file://${user.home}/.m2/repository"/>
   <target name="install" depends="package,test"
           description="Deploys our build artifacts to a Maven repository.">
     <jar destfile="${target.dir}/${ant.project.name}-sources.jar">
@@ -184,7 +184,7 @@
       <fileset dir="${ssrc.dir}" includes="**/*.scala" erroronmissingdir="false"/>
     </jar>
     <artifact:deploy file="${target.dir}/${ant.project.name}.jar" uniqueVersion="false">
-      <remoteRepository url="${maven.deploy.repo}"/>
+      <remoteRepository url="${maven.install.repo}"/>
       <pom refid="pom"/>
       <attach file="${target.dir}/${ant.project.name}-sources.jar" classifier="sources"/>
     </artifact:deploy>
