@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- defines a standard build script used by all of the nexus subprojects -->
-<project name="build-support" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
+<project name="nexus-support" default="compile" xmlns:artifact="urn:maven-artifact-ant">
   <property name="src.dir"      value="src/main/java"/>
   <property name="ssrc.dir"     value="src/main/scala"/>
   <property name="tsrc.dir"     value="src/test/java"/>
@@ -9,31 +9,20 @@
   <property name="classes.dir"  value="${target.dir}/classes"/>
   <property name="tclasses.dir" value="${target.dir}/test-classes"/>
 
-  <property name="maven-ant.vers" value="2.1.3"/>
-  <property name="maven-ant.dir" value="${user.home}/.m2/ant-support"/>
-  <property name="maven-ant.jar" value="${maven-ant.dir}/maven-ant-tasks-${maven-ant.vers}.jar"/>
-  <property name="maven-ant.url"
-            value="http://mirrors.ibiblio.org/pub/mirrors/apache/maven/binaries"/>
-  <condition property="maven-ant.exists"><available file="${maven-ant.jar}"/></condition>
-  <target name="-download-maven-ant" unless="maven-ant.exists">
-    <mkdir dir="${maven-ant.dir}"/>
-    <get src="${maven-ant.url}/maven-ant-tasks-${maven-ant.vers}.jar"
-         dest="${maven-ant.jar}" usetimestamp="true"/>
-  </target>
+  <property name="ooo-build.vers" value="2.6"/>
+  <dirname property="etc.dir" file="${ant.file.nexus-support}"/>
+  <ant antfile="${etc.dir}/bootstrap.xml"/>
+  <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
 
-  <target name="-init-maven-ant" depends="-download-maven-ant">
-    <taskdef resource="org/apache/maven/artifact/ant/antlib.xml"
-             uri="urn:maven-artifact-ant" classpath="${maven-ant.jar}"/>
-    <artifact:pom id="pom" file="pom.xml"/>
-    <artifact:dependencies pathId="classpath" pomRefId="pom"/>
+  <target name="-prepare" depends="-init-ooo">
+    <mavendep pom="pom.xml" id="pom" path="classpath"/>
+    <mavendep pom="pom.xml" id="test" scope="test"/>
     <path id="test.classpath">
-      <path refid="classpath"/>
+      <path refid="test.path"/>
       <pathelement location="${classes.dir}"/>
       <pathelement location="${tclasses.dir}"/>
     </path>
-  </target>
 
-  <target name="-prepare" depends="-init-maven-ant">
     <mkdir dir="${target.dir}"/>
 
     <!-- check whether we have java main source -->
@@ -86,13 +75,9 @@
   </target>
 
   <target name="-compile-java" depends="-prep-compile" if="have.java">
-    <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
-           debug="on" optimize="${build.optimize}" source="1.6" target="1.6" encoding="utf-8">
-      <classpath refid="classpath"/>
-      <compilerarg value="-Xlint"/>
-      <compilerarg value="-Xlint:-serial"/>
+    <ooojavac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath">
       <compilerarg value="-Xlint:rawtypes"/>
-    </javac>
+    </ooojavac>
   </target>
 
   <target name="-compile-scala" depends="-prep-compile,-prep-scala" if="have.scala">
@@ -110,12 +95,7 @@
   </target>
 
   <target name="-compile-java-tests" depends="-prep-test" if="hava.javatests">
-    <javac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
-           debug="on" deprecation="on" source="1.6" target="1.6" encoding="utf-8">
-      <classpath refid="test.classpath"/>
-      <compilerarg value="-Xlint"/>
-      <compilerarg value="-Xlint:-serial"/>
-    </javac>
+    <ooojavac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
   </target>
 
   <target name="-compile-scala-tests" depends="-prep-test,-prep-scala" if="have.scalatests">
@@ -176,16 +156,17 @@
     <jar destfile="${target.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
-  <property name="maven.install.repo" value="file://${user.home}/.m2/repository"/>
+  <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
   <target name="install" depends="package,test"
           description="Deploys our build artifacts to a Maven repository.">
+    <!-- we can't use ooo-build maven-deploy because we want scala in our -sources.jar -->
     <jar destfile="${target.dir}/${ant.project.name}-sources.jar">
       <fileset dir="${src.dir}" includes="**/*.java" erroronmissingdir="false"/>
       <fileset dir="${ssrc.dir}" includes="**/*.scala" erroronmissingdir="false"/>
     </jar>
     <artifact:deploy file="${target.dir}/${ant.project.name}.jar" uniqueVersion="false">
-      <remoteRepository url="${maven.install.repo}"/>
-      <pom refid="pom"/>
+      <remoteRepository url="${maven.deploy.repo}"/>
+      <pom file="pom.xml"/>
       <attach file="${target.dir}/${ant.project.name}-sources.jar" classifier="sources"/>
     </artifact:deploy>
   </target>
