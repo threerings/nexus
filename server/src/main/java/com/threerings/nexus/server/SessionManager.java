@@ -82,7 +82,7 @@ public class SessionManager
     {
         Session session = new Session(this, _omgr, ipaddress, output);
         _byIP.put(ipaddress, session);
-        return session;
+        return session.input;
     }
 
     protected void sessionDisconnected (Session sess)

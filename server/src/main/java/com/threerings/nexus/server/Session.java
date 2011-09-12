@@ -9,11 +9,12 @@ package com.threerings.nexus.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
+import react.SignalView;
+import react.UnitSignal;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -31,33 +32,49 @@ import static com.threerings.nexus.util.Log.log;
  * Represents an active client session.
  */
 public class Session
-    implements SessionManager.Input, Upstream.Handler, ObjectManager.Subscriber
 {
-    /**
-     * An interface for entities that wish to track a session's lifecycle. During calls to the
-     * callback, the session in question will be bound as current, so that {@link SessionLocal} can
-     * be used to access session-local data.
-     */
-    public interface Listener
-    {
-        /** Notifies the listener that this session has been disconnected. */
-        void onDisconnect ();
-    }
+    /** Handles network events for our client. Accessed by SessionManager. */
+    final SessionManager.Input input = new SessionManager.Input() {
+        public void onMessage (Upstream msg) {
+            msg.dispatch(_handler);
+        }
+
+        public void onSendError (Throwable error) {
+            // TODO
+        }
+
+        public void onReceiveError (Throwable error) {
+            // TODO
+        }
+
+        public void onDisconnect () {
+            // let interested parties know that we are audi 5000
+            try {
+                SessionLocal.setCurrent(Session.this);
+                _onDisconnect.emit();
+            } finally {
+                SessionLocal.clearCurrent();
+            }
+
+            // clear any object subscriptions we currently hold
+            for (Integer id : _subscriptions) {
+                _omgr.clearSubscriber(id, _subscriber);
+            }
+            _subscriptions.clear();
+
+            // let the session manager know that we disconnected
+            _smgr.sessionDisconnected(Session.this);
+        }
+    };
 
     /**
-     * Adds a listener to this session.
+     * A signal that is emitted when this session disconnects. During the emission of this signal,
+     * the session in question will be bound as current, so that {@link SessionLocal} can be used
+     * to access session-local data.
      */
-    public void addListener (Listener listener)
+    public SignalView<Void> onDisconnect ()
     {
-        _listeners.add(listener);
-    }
-
-    /**
-     * Removes a listener from this session.
-     */
-    public void removeListener (Listener listener)
-    {
-        _listeners.remove(listener);
+        return _onDisconnect;
     }
 
     /**
@@ -89,106 +106,6 @@ public class Session
         return _ipaddress;
     }
 
-    // from interface SessionManager.Input
-    public void onMessage (Upstream msg)
-    {
-        msg.dispatch(this);
-    }
-
-    // from interface SessionManager.Input
-    public void onSendError (Throwable error)
-    {
-        // TODO
-    }
-
-    // from interface SessionManager.Input
-    public void onReceiveError (Throwable error)
-    {
-        // TODO
-    }
-
-    // from interface SessionManager.Input
-    public void onDisconnect ()
-    {
-        // notify our listeners that we are audi 5000
-        try {
-            SessionLocal.setCurrent(this);
-            for (Listener listener : Lists.newArrayList(_listeners)) {
-                try {
-                    listener.onDisconnect();
-                } catch (Throwable t) {
-                    log.warning("Listener choked in onDisconnect", "listener", listener, t);
-                }
-            }
-        } finally {
-            SessionLocal.clearCurrent();
-        }
-
-        // clear any object subscriptions we currently hold
-        for (Integer id : _subscriptions) {
-            _omgr.clearSubscriber(id, this);
-        }
-        _subscriptions.clear();
-
-        // let the session manager know that we disconnected
-        _smgr.sessionDisconnected(this);
-    }
-
-    // from interface Upstream.Handler
-    public void onSubscribe (Upstream.Subscribe msg)
-    {
-        SessionLocal.setCurrent(this);
-        try {
-            // TODO: per-session class loaders or other fancy business
-            NexusObject object = _omgr.addSubscriber(msg.addr, this);
-            _subscriptions.add(object.getId());
-            sendMessage(new Downstream.Subscribe(object));
-        } catch (Throwable t) {
-            sendMessage(new Downstream.SubscribeFailure(msg.addr, t.getMessage()));
-        } finally {
-            SessionLocal.clearCurrent();
-        }
-    }
-
-    // from interface Upstream.Handler
-    public void onUnsubscribe (Upstream.Unsubscribe msg)
-    {
-        // TODO
-    }
-
-    // from interface Upstream.Handler
-    public void onPostEvent (Upstream.PostEvent msg)
-    {
-        // we pass things straight through to the object manager which handles everything
-        _omgr.dispatchEvent(msg.event, this);
-    }
-
-    // from interface Upstream.Handler
-    public void onServiceCall (final Upstream.ServiceCall msg)
-    {
-        // if we have a call id, stick a callback in the final slot which communicates the result
-        // back to the calling client
-        Object[] args = msg.args.toArray();
-        if (msg.callId > 0) {
-            assert(args[args.length-1] == null);
-            args[args.length-1] = new Callback<Object>() {
-                public void onSuccess (Object result) {
-                    sendMessage(new Downstream.ServiceResponse(msg.callId, result));
-                }
-                public void onFailure (Throwable cause) {
-                    sendMessage(new Downstream.ServiceFailure(msg.callId, cause.getMessage()));
-                }
-            };
-        }
-        _omgr.dispatchCall(msg.objectId, msg.attrIndex, msg.methodId, args, this);
-    }
-
-    // from interface ObjectManager.Subscriber
-    public void forwardEvent (NexusEvent event)
-    {
-        sendMessage(new Downstream.DispatchEvent(event));
-    }
-
     @Override public String toString ()
     {
         // TODO: if authed, report authed id?
@@ -212,19 +129,68 @@ public class Session
         _output.send(msg);
     }
 
+    protected final ObjectManager.Subscriber _subscriber = new ObjectManager.Subscriber() {
+        public void forwardEvent (NexusEvent event) {
+            sendMessage(new Downstream.DispatchEvent(event));
+        }
+    };
+
+    protected final Upstream.Handler _handler = new Upstream.Handler() {
+        public void onSubscribe (Upstream.Subscribe msg) {
+            SessionLocal.setCurrent(Session.this);
+            try {
+                // TODO: per-session class loaders or other fancy business
+                NexusObject object = _omgr.addSubscriber(msg.addr, _subscriber);
+                _subscriptions.add(object.getId());
+                sendMessage(new Downstream.Subscribe(object));
+            } catch (Throwable t) {
+                sendMessage(new Downstream.SubscribeFailure(msg.addr, t.getMessage()));
+            } finally {
+                SessionLocal.clearCurrent();
+            }
+        }
+
+        public void onUnsubscribe (Upstream.Unsubscribe msg) {
+            // TODO
+        }
+
+        public void onPostEvent (Upstream.PostEvent msg) {
+            // we pass things straight through to the object manager which handles everything
+            _omgr.dispatchEvent(msg.event, Session.this);
+        }
+
+        public void onServiceCall (final Upstream.ServiceCall msg) {
+            // if we have a call id, stick a callback in the final slot which communicates the
+            // result back to the calling client
+            Object[] args = msg.args.toArray();
+            if (msg.callId > 0) {
+                assert(args[args.length-1] == null);
+                args[args.length-1] = new Callback<Object>() {
+                    public void onSuccess (Object result) {
+                        sendMessage(new Downstream.ServiceResponse(msg.callId, result));
+                    }
+                    public void onFailure (Throwable cause) {
+                        sendMessage(new Downstream.ServiceFailure(msg.callId, cause.getMessage()));
+                    }
+                };
+            }
+            _omgr.dispatchCall(msg.objectId, msg.attrIndex, msg.methodId, args, Session.this);
+        }
+    };
+
     protected final SessionManager _smgr;
     protected final ObjectManager _omgr;
     protected final String _ipaddress;
     protected final SessionManager.Output _output;
+
+    /** A signal that's notified when our client disconnects. */
+    protected final UnitSignal _onDisconnect = new UnitSignal();
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = Sets.newHashSet();
 
     /** Tracks session-local attributes. */
     protected final Map<Class<?>, Object> _locals = Maps.newHashMap();
-
-    /** Tracks session listeners. */
-    protected final List<Listener> _listeners = Lists.newArrayList();
 
     protected static final byte[] EMPTY_BUFFER = new byte[0];
 }
