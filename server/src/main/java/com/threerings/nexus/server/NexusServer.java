@@ -8,6 +8,8 @@ package com.threerings.nexus.server;
 
 import java.util.concurrent.ExecutorService;
 
+import react.Slot;
+
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Keyed;
 import com.threerings.nexus.distrib.Nexus;
@@ -102,6 +104,18 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
+    public <E, T extends Singleton> Slot<E> routed (T entity, Slot<E> slot)
+    {
+        return routed(entity.getClass(), slot);
+    }
+
+    // from interface Nexus
+    public <E, T extends Keyed> Slot<E> routed (T entity, Slot<E> slot)
+    {
+        return routed(entity.getClass(), entity.getKey(), slot);
+    }
+
+    // from interface Nexus
     public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action)
     {
         _omgr.invoke(eclass, action);
@@ -125,6 +139,37 @@ public class NexusServer implements Nexus
     {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
+    }
+
+    // javac can't follow the (somewhat magical) T in getClass()'s Class<T> so we have to separate
+    // this method from <T extends Singleton>routed(T, Slot<T>)
+    private <E, T extends Singleton> Slot<E> routed (final Class<T> eclass, final Slot<E> slot)
+    {
+        return new Slot<E>() {
+            public void onEmit (final E event) {
+                invoke(eclass, new Action<T>() {
+                    public void invoke (T entity) {
+                        slot.onEmit(event);
+                    }
+                });
+            }
+        };
+    }
+
+    // javac can't follow the (somewhat magical) T in getClass()'s Class<T> so we have to separate
+    // this method from <T extends Keyed>routed(T, Slot<T>)
+    private <E, T extends Keyed> Slot<E> routed (
+        final Class<T> eclass, final Comparable<?> key, final Slot<E> slot)
+    {
+        return new Slot<E>() {
+            public void onEmit (final E event) {
+                invoke(eclass, key, new Action<T>() {
+                    public void invoke (T entity) {
+                        slot.onEmit(event);
+                    }
+                });
+            }
+        };
     }
 
     protected final NexusConfig _config;
