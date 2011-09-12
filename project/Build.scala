@@ -37,21 +37,25 @@ object NexusBuild extends Build {
 
   // GWT bits
   val gwtVers = "2.3.0"
+  val gwtSettings = Seq[Setting[_]](
+    // include the sources in classes/ and the jar file
+    unmanagedResourceDirectories in Compile <+= baseDirectory / "src/main/java",
+    // TODO: how to do? unmanagedSourceDirectories in Compile <+= javaSource in Compile,
+    unmanagedResources in Compile ~= (_.filterNot(_.isDirectory)) // work around SBT bug
+  )
   System.setProperty("gwt.args", "-war target/test-war")
 
+  //
   // sub-project definitions
+
   def subProject (id :String, extraSettings :Seq[Setting[_]] = Seq()) = Project(
     id, file(id), settings = buildSettings ++ extraSettings ++ Seq(
-      name := "nexus-" + id,
-      // include the sources in classes/ and the jar file
-      unmanagedResourceDirectories in Compile <+= baseDirectory / "src/main/java",
-      // TODO: how to do? unmanagedSourceDirectories in Compile <+= javaSource in Compile,
-      unmanagedResources in Compile ~= (_.filterNot(_.isDirectory)) // work around SBT bug
+      name := "nexus-" + id
     )
   )
 
   // core projects
-  lazy val core = locals.addDeps(subProject("core", Seq(
+  lazy val core = locals.addDeps(subProject("core", gwtSettings ++ Seq(
     libraryDependencies ++= locals.libDeps
   )))
   lazy val testSupport = subProject("test-support") dependsOn(core)
@@ -62,7 +66,7 @@ object NexusBuild extends Build {
   )) dependsOn(testSupport)
 
   // gwt-backend projects
-  lazy val gwtIO = subProject("gwt-io", Seq(
+  lazy val gwtIO = subProject("gwt-io", gwtSettings ++ Seq(
     libraryDependencies ++= Seq(
       "com.google.gwt" % "gwt-user" % gwtVers,
       "com.google.gwt" % "gwt-dev" % gwtVers,
@@ -95,16 +99,25 @@ object NexusBuild extends Build {
     )
   )) dependsOn(core)
 
-  // one giant fruit roll-up to bring them all together
-  lazy val nexus = Project("nexus", file(".")) aggregate(
-    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer, tools)
-
+  //
   // demo projects
 
-  // lazy val text = Project(
-  //   "text-sample", file("sample/text"), settings = buildSettings ++ Seq(
-  //     name := "text-sample",
-  //     unmanagedSourceDirectories in Compile <+= baseDirectory / "core/src"
-  //   )
-  // ) dependsOn(core)
+  def demoProject (id :String, extraSettings :Seq[Setting[_]] = Seq()) = Project(
+    id, file("demos/" + id), settings = buildSettings ++ extraSettings ++ Seq(
+      name := "nexus-demo-" + id
+    )
+  )
+
+  lazy val chat = demoProject("chat", Seq(
+    libraryDependencies ++= Seq(
+      "com.samskivert" % "samskivert" % "1.2",
+      "com.threerings" % "gwt-utils" % "1.2"
+    )
+  )) dependsOn(jvmServer, gwtServer)
+
+  //
+  // one giant fruit roll-up to bring them all together
+
+  lazy val nexus = Project("nexus", file(".")) aggregate(
+    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer, tools, chat)
 }
