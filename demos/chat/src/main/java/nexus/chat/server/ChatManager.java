@@ -12,6 +12,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import react.UnitSlot;
+
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.Singleton;
@@ -99,8 +101,8 @@ public class ChatManager implements ChatService, Singleton
             SessionLocal.set(Chatter.class, chatter = new Chatter(_nexus, nickname));
 
             // register a listener on this chatter's session to learn when they go away
-            SessionLocal.getSession().addListener(new Session.Listener() {
-                public void onDisconnect () {
+            SessionLocal.getSession().onDisconnect().connect(new UnitSlot() {
+                @Override public void onEmit () {
                     Chatter chatter = SessionLocal.get(Chatter.class);
                     _activeNicks.remove(chatter.nickname); // clear out this chatter's nickname
                     chatter.leaveRoom(); // leave any occupied room
