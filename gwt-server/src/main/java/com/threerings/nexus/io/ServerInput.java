@@ -84,7 +84,17 @@ public class ServerInput extends Streamable.Input
 
     @Override public String readString ()
     {
-        return readBoolean() ? _valiter.next() : null;
+        return readBoolean() ? _valiter.next() : null; // TODO: is wrong?
+    }
+
+    @Override public <T extends Enum<T>> T readEnum ()
+    {
+        short code = readShort();
+        if (code == 0) return null;
+        else {
+            @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_szer.getClass(code);
+            return Enum.valueOf(clazz, readString()); // TODO: use ordinal()
+        }
     }
 
     @Override public <T extends Streamable> Class<T> readClass ()

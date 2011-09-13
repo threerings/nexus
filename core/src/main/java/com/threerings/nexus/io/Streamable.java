@@ -32,6 +32,7 @@ public interface Streamable
         public abstract float readFloat ();
         public abstract double readDouble ();
         public abstract String readString ();
+        public abstract <T extends Enum<T>> T readEnum ();
         public abstract <T extends Streamable> Class<T> readClass ();
 
         /**
@@ -187,6 +188,7 @@ public interface Streamable
         public abstract void writeFloat (float value);
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
+        public abstract void writeEnum (Enum<?> value);
         public abstract void writeClass (Class<? extends Streamable> clazz);
         public abstract void writeService (DService<?> service);
 

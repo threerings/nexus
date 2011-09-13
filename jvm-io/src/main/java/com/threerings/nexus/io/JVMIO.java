@@ -117,6 +117,13 @@ public class JVMIO
                 }
             }
 
+            @Override public <T extends Enum<T>> T readEnum () {
+                short code = readClassCode();
+                if (code == 0) return null;
+                @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_classes.get(code);
+                return Enum.valueOf(clazz, readString()); // TODO: use ordinal
+            }
+
             @Override public <T extends Streamable> Class<T> readClass () {
                 short code = readResolveClassCode();
                 Class<?> clazz = _classes.get(code);
@@ -145,7 +152,8 @@ public class JVMIO
                     try {
                         _services.put(code, (ServiceFactory<?>)Class.forName(rname).newInstance());
                     } catch (Exception e) {
-                        throw new StreamException("Error instantiating service factory " + rname, e);
+                        throw new StreamException(
+                            "Error instantiating service factory " + rname, e);
                     }
                 }
                 @SuppressWarnings("unchecked") ServiceFactory<T> factory =
@@ -154,6 +162,20 @@ public class JVMIO
                     throw new StreamException("Received unknown service code " + code);
                 }
                 return factory;
+            }
+
+            protected final short readClassCode () {
+                short code = readShort();
+                if (code < 0) {
+                    code = (short)-code;
+                    String cname = readString();
+                    try {
+                        _classes.put(code, Class.forName(cname));
+                    } catch (Throwable t) {
+                        throw new StreamException("Read unknown class (" + cname + ")", t);
+                    }
+                }
+                return code;
             }
 
             protected final short readResolveClassCode () {
@@ -268,6 +290,17 @@ public class JVMIO
                 }
             }
 
+            @Override public void writeEnum (Enum<?> value) {
+                if (value == null) writeShort((short)0);
+                else {
+                    Class<?> clazz = value.getClass();
+                    Short code = _classes.get(clazz);
+                    if (code != null) writeShort(code);
+                    else code = writeUnknownClass(clazz);
+                    writeString(value.name()); // TODO: use ordinal()
+                }
+            }
+
             @Override public void writeClass (Class<? extends Streamable> clazz) {
                 Short code = _classes.get(clazz);
                 if (code != null) {
@@ -295,27 +328,27 @@ public class JVMIO
 
             @Override protected <T> Streamer<T> writeStreamer (T value) {
                 if (value == null) {
-                    return this.<T>writeClass((short)0); // null streamer has code 0
+                    return this.<T>writeKnownClass((short)0); // null streamer has code 0
                 }
 
                 // if the class is known, just look up the code and write it
                 Class<?> vclass = value.getClass();
                 Short code = _classes.get(vclass);
                 if (code != null) {
-                    return this.<T>writeClass(code);
+                    return this.<T>writeKnownClass(code);
                 }
 
                 // if the class is some more obscure subtype of list/set/map, use the stock
                 // streamer and cache this type with the same code
                 if (value instanceof List) {
                     _classes.put(vclass, code = _classes.get(ArrayList.class));
-                    return this.<T>writeClass(code);
+                    return this.<T>writeKnownClass(code);
                 } else if (value instanceof Set) {
                     _classes.put(vclass, code = _classes.get(HashSet.class));
-                    return this.<T>writeClass(code);
+                    return this.<T>writeKnownClass(code);
                 } else if (value instanceof Map) {
                     _classes.put(vclass, code = _classes.get(HashMap.class));
-                    return this.<T>writeClass(code);
+                    return this.<T>writeKnownClass(code);
                 }
 
                 // otherwise we need to load and cache the streamer for this class
@@ -323,24 +356,31 @@ public class JVMIO
             }
 
             @SuppressWarnings("unchecked") 
-            protected final <T> Streamer<T> writeClass (Short code) {
+            protected final <T> Streamer<T> writeKnownClass (Short code) {
                 writeShort(code);
                 return (Streamer<T>)_streamers.get(code);
             }
 
             protected <T> Streamer<T> resolveAndWriteClass (Class<?> clazz) {
+                // look up the streamer first, as it may fail and we want to avoid writing anything
+                // to the stream or modifying _classes in that case
+                @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)
+                    findStreamer(clazz.getName());
+                Short code = writeUnknownClass(clazz);
+                _streamers.put(code, s);
+                return s;
+            }
+
+            protected Short writeUnknownClass (Class<?> clazz) {
                 if (_nextStreamerCode == Short.MAX_VALUE) {
                     throw new StreamException("Cannot stream more than " + Short.MAX_VALUE +
                                               " different value types.");
                 }
                 Short code = (short)++_nextStreamerCode;
-                String cname = clazz.getName();
-                @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)findStreamer(cname);
-                _streamers.put(code, s);
-                _classes.put(clazz, code); // do this after findStreamer, which may fail
+                _classes.put(clazz, code);
                 writeShort((short)-code);
-                writeString(cname);
-                return s;
+                writeString(clazz.getName());
+                return code;
             }
 
             protected Map<Class<?>, Short> _classes = Maps.newHashMap(CLASSES);

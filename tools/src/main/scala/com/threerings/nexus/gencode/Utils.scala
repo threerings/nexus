@@ -107,6 +107,7 @@ object Utils
   def isDService (t :TypeMirror) = extendsClass(DServiceName, t)
   def isNexusService (t :TypeMirror) = implementsIface(NexusServiceName, t)
   def isStreamable (t :TypeMirror) = implementsIface(StreamableName, t)
+  def isEnum (t :TypeMirror) = extendsClass(EnumName, t)
 
   /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
@@ -129,6 +130,7 @@ object Utils
     case TypeKind.DECLARED if (isLang(field, "String")) => "String"
     case TypeKind.DECLARED if (isLang(field, "Class")) => "Class"
     case TypeKind.DECLARED if (isDService(field)) => "Service"
+    case TypeKind.DECLARED if (isEnum(field)) => "Enum"
     case TypeKind.DECLARED => "Value"
     case TypeKind.TYPEVAR => "Value"
     case _ => throw new IllegalArgumentException(
@@ -326,4 +328,5 @@ object Utils
   private[gencode] final val StreamableName = classOf[Streamable].getName
   private[gencode] final val StreamerName = classOf[Streamer[_]].getName
   private[gencode] final val ServiceFactoryName = classOf[ServiceFactory[_]].getName
+  private[gencode] final val EnumName = classOf[Enum[_]].getName
 }

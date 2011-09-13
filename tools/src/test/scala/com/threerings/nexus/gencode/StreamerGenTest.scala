@@ -176,7 +176,7 @@ class StreamerGenTest
     assertEquals("<T extends Object & Comparable<T> & Iterable<?>>", metas.head.typeBounds)
   }
 
-  @Test def testImplementsStreamaerSubIface {
+  @Test def testImplementsStreamerSubIface {
     val metas = StreamerTestCompiler.genMetas("Container.java", """
       package foo.bar;
       public class Container {
@@ -303,6 +303,21 @@ class StreamerGenTest
       """)
     assertEquals(List("Booleans", "Bytes", "Chars", "Shorts", "Ints", "Longs", "Floats",
                       "Doubles", "Strings"), metas.head.ctorArgs.values.map(Utils.fieldKind))
+  }
+
+  @Test def testEnum {
+    // val metas = StreamerTestCompiler.genMetas("Thingy.java", """
+    val code = StreamerTestCompiler.genSource("Thingy.java", """
+      public class Thingy implements com.threerings.nexus.io.Streamable {
+        public static enum Wozzle { FOO, BAR, BAZ };
+        public final Wozzle wozzle;
+        public Thingy (Wozzle wozzle) {
+            this.wozzle = wozzle;
+        }
+      }
+      """)
+    assertTrue(code.contains("readEnum"))
+    assertTrue(code.contains("writeEnum"))
   }
 }
 

@@ -74,6 +74,15 @@ class ClientOutput extends Streamable.Output
         }
     }
 
+    @Override public void writeEnum (Enum<?> value)
+    {
+        if (value == null) writeShort((short)0);
+        else {
+            writeShort(_szer.getCode(value.getClass()));
+            writeString(value.name()); // TODO: use ordinal()
+        }
+    }
+
     @Override public void writeClass (Class<? extends Streamable> clazz)
     {
         writeShort(_szer.getCode(clazz));
