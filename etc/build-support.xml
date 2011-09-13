@@ -94,7 +94,7 @@
     </copy>
   </target>
 
-  <target name="-compile-java-tests" depends="-prep-test" if="hava.javatests">
+  <target name="-compile-java-tests" depends="-prep-test" if="have.javatests">
     <ooojavac srcdir="${tsrc.dir}" destdir="${tclasses.dir}" classpathref="test.classpath"/>
   </target>
 
