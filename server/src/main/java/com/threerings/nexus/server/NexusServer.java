@@ -104,15 +104,36 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
-    public <E, T extends Singleton> Slot<E> routed (T entity, Slot<E> slot)
+    public <E, T extends Singleton> Slot<E> routed (T entity, final Slot<E> slot)
     {
-        return routed(entity.getClass(), slot);
+        // javac isn't smart enough to know that all the T's are the same here
+        @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
+        return new Slot<E>() {
+            public void onEmit (final E event) {
+                invoke(eclass, new Action<T>() {
+                    public void invoke (T entity) {
+                        slot.onEmit(event);
+                    }
+                });
+            }
+        };
     }
 
     // from interface Nexus
-    public <E, T extends Keyed> Slot<E> routed (T entity, Slot<E> slot)
+    public <E, T extends Keyed> Slot<E> routed (T entity, final Slot<E> slot)
     {
-        return routed(entity.getClass(), entity.getKey(), slot);
+        // javac isn't smart enough to know that all the T's are the same here
+        @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
+        final Comparable<?> key = entity.getKey();
+        return new Slot<E>() {
+            public void onEmit (final E event) {
+                invoke(eclass, key, new Action<T>() {
+                    public void invoke (T entity) {
+                        slot.onEmit(event);
+                    }
+                });
+            }
+        };
     }
 
     // from interface Nexus
@@ -139,37 +160,6 @@ public class NexusServer implements Nexus
     {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
-    }
-
-    // javac can't follow the (somewhat magical) T in getClass()'s Class<T> so we have to separate
-    // this method from <T extends Singleton>routed(T, Slot<T>)
-    private <E, T extends Singleton> Slot<E> routed (final Class<T> eclass, final Slot<E> slot)
-    {
-        return new Slot<E>() {
-            public void onEmit (final E event) {
-                invoke(eclass, new Action<T>() {
-                    public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
-            }
-        };
-    }
-
-    // javac can't follow the (somewhat magical) T in getClass()'s Class<T> so we have to separate
-    // this method from <T extends Keyed>routed(T, Slot<T>)
-    private <E, T extends Keyed> Slot<E> routed (
-        final Class<T> eclass, final Comparable<?> key, final Slot<E> slot)
-    {
-        return new Slot<E>() {
-            public void onEmit (final E event) {
-                invoke(eclass, key, new Action<T>() {
-                    public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
-            }
-        };
     }
 
     protected final NexusConfig _config;
