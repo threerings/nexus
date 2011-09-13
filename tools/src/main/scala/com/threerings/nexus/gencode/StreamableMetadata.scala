@@ -94,6 +94,8 @@ class StreamableMetadata (val elem :TypeElement) extends Metadata {
   private def fieldToRead (field :TypeMirror) = new AnyRef {
     val fkind = Utils.fieldKind(field)
     val vtype = Utils.valueType(field)
+    val readArgs = if (fkind != "Enum") ""
+                   else Utils.toString(field, false) + ".class"
   }
 
   /** Generates all variants of a field name that we allow as a matching constructor arg. */

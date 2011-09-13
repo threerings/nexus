@@ -32,8 +32,15 @@ public interface Streamable
         public abstract float readFloat ();
         public abstract double readDouble ();
         public abstract String readString ();
-        public abstract <T extends Enum<T>> T readEnum ();
         public abstract <T extends Streamable> Class<T> readClass ();
+
+        /**
+         * Reads an enumerated value from the stream.
+         */
+        public <T extends Enum<T>> T readEnum (Class<T> eclass) {
+            String name = readString();
+            return (name.length() == 0) ? null : Enum.valueOf(eclass, name); // TODO: use ordinal
+        }
 
         /**
          * Reads an array of boolean values from the stream. The result will not be null.
@@ -188,9 +195,15 @@ public interface Streamable
         public abstract void writeFloat (float value);
         public abstract void writeDouble (double value);
         public abstract void writeString (String value);
-        public abstract void writeEnum (Enum<?> value);
         public abstract void writeClass (Class<? extends Streamable> clazz);
         public abstract void writeService (DService<?> service);
+
+        /**
+         * Writes an enumerated value to the stream. The value may be null.
+         */
+        public void writeEnum (Enum<?> value) {
+            writeString(value == null ? "" : value.name()); // TODO: use ordinal
+        }
 
         /**
          * Writes an array of boolean values to the stream.

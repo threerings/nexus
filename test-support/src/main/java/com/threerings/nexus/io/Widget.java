@@ -4,6 +4,9 @@
 
 package com.threerings.nexus.io;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.threerings.nexus.io.Streamable;
 
 /**
@@ -11,6 +14,11 @@ import com.threerings.nexus.io.Streamable;
  */
 public class Widget implements Streamable
 {
+    public static final List<Widget> WS = Arrays.asList(
+        new Widget(Color.RED, "foo", new Wangle(42)),
+        new Widget(Color.GREEN, "bar", new Wangle(21)),
+        new Widget(Color.BLUE, "baz", new Wangle(7)));
+
     public static class Wangle implements Streamable {
         public final int size;
 
@@ -23,10 +31,14 @@ public class Widget implements Streamable
         }
     }
 
+    public static enum Color { RED, GREEN, BLUE };
+
+    public final Color color;
     public final String name;
 
-    public Widget (String name, Wangle wangle)
+    public Widget (Color color, String name, Wangle wangle)
     {
+        this.color = color;
         this.name = name;
         _wangle = wangle;
     }

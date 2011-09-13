@@ -316,6 +316,7 @@ class StreamerGenTest
         }
       }
       """)
+    // System.err.println(code)
     assertTrue(code.contains("readEnum"))
     assertTrue(code.contains("writeEnum"))
   }

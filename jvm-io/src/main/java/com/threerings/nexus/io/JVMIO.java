@@ -117,13 +117,6 @@ public class JVMIO
                 }
             }
 
-            @Override public <T extends Enum<T>> T readEnum () {
-                short code = readClassCode();
-                if (code == 0) return null;
-                @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_classes.get(code);
-                return Enum.valueOf(clazz, readString()); // TODO: use ordinal
-            }
-
             @Override public <T extends Streamable> Class<T> readClass () {
                 short code = readResolveClassCode();
                 Class<?> clazz = _classes.get(code);
@@ -189,15 +182,20 @@ public class JVMIO
 
             protected final void resolveStreamer (short code) {
                 String cname = readString();
-                Streamer<?> s = findStreamer(cname);
-                // extract the target type from the Streamer class (for use by readClass())
+                Class<?> clazz;
                 try {
-                    _classes.put(code, s.getClass().getDeclaredMethod(
-                                     "readObject", Streamable.Input.class).getReturnType());
+                    _classes.put(code, clazz = Class.forName(cname));
                 } catch (Throwable t) {
-                    throw new StreamException("Error creating streamer (" + s.getClass() + ")", t);
+                    throw new StreamException("Read unknown class (" + cname + ")", t);
                 }
-                _streamers.put(code, s);
+
+                if (clazz.isEnum()) {
+                    @SuppressWarnings("unchecked") Streamer<?> s =
+                        new Streamers.Streamer_Enum(clazz);
+                    _streamers.put(code, s);
+                } else {
+                    _streamers.put(code, findStreamer(cname));
+                }
             }
 
             protected Map<Short, Class<?>> _classes = Maps.newHashMap();
@@ -290,24 +288,10 @@ public class JVMIO
                 }
             }
 
-            @Override public void writeEnum (Enum<?> value) {
-                if (value == null) writeShort((short)0);
-                else {
-                    Class<?> clazz = value.getClass();
-                    Short code = _classes.get(clazz);
-                    if (code != null) writeShort(code);
-                    else code = writeUnknownClass(clazz);
-                    writeString(value.name()); // TODO: use ordinal()
-                }
-            }
-
             @Override public void writeClass (Class<? extends Streamable> clazz) {
                 Short code = _classes.get(clazz);
-                if (code != null) {
-                    writeShort(code);
-                } else {
-                    resolveAndWriteClass(clazz);
-                }
+                if (code != null) writeShort(code);
+                else resolveAndWriteClass(clazz);
             }
 
             @Override public void writeService (DService<?> service) {
@@ -349,6 +333,13 @@ public class JVMIO
                 } else if (value instanceof Map) {
                     _classes.put(vclass, code = _classes.get(HashMap.class));
                     return this.<T>writeKnownClass(code);
+                } else if (value instanceof Enum<?>) {
+                    code = writeUnknownClass(vclass);
+                    _classes.put(vclass, code);
+                    @SuppressWarnings("unchecked") Streamer<T> s =
+                        (Streamer<T>)new Streamers.Streamer_Enum(value.getClass());
+                    _streamers.put(code, s);
+                    return s;
                 }
 
                 // otherwise we need to load and cache the streamer for this class

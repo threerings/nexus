@@ -144,6 +144,7 @@ object Utils
    */
   def valueType (field :TypeMirror) = field.getKind match {
     case TypeKind.DECLARED if (isLang(field, "String")) => ""
+    case TypeKind.DECLARED if (isEnum(field)) => ""
     case TypeKind.DECLARED if (isLang(field, "Class") || isDService(field)) =>
       "<" + toString(field.asInstanceOf[DeclaredType].getTypeArguments.get(0), false) + ">"
     case TypeKind.DECLARED => "<" + toString(field, false) + ">"

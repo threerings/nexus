@@ -20,6 +20,8 @@ import static org.junit.Assert.*;
  */
 public class JVMIOTest
 {
+    public static enum TestEnum { FOO, BAR, BAZ };
+
     @Test
     public void testPrimitives ()
     {
@@ -72,6 +74,7 @@ public class JVMIOTest
         final float aFloat = 3.14179f;
         final double aDouble = Math.E;
         final String aString = "Hello world!";
+        final TestEnum anEnum = TestEnum.BAR;
 
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
@@ -85,6 +88,7 @@ public class JVMIOTest
                 out.writeValue(aFloat);
                 out.writeValue(aDouble);
                 out.writeValue(aString);
+                out.writeValue(anEnum);
             }
             public void readTest (Streamable.Input in) {
                 assertEquals(aNull, in.readValue());
@@ -97,6 +101,7 @@ public class JVMIOTest
                 assertEquals(aFloat, in.<Float>readValue().floatValue(), 0.0);
                 assertEquals(aDouble, in.<Double>readValue().doubleValue(), 0.0);
                 assertEquals(aString, in.<String>readValue());
+                assertEquals(anEnum, in.<TestEnum>readValue());
             }
         });
     }
@@ -106,12 +111,12 @@ public class JVMIOTest
     {
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
-                for (Widget w : WS) {
+                for (Widget w : Widget.WS) {
                     out.writeValue(w);
                 }
             }
             public void readTest (Streamable.Input in) {
-                for (Widget w : WS) {
+                for (Widget w : Widget.WS) {
                     assertEquals(w, in.<Widget>readValue());
                 }
             }
@@ -123,12 +128,12 @@ public class JVMIOTest
     {
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
-                out.writeValues(WS.size(), WS.iterator());
+                out.writeValues(Widget.WS.size(), Widget.WS.iterator());
             }
             public void readTest (Streamable.Input in) {
                 List<Widget> into = new ArrayList<Widget>();
                 in.<Widget>readValues(into);
-                assertEquals(WS, into);
+                assertEquals(Widget.WS, into);
             }
         });
     }
@@ -145,9 +150,4 @@ public class JVMIOTest
         void writeTest (Streamable.Output out);
         void readTest (Streamable.Input in);
     }
-
-    protected static final List<Widget> WS = Arrays.asList(
-        new Widget("foo", new Widget.Wangle(42)),
-        new Widget("bar", new Widget.Wangle(21)),
-        new Widget("baz", new Widget.Wangle(7)));
 }

@@ -75,16 +75,6 @@ class ClientInput extends Streamable.Input
             this.@com.threerings.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
-    @Override public <T extends Enum<T>> T readEnum ()
-    {
-        short code = readShort();
-        if (code == 0) return null;
-        else {
-            @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_szer.getClass(code);
-            return Enum.valueOf(clazz, readString()); // TODO: use ordinal()
-        }
-    }
-
     @Override public <T extends Streamable> Class<T> readClass ()
     {
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_szer.getClass(readShort());

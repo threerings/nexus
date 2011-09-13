@@ -19,6 +19,11 @@ import java.util.Set;
  */
 public class Streamers
 {
+    /** Creates a streamer for the supplied enum class. */
+    public static <T extends Enum<T>> Streamer_Enum<T> create (Class<T> eclass) {
+        return new Streamer_Enum<T>(eclass);
+    }
+
     /** A streamer for null instances. */
     public static class Streamer_Null implements Streamer<Void> {
         public Class<?> getObjectClass () {
@@ -211,6 +216,23 @@ public class Streamers
             });
             return map;
         }
+    }
+
+    /** A streamer for {@link Enum} classes. */
+    public static class Streamer_Enum<T extends Enum<T>> implements Streamer<T> {
+        public Streamer_Enum (Class<T> eclass) {
+            _eclass = eclass;
+        }
+        public Class<?> getObjectClass () {
+            return _eclass;
+        }
+        public void writeObject (Streamable.Output out, T value) {
+            out.writeEnum(value);
+        }
+        public T readObject (Streamable.Input in) {
+            return in.readEnum(_eclass);
+        }
+        protected Class<T> _eclass;
     }
 
     protected static <T> void writeSequence (Streamable.Output out, Iterable<T> values)

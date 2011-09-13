@@ -57,13 +57,13 @@ public class ServerOutputTest
     {
         GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
         Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
-        for (Widget w : ServerInputTest.WS) {
+        for (Widget w : Widget.WS) {
             out.writeValue(w);
         }
         // System.out.println(buf.getPayload());
 
-        // final String PAYLOAD = "[13,\"foo\",14,42,13,\"bar\",14,21,13,\"baz\",14,7]";
-        final String PAYLOAD = "[28,\"foo\",29,42,28,\"bar\",29,21,28,\"baz\",29,7]";
+        final String PAYLOAD =
+            "[31,\"RED\",\"foo\",33,42,31,\"GREEN\",\"bar\",33,21,31,\"BLUE\",\"baz\",33,7]";
         assertEquals(PAYLOAD, buf.getPayload());
     }
 
@@ -72,11 +72,11 @@ public class ServerOutputTest
     {
         GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
         Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
-        out.writeValues(ServerInputTest.WS.size(), ServerInputTest.WS.iterator());
+        out.writeValues(Widget.WS.size(), Widget.WS.iterator());
         // System.out.println(buf.getPayload());
 
-        // final String PAYLOAD = "[3,13,\"foo\",14,42,\"bar\",14,21,\"baz\",14,7]";
-        final String PAYLOAD = "[3,28,\"foo\",29,42,\"bar\",29,21,\"baz\",29,7]";
+        final String PAYLOAD =
+            "[3,31,\"RED\",\"foo\",33,42,\"GREEN\",\"bar\",33,21,\"BLUE\",\"baz\",33,7]";
         assertEquals(PAYLOAD, buf.getPayload());
     }
 }

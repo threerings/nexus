@@ -54,10 +54,9 @@ public class ServerInputTest
     @Test
     public void testValueInput ()
     {
-        // final String PAYLOAD = "13|1|foo|14|42|13|1|bar|14|21|13|1|baz|14|7|";
-        final String PAYLOAD = "28|1|foo|29|42|28|1|bar|29|21|28|1|baz|29|7|";
+        final String PAYLOAD = "31|1|RED|1|foo|33|42|31|1|GREEN|1|bar|33|21|31|1|BLUE|1|baz|33|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
-        for (Widget w : WS) {
+        for (Widget w : Widget.WS) {
             assertEquals(w, in.<Widget>readValue());
         }
     }
@@ -65,16 +64,10 @@ public class ServerInputTest
     @Test
     public void testValuesInput ()
     {
-        // final String PAYLOAD = "3|13|1|foo|14|42|1|bar|14|21|1|baz|14|7|";
-        final String PAYLOAD = "3|28|1|foo|29|42|1|bar|29|21|1|baz|29|7|";
+        final String PAYLOAD = "3|31|1|RED|1|foo|33|42|1|GREEN|1|bar|33|21|1|BLUE|1|baz|33|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         List<Widget> into = new ArrayList<Widget>();
         in.<Widget>readValues(into);
-        assertEquals(WS, into);
+        assertEquals(Widget.WS, into);
     }
-
-    protected static final List<Widget> WS = Arrays.asList(
-        new Widget("foo", new Widget.Wangle(42)),
-        new Widget("bar", new Widget.Wangle(21)),
-        new Widget("baz", new Widget.Wangle(7)));
 }

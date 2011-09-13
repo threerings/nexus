@@ -51,12 +51,14 @@ public class Streamer_Widget
     @Override
     public Widget readObject (Streamable.Input in) {
         return new Widget(
+            in.readEnum(Widget.Color.class),
             in.readString(),
             in.<Widget.Wangle>readValue()
         );
     }
 
     public static  void writeObjectImpl (Streamable.Output out, Widget obj) {
+        out.writeEnum(obj.color);
         out.writeString(obj.name);
         out.writeValue(obj._wangle);
     }

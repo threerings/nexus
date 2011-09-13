@@ -64,7 +64,7 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
             return new {{typeUse}}(
 {{/isNexusObject}}
 {{#reads}}
-                in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
+                in.{{vtype}}read{{fkind}}({{readArgs}}){{^-last}},{{/-last}}
 {{/reads}}
             );
 {{#isNexusObject}}
@@ -109,7 +109,7 @@ public class Streamer_{{outerName}}{{#outer}}{{typeBounds}}{{/outer}}
         return new {{typeUse}}(
 {{/isNexusObject}}
 {{#reads}}
-            in.{{vtype}}read{{fkind}}(){{^-last}},{{/-last}}
+            in.{{vtype}}read{{fkind}}({{readArgs}}){{^-last}},{{/-last}}
 {{/reads}}
         );
 {{#isNexusObject}}
