@@ -13,6 +13,22 @@ import react.Slot;
  */
 public interface Nexus
 {
+    /** A handle used to control deferred actions. See {@link #invokeAfter}. */
+    interface Deferred {
+        /** Cancels this deferred action. This is mainly intended for stopping repeating actions.
+         * <p> The caller should not assume that a canceled action will not subsequently be
+         * executed at least once. It is possible that the cancellation occurs simultaneously with
+         * the action being queued for execution on its entity, at which point the action cannot be
+         * stopped. Thus any deferred action should contain code that confirm that its
+         * preconditions still hold. </p> */
+        void cancel ();
+
+        /** Causes this deferred action to repeat every {@code period} millis after its first
+         * invocation, until canceled. This must be called immediately after {@link #invokeAfter}.
+         * @return a reference to this instance for convenient chaining. */
+        Deferred repeatEvery (long period);
+    }
+
     /**
      * Registers an anonymous object with the Nexus.
      */
@@ -128,6 +144,22 @@ public interface Nexus
      * node.
      */
     <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request);
+
+    /**
+     * Executes an action in the context (thread) of the specified singleton entity (either object
+     * or non-object entity). The action is executed after the specified delay, unless canceled
+     * prior.
+     */
+    <T extends Singleton> Deferred invokeAfter (Class<T> eclass, long delay, Action<T> action);
+
+    /**
+     * Executes an action in the context (server+thread) of the specified keyed (object or
+     * non-object) entity. The action is executed after the specified delay, unless canceled prior.
+     * The action may be streamed to another server node if the context for the specified keyed
+     * entity is hosted outside the local server node.
+     */
+    <T extends Keyed> Deferred invokeAfter (Class<T> eclass, Comparable<?> key,
+                                            long delay, Action<T> action);
 
     // TODO: invoke an action on all singletons on all nodes
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?
