@@ -12,6 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.Factory_TestService;
+import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.Singleton;
 import com.threerings.nexus.distrib.TestService;
 import com.threerings.nexus.util.Callback;
 
@@ -22,6 +24,30 @@ import org.junit.Assert;
  */
 public class TestUtil
 {
+    public static class TestSingleton implements Singleton
+    {
+        public int increment (int value) {
+            return value+1;
+        }
+    }
+
+    public static class TestKeyed implements Keyed
+    {
+        public TestKeyed (int key) {
+            _key = key;
+        }
+
+        public Comparable<?> getKey () {
+            return _key;
+        }
+
+        public int decrement (int value) {
+            return value-1;
+        }
+
+        protected Integer _key; // box once instead of on every getKey call
+    }
+
     public static NexusConfig createTestConfig ()
     {
         Properties props = new Properties();

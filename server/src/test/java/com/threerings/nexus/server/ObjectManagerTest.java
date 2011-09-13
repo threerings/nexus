@@ -22,6 +22,8 @@ import com.threerings.nexus.distrib.TestObject;
 import org.junit.*;
 import static org.junit.Assert.*;
 
+import static com.threerings.nexus.server.TestUtil.*;
+
 /**
  * Unit tests for the {@link ObjectManager}.
  */
@@ -31,7 +33,7 @@ public class ObjectManagerTest
     public void testRegister ()
     {
         ObjectManager omgr = createObjectManager();
-        TestObject test = new TestObject(TestUtil.createTestServiceAttr());
+        TestObject test = new TestObject(createTestServiceAttr());
         omgr.register(test);
 
         // ensure that we've been assigned an id
@@ -170,7 +172,7 @@ public class ObjectManagerTest
 
     protected ObjectManager createObjectManager ()
     {
-        return new ObjectManager(TestUtil.createTestConfig(), createDirectExec());
+        return new ObjectManager(createTestConfig(), createDirectExec());
     }
 
     protected Executor createDirectExec () {
@@ -180,36 +182,12 @@ public class ObjectManagerTest
             }
         };
     }
-            
-    protected static class TestSingleton implements Singleton
-    {
-        public int increment (int value) {
-            return value+1;
-        }
-    }
 
     protected static final Action<TestSingleton> FAIL_SINGLE = new Action<TestSingleton>() {
         public void invoke (TestSingleton obj) {
             fail();
         }
     };
-
-    protected static class TestKeyed implements Keyed
-    {
-        public TestKeyed (int key) {
-            _key = key;
-        }
-
-        public Comparable<?> getKey () {
-            return _key;
-        }
-
-        public int decrement (int value) {
-            return value-1;
-        }
-
-        protected Integer _key; // box once instead of on every getKey call
-    }
 
     protected static final Action<TestKeyed> FAIL_KEYED = new Action<TestKeyed>() {
         public void invoke (TestKeyed obj) {
