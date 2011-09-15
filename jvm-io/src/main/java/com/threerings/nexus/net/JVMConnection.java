@@ -162,7 +162,6 @@ public class JVMConnection extends Connection
 
                     // decode the message from the frame data and pass it on
                     _bin.setBuffer(frame);
-                    // TODO: this needs to happen on the proper thread
                     onReceive(_sin.<Downstream>readValue());
                     // TODO: if decoding fails, proceed to the next frame and keep going?
                 }
