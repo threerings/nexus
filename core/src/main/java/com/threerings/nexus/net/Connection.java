@@ -142,13 +142,7 @@ public abstract class Connection
             log.warning("Missing target of event", "event", msg.event);
             return;
         }
-
-        // the dispatcher will locate the target object and dispatch the event
-        dispatch(new Runnable() {
-            public void run () {
-                msg.event.applyTo(target);
-            }
-        });
+        msg.event.applyTo(target);
     }
 
     // from interface Downstream.Handler
@@ -158,6 +152,11 @@ public abstract class Connection
         if (callback == null) {
             log.warning("Received service response for unknown call", "msg", msg);
             return;
+        }
+        // if the result is a NexusObject, it must be initialized
+        if (msg.result instanceof NexusObject) {
+            NexusObject obj = (NexusObject)msg.result;
+            DistribUtil.init(obj, obj.getId(), this);
         }
         try {
             @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;
@@ -201,10 +200,14 @@ public abstract class Connection
     /**
      * Called when a message is received from the server.
      */
-    protected void onReceive (Downstream message)
+    protected void onReceive (final Downstream message)
     {
         log.info("Received "+ message);
-        message.dispatch(this);
+        dispatch(new Runnable() {
+            public void run () {
+                message.dispatch(Connection.this);
+            }
+        });
     }
 
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
