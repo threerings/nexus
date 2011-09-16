@@ -242,11 +242,20 @@ public class ObjectManager
         if (!(bind.entity instanceof NexusObject)) {
             throw new NexusException(bind.entity.getClass().getName() + " is not a NexusObject");
         }
+        // TODO: access control
 
         @SuppressWarnings("unchecked") T target = (T)bind.entity;
-        // TODO: access control
-        getSubscriberSet(target.getId()).add(sub);
+        addSubscriber(target, sub);
         return target;
+    }
+
+    /**
+     * Adds a subscriber to an existing object.
+     */
+    public void addSubscriber (NexusObject target, Subscriber sub) {
+        int id = target.getId();
+        if (id == 0) throw new NexusException("Cannot subscribe to unregistered object " + target);
+        getSubscriberSet(id).add(sub);
     }
 
     /**

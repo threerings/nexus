@@ -22,6 +22,7 @@ import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.net.Downstream;
 import com.threerings.nexus.net.Upstream;
 import com.threerings.nexus.util.Callback;
@@ -160,6 +161,14 @@ public class Session
                 assert(args[args.length-1] == null);
                 args[args.length-1] = new Callback<Object>() {
                     public void onSuccess (Object result) {
+                        // add ourselves as a subscriber to any objects in the response
+                        if (result instanceof NexusService.ObjectResponse) {
+                            for (NexusObject obj : ((NexusService.ObjectResponse)result).
+                                     getObjects()) {
+                                _omgr.addSubscriber(obj, _subscriber);
+                                _subscriptions.add(obj.getId());
+                            }
+                        }
                         sendMessage(new Downstream.ServiceResponse(msg.callId, result));
                     }
                     public void onFailure (Throwable cause) {

@@ -149,6 +149,7 @@ public abstract class Connection
         if (msg.result instanceof NexusService.ObjectResponse) {
             for (NexusObject obj : ((NexusService.ObjectResponse)msg.result).getObjects()) {
                 DistribUtil.init(obj, obj.getId(), this);
+                _objects.put(obj.getId(), obj); // store the object in our local table
             }
         }
         try {
