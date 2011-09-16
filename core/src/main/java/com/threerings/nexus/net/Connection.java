@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.threerings.nexus.distrib.Address;
-import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.DistribUtil;
+import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
@@ -153,10 +154,11 @@ public abstract class Connection
             log.warning("Received service response for unknown call", "msg", msg);
             return;
         }
-        // if the result is a NexusObject, it must be initialized
-        if (msg.result instanceof NexusObject) {
-            NexusObject obj = (NexusObject)msg.result;
-            DistribUtil.init(obj, obj.getId(), this);
+        // if the result contains NexusObjects, they must be initialized
+        if (msg.result instanceof NexusService.ObjectResponse) {
+            for (NexusObject obj : ((NexusService.ObjectResponse)msg.result).getObjects()) {
+                DistribUtil.init(obj, obj.getId(), this);
+            }
         }
         try {
             @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;

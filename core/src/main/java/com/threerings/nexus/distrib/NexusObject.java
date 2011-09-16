@@ -12,7 +12,7 @@ import static com.threerings.nexus.util.Log.log;
  * The basis for all distributed information sharing in Nexus.
  */
 public abstract class NexusObject
-    implements Streamable
+    implements Streamable, NexusService.ObjectResponse
 {
     /**
      * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.
@@ -58,6 +58,12 @@ public abstract class NexusObject
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).writeContents(out);
         }
+    }
+
+    @Override // from NexusService.ObjectResponse
+    public NexusObject[] getObjects ()
+    {
+        return new NexusObject[] { this };
     }
 
     /**
