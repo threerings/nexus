@@ -72,8 +72,7 @@ public class Session
      * the session in question will be bound as current, so that {@link SessionLocal} can be used
      * to access session-local data.
      */
-    public SignalView<Void> onDisconnect ()
-    {
+    public SignalView<Void> onDisconnect () {
         return _onDisconnect;
     }
 
@@ -81,8 +80,7 @@ public class Session
      * Returns the value of the specified session-local attribute, or null if no value is currently
      * configured for the supplied key.
      */
-    public <T> T getLocal (Class<T> key)
-    {
+    public <T> T getLocal (Class<T> key) {
         @SuppressWarnings("unchecked") T value = (T)_locals.get(key);
         return value;
     }
@@ -91,8 +89,7 @@ public class Session
      * Configures the supplied value as the session-local attribute for the specified key.
      * @return the previously configured value for that key. (TODO: reject overwrites instead?)
      */
-    public <T> T setLocal (Class<T> key, T value)
-    {
+    public <T> T setLocal (Class<T> key, T value) {
         @SuppressWarnings("unchecked") T ovalue = (T)_locals.put(key, value);
         return ovalue;
     }
@@ -101,20 +98,17 @@ public class Session
      * Returns the IP address via which this session is operating. Note that multiple sessions can
      * be operating over the same IP, so do not treat this as a unique key.
      */
-    public String getIPAddress ()
-    {
+    public String getIPAddress () {
         return _ipaddress;
     }
 
-    @Override public String toString ()
-    {
+    @Override public String toString () {
         // TODO: if authed, report authed id?
         return "[id=" + hashCode() + ", addr=" + _ipaddress + "]";
     }
 
     protected Session (SessionManager smgr, ObjectManager omgr, String ipaddress,
-                       SessionManager.Output output)
-    {
+                       SessionManager.Output output) {
         _smgr = smgr;
         _omgr = omgr;
         _ipaddress = ipaddress;
@@ -124,8 +118,7 @@ public class Session
     /**
      * Flattens a message into bytes and sends it to the client via the transport layer.
      */
-    protected synchronized void sendMessage (Downstream msg)
-    {
+    protected synchronized void sendMessage (Downstream msg) {
         _output.send(msg);
     }
 

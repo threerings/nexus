@@ -21,8 +21,7 @@ import nexus.chat.distrib.Streamer_RoomObject;
  */
 public class ChatSerializer extends AbstractSerializer
 {
-    public ChatSerializer ()
-    {
+    public ChatSerializer () {
         mapStreamer(new Streamer_ChatObject());
         mapStreamer(new Streamer_RoomObject());
         mapStreamer(new Streamer_RoomObject.ChatEvent());

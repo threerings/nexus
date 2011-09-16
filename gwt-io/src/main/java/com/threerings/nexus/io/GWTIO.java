@@ -16,8 +16,7 @@ public class GWTIO
 {
     /** An automatically generated class that knows about all {@link Streamable} and
      * {@link NexusService} classes that will be used by a client. */
-    public interface Serializer
-    {
+    public interface Serializer {
         /** Returns the class assigned the supplied code.
          * @throws NexusException if no class is registered for the supplied code. */
         Class<?> getClass (short code);
@@ -47,8 +46,7 @@ public class GWTIO
      * Returns a {@link Streamable#Input} that obtains its underlying data from the supplied string
      * payload.
      */
-    public static Streamable.Input newInput (Serializer szer, String data)
-    {
+    public static Streamable.Input newInput (Serializer szer, String data) {
         return new ClientInput(szer, data);
     }
 
@@ -56,8 +54,7 @@ public class GWTIO
      * Returns a {@link Streamable#Output} that obtains its underlying data from the supplied output
      * stream.
      */
-    public static Streamable.Output newOutput (Serializer szer, StringBuffer output)
-    {
+    public static Streamable.Output newOutput (Serializer szer, StringBuffer output) {
         return new ClientOutput(szer, output);
     }
 

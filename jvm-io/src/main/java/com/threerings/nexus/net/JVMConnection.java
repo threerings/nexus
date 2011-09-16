@@ -35,8 +35,7 @@ public class JVMConnection extends Connection
      *
      * @param callback will be notified on connection completion, or failure.
      */
-    public JVMConnection (String host, int port, Executor exec, Callback<Connection> callback)
-    {
+    public JVMConnection (String host, int port, Executor exec, Callback<Connection> callback) {
         super(host);
         _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
@@ -45,8 +44,7 @@ public class JVMConnection extends Connection
     }
 
     @Override // from Connection
-    public synchronized void close ()
-    {
+    public synchronized void close () {
         // if we have no writer, we're still in the process of initializing ourselves, so we'll
         // trigger the reader to abort once it finishes initializing
         if (_writer == null) {
@@ -58,22 +56,19 @@ public class JVMConnection extends Connection
     }
 
     @Override // from Connection
-    protected void send (Upstream request)
-    {
+    protected void send (Upstream request) {
         _outq.offer(request);
     }
 
     @Override // from Connection
-    protected void dispatch (Runnable run)
-    {
+    protected void dispatch (Runnable run) {
         _exec.execute(run);
     }
 
     /**
      * Called by the reader, once we have established our connection with the server.
      */
-    protected synchronized void connectionEstablished (SocketChannel channel)
-    {
+    protected synchronized void connectionEstablished (SocketChannel channel) {
         // start up the writer thread now that we're connected
         _writer = new Writer(channel);
         _writer.start();
@@ -82,8 +77,7 @@ public class JVMConnection extends Connection
     /**
      * Called by the reader when our socket is fully closed.
      */
-    protected void connectionClosed ()
-    {
+    protected void connectionClosed () {
         log.info("Connection closed. TODO!");
         // TODO: report to our client (or observer) that we were shutdown
     }
@@ -91,16 +85,14 @@ public class JVMConnection extends Connection
     /**
      * Called by the reader or writer if socket I/O fails.
      */
-    protected void connectionFailed (Throwable cause)
-    {
+    protected void connectionFailed (Throwable cause) {
         // close everything down; if the writer failed, this will already have happened, but if the
         // reader failed, this will trigger the writer to close the socket and tidy things up
         close();
         // TODO: report to our client (or observer) that we failed
     }
 
-    protected static void closeChannel (SocketChannel channel)
-    {
+    protected static void closeChannel (SocketChannel channel) {
         try {
             channel.close();
         } catch (IOException ioe) {
@@ -108,8 +100,7 @@ public class JVMConnection extends Connection
         }
     }
 
-    protected class Reader extends Thread
-    {
+    protected class Reader extends Thread {
         public Reader (String host, int port, Callback<Connection> callback) {
             _host = host;
             _port = port;
@@ -187,8 +178,7 @@ public class JVMConnection extends Connection
         protected Streamable.Input _sin = JVMIO.newInput(_bin);
     }
 
-    protected class Writer extends Thread
-    {
+    protected class Writer extends Thread {
         public Writer (SocketChannel channel) {
             _channel = channel;
         }

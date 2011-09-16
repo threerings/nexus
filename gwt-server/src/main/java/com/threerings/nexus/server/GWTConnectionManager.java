@@ -35,8 +35,7 @@ import static com.threerings.nexus.util.Log.log;
 public class GWTConnectionManager
 {
     public GWTConnectionManager (SessionManager smgr, GWTIO.Serializer szer,
-                                 String hostname, int port)
-    {
+                                 String hostname, int port) {
         _jetty = new Server();
 
         // use a custom connector that works around some jetty non-awesomeness
@@ -58,13 +57,11 @@ public class GWTConnectionManager
         _jetty.setHandler(handlers);
     }
 
-    public void setDocRoot (File docroot)
-    {
+    public void setDocRoot (File docroot) {
         _rhandler.setResourceBase(docroot.getAbsolutePath());
     }
 
-    public void start ()
-    {
+    public void start () {
         try {
             _jetty.start();
         } catch (Exception e) {
@@ -72,8 +69,7 @@ public class GWTConnectionManager
         }
     }
 
-    public void shutdown ()
-    {
+    public void shutdown () {
         try {
             _jetty.stop();
         } catch (Exception e) {
@@ -81,8 +77,7 @@ public class GWTConnectionManager
         }
     }
 
-    protected static class SaneChannelConnector extends SelectChannelConnector
-    {
+    protected static class SaneChannelConnector extends SelectChannelConnector {
         public SaneChannelConnector (String httpHost, int httpPort) {
             setHost(httpHost);
             setPort(httpPort);

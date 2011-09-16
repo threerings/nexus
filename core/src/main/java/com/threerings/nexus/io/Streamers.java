@@ -235,8 +235,7 @@ public class Streamers
         protected Class<T> _eclass;
     }
 
-    protected static <T> void writeSequence (Streamable.Output out, Iterable<T> values)
-    {
+    protected static <T> void writeSequence (Streamable.Output out, Iterable<T> values) {
         Iterator<T> seeker = values.iterator();
         Iterator<T> writer = values.iterator();
         int count = 0;
@@ -259,8 +258,7 @@ public class Streamers
         out.writeValues(0, null); // terminator
     }
 
-    protected static <T> void readSequence (Streamable.Input in, Collection<T> into)
-    {
+    protected static <T> void readSequence (Streamable.Input in, Collection<T> into) {
         int size = into.size(), added;
         do {
             in.readValues(into);

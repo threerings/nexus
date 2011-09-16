@@ -21,8 +21,7 @@ public abstract class NexusEvent
     public abstract void applyTo (NexusObject object);
 
     @Override
-    public String toString ()
-    {
+    public String toString () {
         String cname = getClass().getName();
         cname = cname.substring(cname.lastIndexOf(".")+1);
         StringBuilder buf = new StringBuilder(cname).append("[");
@@ -33,13 +32,11 @@ public abstract class NexusEvent
     /**
      * Creates an event targeted to the specified object.
      */
-    protected NexusEvent (int targetId)
-    {
+    protected NexusEvent (int targetId) {
         this.targetId = targetId;
     }
 
-    protected void toString (StringBuilder buf)
-    {
+    protected void toString (StringBuilder buf) {
         buf.append("target=").append(targetId);
     }
 }

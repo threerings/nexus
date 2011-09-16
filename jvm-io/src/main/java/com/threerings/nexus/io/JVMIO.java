@@ -41,8 +41,7 @@ public class JVMIO
      * Returns a {@link Streamable#Input} that obtains its underlying data from the supplied input
      * stream.
      */
-    public static Streamable.Input newInput (InputStream in)
-    {
+    public static Streamable.Input newInput (InputStream in) {
         final DataInputStream din = new DataInputStream(in);
         return new Streamable.Input() {
             @Override public boolean readBoolean () {
@@ -207,8 +206,7 @@ public class JVMIO
     /**
      * Returns a {@link Streamable#Output} that writes encoded data to the supplied output stream.
      */
-    public static Streamable.Output newOutput (OutputStream out)
-    {
+    public static Streamable.Output newOutput (OutputStream out) {
         final DataOutputStream dout = new DataOutputStream(out);
         return new Streamable.Output() {
             @Override public void writeBoolean (boolean value) {
@@ -385,15 +383,13 @@ public class JVMIO
 
     private JVMIO () {} // no constructy
 
-    protected static String makeAuxName (String cname, String prefix)
-    {
+    protected static String makeAuxName (String cname, String prefix) {
         int didx = cname.lastIndexOf(".");
         // the below works whether didx is -1 or a valid index
         return cname.substring(0, didx+1) + prefix + "_" + cname.substring(didx+1);
     }
 
-    protected static Streamer<?> findStreamer (String cname)
-    {
+    protected static Streamer<?> findStreamer (String cname) {
         String sname = makeAuxName(cname, "Streamer");
         try {
             return (Streamer<?>)Class.forName(sname).newInstance();
@@ -402,8 +398,7 @@ public class JVMIO
         }
     }
 
-    protected static void mapStreamer (int code, Streamer<?> streamer, Class<?>... classes)
-    {
+    protected static void mapStreamer (int code, Streamer<?> streamer, Class<?>... classes) {
         STREAMERS.put((short)code, streamer);
         for (Class<?> clazz : classes) {
             CLASSES.put(clazz, (short)code);

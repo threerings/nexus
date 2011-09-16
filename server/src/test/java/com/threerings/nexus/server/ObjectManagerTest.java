@@ -30,8 +30,7 @@ import static com.threerings.nexus.server.TestUtil.*;
 public class ObjectManagerTest
 {
     @Test
-    public void testRegister ()
-    {
+    public void testRegister () {
         ObjectManager omgr = createObjectManager();
         TestObject test = new TestObject(createTestServiceAttr());
         omgr.register(test);
@@ -62,8 +61,7 @@ public class ObjectManagerTest
     }
 
     @Test
-    public void testSingleton ()
-    {
+    public void testSingleton () {
         ObjectManager omgr = createObjectManager();
         TestSingleton test = new TestSingleton();
         omgr.registerSingleton(test);
@@ -96,8 +94,7 @@ public class ObjectManagerTest
     }
 
     @Test
-    public void testMissingSingletonInvoke ()
-    {
+    public void testMissingSingletonInvoke () {
         ObjectManager omgr = createObjectManager();
         try {
             omgr.invoke(TestSingleton.class, FAIL_SINGLE);
@@ -108,8 +105,7 @@ public class ObjectManagerTest
     }
 
     @Test
-    public void testRegisterAndClearKeyed ()
-    {
+    public void testRegisterAndClearKeyed () {
         ObjectManager omgr = createObjectManager();
         TestKeyed test = new TestKeyed(5);
         omgr.registerKeyed(test);
@@ -148,8 +144,7 @@ public class ObjectManagerTest
     }
 
     @Test
-    public void testMissingKeyedInvoke ()
-    {
+    public void testMissingKeyedInvoke () {
         ObjectManager omgr = createObjectManager();
 
         // test when there are no registrations at all
@@ -170,8 +165,7 @@ public class ObjectManagerTest
         }
     }
 
-    protected ObjectManager createObjectManager ()
-    {
+    protected ObjectManager createObjectManager () {
         return new ObjectManager(createTestConfig(), createDirectExec());
     }
 

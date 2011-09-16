@@ -58,8 +58,7 @@ public class DSet<T> extends react.RSet<T>
     }
 
     /** An event emitted when an element is added. */
-    protected static class AddEvent<T> extends DAttribute.Event
-    {
+    protected static class AddEvent<T> extends DAttribute.Event {
         public AddEvent (int targetId, short index, T elem) {
             super(targetId, index);
             _elem = elem;
@@ -79,8 +78,7 @@ public class DSet<T> extends react.RSet<T>
     }
 
     /** An event emitted when an element is removed. */
-    protected static class RemoveEvent<T> extends DAttribute.Event
-    {
+    protected static class RemoveEvent<T> extends DAttribute.Event {
         public RemoveEvent (int targetId, short index, T elem) {
             super(targetId, index);
             _elem = elem;

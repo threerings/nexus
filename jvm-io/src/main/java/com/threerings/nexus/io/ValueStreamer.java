@@ -137,7 +137,8 @@ public enum ValueStreamer
     }
 
     protected static Map<Byte, ValueStreamer> _fromCode = new HashMap<Byte, ValueStreamer>();
-    protected static Map<Class<?>, ValueStreamer> _fromType = new HashMap<Class<?>, ValueStreamer>();
+    protected static Map<Class<?>, ValueStreamer> _fromType =
+        new HashMap<Class<?>, ValueStreamer>();
     static {
         for (ValueStreamer s : ValueStreamer.values()) {
             _fromCode.put(s.code, s);

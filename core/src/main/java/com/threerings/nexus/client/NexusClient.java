@@ -23,8 +23,8 @@ public abstract class NexusClient
     /**
      * Requests to subscribe to the object identified by the supplied address.
      */
-    public <T extends NexusObject> void subscribe (final Address<T> addr, final Callback<T> callback)
-    {
+    public <T extends NexusObject> void subscribe (final Address<T> addr,
+                                                   final Callback<T> callback) {
         withConnection(addr.host, new Callback.Chain<Connection>(callback) {
             public void onSuccess (Connection conn) {
                 conn.subscribe(addr, callback);
@@ -36,8 +36,7 @@ public abstract class NexusClient
      * Unsubscribes from the specified object. Any events in-flight will be sent to the server, and
      * any events generated after this unsubscription request will be dropped.
      */
-    public void unsubscribe (NexusObject object)
-    {
+    public void unsubscribe (NexusObject object) {
         // TODO: object.postEvent(new UnsubscribeMarker())
         // TODO: catch UnsubscribeMarker in Connection.postEvent, and unsubscribe instead of
         // forwarding the event to the server
@@ -57,8 +56,7 @@ public abstract class NexusClient
      * }));
      * }</pre>
      */
-    public <T extends NexusObject> Callback<Address<T>> subscriber (final Callback<T> callback)
-    {
+    public <T extends NexusObject> Callback<Address<T>> subscriber (final Callback<T> callback) {
         return new Callback<Address<T>>() {
             public void onSuccess (Address<T> address) {
                 subscribe(address, callback);
@@ -76,8 +74,7 @@ public abstract class NexusClient
     // active subscriptions (this would allow a little leeway, so that a usage pattern wherein one
     // unsubscribed from their last object on a given server and then immediately subscribed to a
     // new one, did not cause needless disconnect and reconnect)
-    protected void disconnect (String serverHost)
-    {
+    protected void disconnect (String serverHost) {
         // TODO
     }
 
@@ -85,8 +82,7 @@ public abstract class NexusClient
      * Establishes a connection with the supplied host (if one does not already exist), and invokes
      * the supplied action with said connection. Ensures thread-safety in the process.
      */
-    protected synchronized void withConnection (final String host, Callback<Connection> action)
-    {
+    protected synchronized void withConnection (final String host, Callback<Connection> action) {
         Connection conn = _connections.get(host);
         if (conn != null) {
             action.onSuccess(conn);
@@ -111,8 +107,7 @@ public abstract class NexusClient
         });
     }
 
-    protected synchronized void onConnectSuccess (Connection conn)
-    {
+    protected synchronized void onConnectSuccess (Connection conn) {
         CallbackList<Connection> plist = _penders.remove(conn.getHost());
         if (plist == null) {
             log.warning("Have no penders for established connection?!", "host", conn.getHost());
@@ -123,8 +118,7 @@ public abstract class NexusClient
         }
     }
 
-    protected synchronized void onConnectFailure (String host, Throwable cause)
-    {
+    protected synchronized void onConnectFailure (String host, Throwable cause) {
         CallbackList<Connection> plist = _penders.remove(host);
         if (plist == null) {
             log.warning("Have no penders for failed connection?!", "host", host);

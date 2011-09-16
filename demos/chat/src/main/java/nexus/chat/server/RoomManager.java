@@ -24,8 +24,7 @@ public class RoomManager implements RoomService, Keyed
     /**
      * Creates a room manager for the chat room with the specified name.
      */
-    public RoomManager (Nexus nexus, String name)
-    {
+    public RoomManager (Nexus nexus, String name) {
         // create our room object before we register ourselves as it will hold our key
         roomObj = new RoomObject(name, Factory_RoomService.createDispatcher(this));
 
@@ -36,24 +35,20 @@ public class RoomManager implements RoomService, Keyed
         nexus.registerKeyed(roomObj, this);
     }
 
-    public void chatterEntered (String nickname)
-    {
+    public void chatterEntered (String nickname) {
         emitChatEvent(null, nickname + " entered.");
     }
 
-    public void chatterLeft (String nickname)
-    {
+    public void chatterLeft (String nickname) {
         emitChatEvent(null, nickname + " left.");
     }
 
-    public void chatterChangedNick (String oldname, String newname)
-    {
+    public void chatterChangedNick (String oldname, String newname) {
         emitChatEvent(null, oldname + " is now known as <" + newname + ">.");
     }
 
     // from interface RoomService
-    public void sendMessage (String message, Callback<Void> callback)
-    {
+    public void sendMessage (String message, Callback<Void> callback) {
         // here we might do things like access control, etc.
 
         // send the chat event to all subscribers to the room
@@ -64,8 +59,7 @@ public class RoomManager implements RoomService, Keyed
     }
 
     // from interface Keyed
-    public Comparable<?> getKey ()
-    {
+    public Comparable<?> getKey () {
         return roomObj.name;
     }
 

@@ -15,9 +15,7 @@ public class Streamer_DValue
     /**
      * Handles the streaming of {@link DValue.ChangeEvent} instances.
      */
-    public static class ChangeEvent<T>
-        implements Streamer<DValue.ChangeEvent<T>>
-    {
+    public static class ChangeEvent<T> implements Streamer<DValue.ChangeEvent<T>> {
         @Override
         public Class<?> getObjectClass () {
             return DValue.ChangeEvent.class;

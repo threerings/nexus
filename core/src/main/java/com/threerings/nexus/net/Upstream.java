@@ -31,8 +31,7 @@ public interface Upstream extends Streamable
     }
 
     /** A request to subscribe to a Nexus object. */
-    public static class Subscribe implements Upstream
-    {
+    public static class Subscribe implements Upstream {
         /** The address of object to which a subscription is desired. */
         public final Address<?> addr;
 
@@ -46,8 +45,7 @@ public interface Upstream extends Streamable
         }
     }
 
-    public static class Unsubscribe implements Upstream
-    {
+    public static class Unsubscribe implements Upstream {
         /** The id of the object from which we are unsubscribing. */
         public final int id;
 
@@ -62,8 +60,7 @@ public interface Upstream extends Streamable
     }
 
     /** A request to post an event on the server. */
-    public static class PostEvent implements Upstream
-    {
+    public static class PostEvent implements Upstream {
         /** The event to be posted. */
         public final NexusEvent event;
 
@@ -78,8 +75,7 @@ public interface Upstream extends Streamable
     }
 
     /** A request to post a service call on the server. */
-    public static class ServiceCall implements Upstream
-    {
+    public static class ServiceCall implements Upstream {
         /** An id that will be used to correlate this call with a response. If the id is zero, the
          * call is not expecting a response. */
         public final int callId;

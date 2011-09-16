@@ -14,18 +14,15 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class DistribUtil
 {
-    public static void init (NexusObject object, int id, EventSink sink)
-    {
+    public static void init (NexusObject object, int id, EventSink sink) {
         object.init(id, sink);
     }
 
-    public static void clear (NexusObject object)
-    {
+    public static void clear (NexusObject object) {
         object.clear();
     }
 
-    public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args)
-    {
+    public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args) {
         Object cb = args[args.length-1];
         DService.Dispatcher<?> disp = null;
         try {
@@ -51,8 +48,7 @@ public class DistribUtil
     /**
      * Returns a sentinel value for use by events in tracking unset values.
      */
-    public static <T> T sentinelValue ()
-    {
+    public static <T> T sentinelValue () {
         @SuppressWarnings("unchecked") T value = (T)SENTINEL_VALUE;
         return value;
     }

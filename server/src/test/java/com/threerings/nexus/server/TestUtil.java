@@ -24,15 +24,13 @@ import org.junit.Assert;
  */
 public class TestUtil
 {
-    public static class TestSingleton implements Singleton
-    {
+    public static class TestSingleton implements Singleton {
         public int increment (int value) {
             return value+1;
         }
     }
 
-    public static class TestKeyed implements Keyed
-    {
+    public static class TestKeyed implements Keyed {
         public TestKeyed (int key) {
             _key = key;
         }
@@ -48,8 +46,7 @@ public class TestUtil
         protected Integer _key; // box once instead of on every getKey call
     }
 
-    public static NexusConfig createTestConfig ()
-    {
+    public static NexusConfig createTestConfig () {
         Properties props = new Properties();
         props.setProperty("nexus.node", "test");
         props.setProperty("nexus.hostname", "localhost");
@@ -57,8 +54,7 @@ public class TestUtil
         return new NexusConfig(props);
     }
 
-    public static void awaitTermination (ExecutorService exec)
-    {
+    public static void awaitTermination (ExecutorService exec) {
         try {
             if (!exec.awaitTermination(2, TimeUnit.SECONDS)) { // TODO: change back to 10
                 Assert.fail("Executor failed to terminate after 10 seconds.");
@@ -68,8 +64,7 @@ public class TestUtil
         }
     }
 
-    public static DService<TestService> createTestServiceAttr ()
-    {
+    public static DService<TestService> createTestServiceAttr () {
         return Factory_TestService.createDispatcher(new TestService () {
             public void addOne (int value, Callback<Integer> callback) {
                 callback.onSuccess(value+1);

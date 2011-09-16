@@ -21,8 +21,7 @@ public interface Streamable
     /**
      * The means by which {@link Streamable} instances read their data from a remote source.
      */
-    public abstract class Input
-    {
+    public abstract class Input {
         public abstract boolean readBoolean ();
         public abstract byte readByte ();
         public abstract short readShort ();
@@ -184,8 +183,7 @@ public interface Streamable
     /**
      * The means by which {@link Streamable} instances write their data to a remote source.
      */
-    public abstract class Output
-    {
+    public abstract class Output {
         public abstract void writeBoolean (boolean value);
         public abstract void writeByte (byte value);
         public abstract void writeShort (short value);

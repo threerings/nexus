@@ -13,8 +13,7 @@ import static org.junit.Assert.*;
 public class ServerOutputTest
 {
     @Test
-    public void testBasicTypes ()
-    {
+    public void testBasicTypes () {
         GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
         Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
         // note: additions to this test should be mirrored in ServerInputTest in nexus-server
@@ -53,8 +52,7 @@ public class ServerOutputTest
     }
 
     @Test
-    public void testValueOutput ()
-    {
+    public void testValueOutput () {
         GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
         Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
         for (Widget w : Widget.WS) {
@@ -68,8 +66,7 @@ public class ServerOutputTest
     }
 
     @Test
-    public void testValuesOutput ()
-    {
+    public void testValuesOutput () {
         GWTServerIO.PayloadBuffer buf = new GWTServerIO.PayloadBuffer();
         Streamable.Output out = GWTServerIO.newOutput(new TestSerializer(), buf);
         out.writeValues(Widget.WS.size(), Widget.WS.iterator());

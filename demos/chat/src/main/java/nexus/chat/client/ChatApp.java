@@ -18,8 +18,7 @@ import com.threerings.nexus.client.NexusClient;
  */
 public class ChatApp
 {
-    public static void main (String[] args)
-    {
+    public static void main (String[] args) {
         // improve our logging output
         OneLineLogFormatter.configureDefaultHandler(false);
 

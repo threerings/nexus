@@ -24,8 +24,7 @@ import nexus.chat.distrib.ChatObject;
  */
 public class ConnectPanel extends JPanel
 {
-    public ConnectPanel (ChatContext ctx)
-    {
+    public ConnectPanel (ChatContext ctx) {
         _ctx = ctx;
 
         VGroupLayout layout = new VGroupLayout();
@@ -56,8 +55,7 @@ public class ConnectPanel extends JPanel
         onConnect.actionPerformed(null);
     }
 
-    protected void onConnect (String address)
-    {
+    protected void onConnect (String address) {
         _status.setText("Connecting to " + address + "...");
 
         // subscribe to the singleton ChatObject on the specified host; this will trigger a

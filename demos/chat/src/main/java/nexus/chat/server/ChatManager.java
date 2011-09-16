@@ -34,8 +34,7 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class ChatManager implements ChatService, Singleton
 {
-    public ChatManager (Nexus nexus)
-    {
+    public ChatManager (Nexus nexus) {
         _nexus = nexus;
 
         // register ourselves as a singleton
@@ -47,8 +46,7 @@ public class ChatManager implements ChatService, Singleton
     }
 
     // from interface ChatService
-    public void updateNick (String nickname, Callback<Void> callback)
-    {
+    public void updateNick (String nickname, Callback<Void> callback) {
         require(!_activeNicks.contains(nickname), "The nickname '" + nickname + "' is in use.");
         require(!nickname.startsWith("{") && !nickname.toLowerCase().contains("anonymous"),
                 "Invalid nickname."); // no spoofing
@@ -59,14 +57,12 @@ public class ChatManager implements ChatService, Singleton
     }
 
     // from interface ChatService
-    public void getRooms (Callback<List<String>> callback)
-    {
+    public void getRooms (Callback<List<String>> callback) {
         callback.onSuccess(Lists.newArrayList(_rooms.keySet()));
     }
 
     // from interface ChatService
-    public void joinRoom (String name, Callback<Address<RoomObject>> callback)
-    {
+    public void joinRoom (String name, Callback<Address<RoomObject>> callback) {
         Address<RoomObject> addr = _rooms.get(name);
         require(addr != null, "No room named '" + name + "'.");
         // here we might check invitation lists or whatnot
@@ -77,8 +73,7 @@ public class ChatManager implements ChatService, Singleton
     }
 
     // from interface ChatService
-    public void createRoom (String name, Callback<Address<RoomObject>> callback)
-    {
+    public void createRoom (String name, Callback<Address<RoomObject>> callback) {
         require(!_rooms.containsKey(name), "Room already exists.");
         // here we might check privileges or whether the room name contains swear words, etc.
 
@@ -92,8 +87,7 @@ public class ChatManager implements ChatService, Singleton
         callback.onSuccess(addr);
     }
 
-    protected Chatter getChatter ()
-    {
+    protected Chatter getChatter () {
         Chatter chatter = SessionLocal.get(Chatter.class);
         if (chatter == null) {
             log.info("New chatter " + SessionLocal.getSession().getIPAddress());

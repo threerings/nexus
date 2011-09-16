@@ -19,8 +19,7 @@ public class DMap<K,V> extends react.RMap<K,V>
     /**
      * Creates a distributed map with the supplied underlying map implementation.
      */
-    public static <K,V> DMap<K,V> create (Map<K,V> impl)
-    {
+    public static <K,V> DMap<K,V> create (Map<K,V> impl) {
         return new DMap<K,V>(impl);
     }
 
@@ -72,8 +71,7 @@ public class DMap<K,V> extends react.RMap<K,V>
     }
 
     /** An event emitted when a mapping is added or updated. */
-    protected static class PutEvent<K,V> extends DAttribute.Event
-    {
+    protected static class PutEvent<K,V> extends DAttribute.Event {
         public V oldValue = DistribUtil.<V>sentinelValue();
 
         public PutEvent (int targetId, short index, K key, V value) {
@@ -99,8 +97,7 @@ public class DMap<K,V> extends react.RMap<K,V>
     }
 
     /** An event emitted when a mapping is removed. */
-    protected static class RemoveEvent<K,V> extends DAttribute.Event
-    {
+    protected static class RemoveEvent<K,V> extends DAttribute.Event {
         public V oldValue = DistribUtil.<V>sentinelValue();
 
         public RemoveEvent (int targetId, short index, K key) {

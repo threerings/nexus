@@ -27,27 +27,23 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class GWTIOJettyServlet extends WebSocketServlet
 {
-    public GWTIOJettyServlet (SessionManager smgr, GWTIO.Serializer szer)
-    {
+    public GWTIOJettyServlet (SessionManager smgr, GWTIO.Serializer szer) {
         _smgr = smgr;
         _szer = szer;
     }
 
     @Override
     protected void doGet (HttpServletRequest req, HttpServletResponse rsp)
-        throws ServletException, IOException
-    {
+        throws ServletException, IOException {
         getServletContext().getNamedDispatcher("default").forward(req, rsp);
     }
 
     @Override
-    protected WebSocket doWebSocketConnect (HttpServletRequest req, String protocol)
-    {
+    protected WebSocket doWebSocketConnect (HttpServletRequest req, String protocol) {
         return new GWTIOWebSocket(req.getRemoteAddr());
     }
 
-    protected class GWTIOWebSocket implements WebSocket, SessionManager.Output
-    {
+    protected class GWTIOWebSocket implements WebSocket, SessionManager.Output {
         public GWTIOWebSocket (String ipaddress) {
             _ipaddress = ipaddress;
         }
@@ -85,8 +81,7 @@ public class GWTIOJettyServlet extends WebSocketServlet
         }
 
         // from interface SessionManager.Input
-        public void send (Downstream msg)
-        {
+        public void send (Downstream msg) {
             if (!_outbound.isOpen()) {
                 log.warning("Dropping outbound message to closed WebSocket", "addr", _ipaddress);
                 return;
@@ -109,8 +104,7 @@ public class GWTIOJettyServlet extends WebSocketServlet
         }
 
         // from interface SessionManager.Input
-        public void disconnect ()
-        {
+        public void disconnect () {
             _outbound.disconnect();
         }
 

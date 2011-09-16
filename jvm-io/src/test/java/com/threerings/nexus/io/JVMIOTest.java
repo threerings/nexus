@@ -23,8 +23,7 @@ public class JVMIOTest
     public static enum TestEnum { FOO, BAR, BAZ };
 
     @Test
-    public void testPrimitives ()
-    {
+    public void testPrimitives () {
         final boolean aBoolean = false;
         final byte aByte = 7;
         final char aChar = 'z';
@@ -62,8 +61,7 @@ public class JVMIOTest
     }
 
     @Test
-    public void testValues ()
-    {
+    public void testValues () {
         final Object aNull = null;
         final boolean aBoolean = false;
         final byte aByte = 7;
@@ -107,8 +105,7 @@ public class JVMIOTest
     }
 
     @Test
-    public void testWriteValue ()
-    {
+    public void testWriteValue () {
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
                 for (Widget w : Widget.WS) {
@@ -124,8 +121,7 @@ public class JVMIOTest
     }
 
     @Test
-    public void testWriteValues ()
-    {
+    public void testWriteValues () {
         testStreaming(new StreamTester() {
             public void writeTest (Streamable.Output out) {
                 out.writeValues(Widget.WS.size(), Widget.WS.iterator());
@@ -138,8 +134,7 @@ public class JVMIOTest
         });
     }
 
-    protected void testStreaming (StreamTester tester)
-    {
+    protected void testStreaming (StreamTester tester) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Streamable.Output sout = JVMIO.newOutput(out);
         tester.writeTest(sout);

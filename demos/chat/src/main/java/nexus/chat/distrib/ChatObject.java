@@ -18,14 +18,12 @@ public class ChatObject extends NexusObject
     /** Provides global chat services. */
     public DService<ChatService> chatSvc;
 
-    public ChatObject (DService<ChatService> chatSvc)
-    {
+    public ChatObject (DService<ChatService> chatSvc) {
         this.chatSvc = chatSvc;
     }
 
     @Override
-    protected DAttribute getAttribute (int index)
-    {
+    protected DAttribute getAttribute (int index) {
         switch (index) {
         case 0: return chatSvc;
         default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
@@ -33,8 +31,7 @@ public class ChatObject extends NexusObject
     }
 
     @Override
-    protected int getAttributeCount ()
-    {
+    protected int getAttributeCount () {
         return 1;
     }
 }

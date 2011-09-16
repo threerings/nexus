@@ -21,16 +21,14 @@ import static org.junit.Assert.*;
  */
 public class GWTIOTest extends GWTTestCase
 {
-    public String getModuleName ()
-    {
+    public String getModuleName () {
         return "com.threerings.nexus.GWTIO";
     }
 
     // NOTE: changes to these tests should be mirrored in Server{Input|Output}Test in gwt-server
 
     @Test
-    public void testBasicTypesInput ()
-    {
+    public void testBasicTypesInput () {
         final String PAYLOAD =
             "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
             "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
@@ -65,8 +63,7 @@ public class GWTIOTest extends GWTTestCase
     }
 
     @Test
-    public void testBasicTypesOutput ()
-    {
+    public void testBasicTypesOutput () {
         StringBuffer buf = new StringBuffer();
         Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
         out.writeBoolean(true);
@@ -104,8 +101,7 @@ public class GWTIOTest extends GWTTestCase
     }
 
     @Test
-    public void testValueInput ()
-    {
+    public void testValueInput () {
         final String PAYLOAD =
             "[31,\"RED\",\"foo\",33,42,31,\"GREEN\",\"bar\",33,21,31,\"BLUE\",\"baz\",33,7]";
         Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
@@ -115,8 +111,7 @@ public class GWTIOTest extends GWTTestCase
     }
 
     @Test
-    public void testValueOutput ()
-    {
+    public void testValueOutput () {
         StringBuffer buf = new StringBuffer();
         Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
         for (Widget w : Widget.WS) {
@@ -129,8 +124,7 @@ public class GWTIOTest extends GWTTestCase
     }
 
     @Test
-    public void testValuesInput ()
-    {
+    public void testValuesInput () {
         final String PAYLOAD =
             "[3,31,\"RED\",\"foo\",33,42,\"GREEN\",\"bar\",33,21,\"BLUE\",\"baz\",33,7]";
         Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
@@ -140,8 +134,7 @@ public class GWTIOTest extends GWTTestCase
     }
 
     @Test
-    public void testValuesOutput ()
-    {
+    public void testValuesOutput () {
         StringBuffer buf = new StringBuffer();
         Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
         out.writeValues(Widget.WS.size(), Widget.WS.iterator());

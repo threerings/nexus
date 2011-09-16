@@ -21,16 +21,14 @@ import java.nio.ByteBuffer;
  */
 public class FramingOutputStream extends OutputStream
 {
-    public FramingOutputStream ()
-    {
+    public FramingOutputStream () {
         _buffer = ByteBuffer.allocate(INITIAL_BUFFER_SIZE);
     }
 
     /**
      * Prepares our internal buffer to write a new frame.
      */
-    public void prepareFrame ()
-    {
+    public void prepareFrame () {
         _buffer.clear();
         _buffer.put(HEADER_PAD);
     }
@@ -39,8 +37,7 @@ public class FramingOutputStream extends OutputStream
      * Writes the frame length to the beginning of our buffer (which must have been prepared via a
      * call to {@link #prepareFrame}) and returns it for writing to the appropriate channel.
      */
-    public ByteBuffer frameAndReturnBuffer ()
-    {
+    public ByteBuffer frameAndReturnBuffer () {
         // flip the buffer which will limit it to its current position
         _buffer.flip();
         // then write the frame length
@@ -51,8 +48,7 @@ public class FramingOutputStream extends OutputStream
     }
 
     @Override
-    public void write (int b)
-    {
+    public void write (int b) {
         try {
             _buffer.put((byte)b);
         } catch (BufferOverflowException boe) {
@@ -62,8 +58,7 @@ public class FramingOutputStream extends OutputStream
     }
 
     @Override
-    public void write (byte[] b, int off, int len)
-    {
+    public void write (byte[] b, int off, int len) {
         // sanity check the arguments
         if ((off < 0) || (off > b.length) || (len < 0) ||
             ((off + len) > b.length) || ((off + len) < 0)) {
@@ -83,8 +78,7 @@ public class FramingOutputStream extends OutputStream
     /**
      * Expands our buffer to accomodate the specified capacity.
      */
-    protected final void expand (int needed)
-    {
+    protected final void expand (int needed) {
         int ocapacity = _buffer.capacity();
         int ncapacity = _buffer.position() + needed;
         if (ncapacity > ocapacity) {

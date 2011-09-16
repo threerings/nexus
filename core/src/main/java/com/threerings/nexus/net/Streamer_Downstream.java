@@ -18,9 +18,7 @@ public class Streamer_Downstream
     /**
      * Handles the streaming of {@link Downstream.Subscribe} instances.
      */
-    public static class Subscribe
-        implements Streamer<Downstream.Subscribe>
-    {
+    public static class Subscribe implements Streamer<Downstream.Subscribe> {
         @Override
         public Class<?> getObjectClass () {
             return Downstream.Subscribe.class;
@@ -46,9 +44,7 @@ public class Streamer_Downstream
     /**
      * Handles the streaming of {@link Downstream.SubscribeFailure} instances.
      */
-    public static class SubscribeFailure
-        implements Streamer<Downstream.SubscribeFailure>
-    {
+    public static class SubscribeFailure implements Streamer<Downstream.SubscribeFailure> {
         @Override
         public Class<?> getObjectClass () {
             return Downstream.SubscribeFailure.class;
@@ -76,9 +72,7 @@ public class Streamer_Downstream
     /**
      * Handles the streaming of {@link Downstream.DispatchEvent} instances.
      */
-    public static class DispatchEvent
-        implements Streamer<Downstream.DispatchEvent>
-    {
+    public static class DispatchEvent implements Streamer<Downstream.DispatchEvent> {
         @Override
         public Class<?> getObjectClass () {
             return Downstream.DispatchEvent.class;
@@ -104,9 +98,7 @@ public class Streamer_Downstream
     /**
      * Handles the streaming of {@link Downstream.ServiceResponse} instances.
      */
-    public static class ServiceResponse
-        implements Streamer<Downstream.ServiceResponse>
-    {
+    public static class ServiceResponse implements Streamer<Downstream.ServiceResponse> {
         @Override
         public Class<?> getObjectClass () {
             return Downstream.ServiceResponse.class;
@@ -134,9 +126,7 @@ public class Streamer_Downstream
     /**
      * Handles the streaming of {@link Downstream.ServiceFailure} instances.
      */
-    public static class ServiceFailure
-        implements Streamer<Downstream.ServiceFailure>
-    {
+    public static class ServiceFailure implements Streamer<Downstream.ServiceFailure> {
         @Override
         public Class<?> getObjectClass () {
             return Downstream.ServiceFailure.class;

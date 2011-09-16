@@ -19,9 +19,7 @@ public class Streamer_Upstream
     /**
      * Handles the streaming of {@link Upstream.Subscribe} instances.
      */
-    public static class Subscribe
-        implements Streamer<Upstream.Subscribe>
-    {
+    public static class Subscribe implements Streamer<Upstream.Subscribe> {
         @Override
         public Class<?> getObjectClass () {
             return Upstream.Subscribe.class;
@@ -47,9 +45,7 @@ public class Streamer_Upstream
     /**
      * Handles the streaming of {@link Upstream.Unsubscribe} instances.
      */
-    public static class Unsubscribe
-        implements Streamer<Upstream.Unsubscribe>
-    {
+    public static class Unsubscribe implements Streamer<Upstream.Unsubscribe> {
         @Override
         public Class<?> getObjectClass () {
             return Upstream.Unsubscribe.class;
@@ -75,9 +71,7 @@ public class Streamer_Upstream
     /**
      * Handles the streaming of {@link Upstream.PostEvent} instances.
      */
-    public static class PostEvent
-        implements Streamer<Upstream.PostEvent>
-    {
+    public static class PostEvent implements Streamer<Upstream.PostEvent> {
         @Override
         public Class<?> getObjectClass () {
             return Upstream.PostEvent.class;
@@ -103,9 +97,7 @@ public class Streamer_Upstream
     /**
      * Handles the streaming of {@link Upstream.ServiceCall} instances.
      */
-    public static class ServiceCall
-        implements Streamer<Upstream.ServiceCall>
-    {
+    public static class ServiceCall implements Streamer<Upstream.ServiceCall> {
         @Override
         public Class<?> getObjectClass () {
             return Upstream.ServiceCall.class;

@@ -17,8 +17,7 @@ import com.threerings.nexus.client.NexusClient;
 public class ChatEntryPoint implements EntryPoint
 {
     // from interface EntryPoint
-    public void onModuleLoad ()
-    {
+    public void onModuleLoad () {
         WebContext ctx = new WebContext() {
             public NexusClient getClient () {
                 return _client;

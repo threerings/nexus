@@ -22,8 +22,7 @@ public class JVMClient extends NexusClient
      * @param exec the executor on which to dispatch distributed object events.
      * @param port the port on which to connect to servers.
      */
-    public static NexusClient create (Executor exec, int port)
-    {
+    public static NexusClient create (Executor exec, int port) {
         return new JVMClient(exec, port);
     }
 
@@ -31,8 +30,7 @@ public class JVMClient extends NexusClient
      * Creates a Nexus client that will dispatch events on the AWT event queue.
      * @param port the port on which to connect to servers.
      */
-    public static NexusClient create (int port)
-    {
+    public static NexusClient create (int port) {
         return create(new Executor() {
             public void execute (Runnable command) {
                 EventQueue.invokeLater(command);
@@ -40,14 +38,12 @@ public class JVMClient extends NexusClient
         }, port);
     }
 
-    protected JVMClient (Executor exec, int port)
-    {
+    protected JVMClient (Executor exec, int port) {
         _exec = exec;
         _port = port;
     }
 
-    protected void connect (String host, Callback<Connection> callback)
-    {
+    protected void connect (String host, Callback<Connection> callback) {
         new JVMConnection(host, _port, _exec, callback);
     }
 

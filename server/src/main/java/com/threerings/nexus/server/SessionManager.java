@@ -68,8 +68,7 @@ public class SessionManager
         void disconnect ();
     }
 
-    public SessionManager (ObjectManager omgr)
-    {
+    public SessionManager (ObjectManager omgr) {
         _omgr = omgr;
     }
 
@@ -78,15 +77,13 @@ public class SessionManager
      * instance will be used to communicate messages to the client, and the returned {@link Input}
      * instance should be delivered messages coming from the client.
      */
-    public Input createSession (String ipaddress, Output output)
-    {
+    public Input createSession (String ipaddress, Output output) {
         Session session = new Session(this, _omgr, ipaddress, output);
         _byIP.put(ipaddress, session);
         return session.input;
     }
 
-    protected void sessionDisconnected (Session sess)
-    {
+    protected void sessionDisconnected (Session sess) {
         // remove the session from our (ip -> sessions) mapping
         _byIP.remove(sess.getIPAddress(), sess);
 

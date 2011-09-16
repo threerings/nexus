@@ -25,8 +25,7 @@ import nexus.chat.distrib.ChatObject;
  */
 public class ConnectPanel extends FlowPanel
 {
-    public ConnectPanel (WebContext ctx)
-    {
+    public ConnectPanel (WebContext ctx) {
         _ctx = ctx;
 
         final TextBox address = Widgets.newTextBox("", -1, 40);
@@ -48,8 +47,7 @@ public class ConnectPanel extends FlowPanel
         onConnect.onClick(null);
     }
 
-    protected void onConnect (String address)
-    {
+    protected void onConnect (String address) {
         _status.setText("Connecting to " + address + "...");
 
         // subscribe to the singleton ChatObject on the specified host; this will trigger a

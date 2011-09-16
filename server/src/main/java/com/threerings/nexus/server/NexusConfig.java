@@ -26,15 +26,13 @@ public class NexusConfig
      * Creates a configuration instance, obtaining configuration values from the supplied
      * properties instance.
      */
-    public NexusConfig (Properties props)
-    {
+    public NexusConfig (Properties props) {
         nodeName = require(props, "nexus.node");
         publicHostname = require(props, "nexus.hostname");
         rpcTimeout = Long.parseLong(require(props, "nexus.rpc_timeout"));
     }
 
-    protected String require (Properties props, String key)
-    {
+    protected String require (Properties props, String key) {
         String value = props.getProperty(key, System.getProperty(key));
         if (value == null || value.length() == 0) {
             throw new RuntimeException("Missing required property '" + key + "'");

@@ -24,8 +24,7 @@ public class EntityContext
     /**
      * Creates an entity context that will use the supplied executor for executions.
      */
-    public EntityContext (Executor exec)
-    {
+    public EntityContext (Executor exec) {
         _exec = exec;
     }
 
@@ -35,8 +34,7 @@ public class EntityContext
      * executed, it will additionally be queued up on the supplied executor, so that its pending
      * operations will be executed.
      */
-    public synchronized void postOp (final Runnable op)
-    {
+    public synchronized void postOp (final Runnable op) {
         _ops.offer(new Runnable() {
             public void run () {
                 try {
@@ -53,8 +51,7 @@ public class EntityContext
         }
     }
 
-    protected synchronized void scheduleNext ()
-    {
+    protected synchronized void scheduleNext () {
         if ((_active = _ops.poll()) != null) {
             _exec.execute(_active);
         }

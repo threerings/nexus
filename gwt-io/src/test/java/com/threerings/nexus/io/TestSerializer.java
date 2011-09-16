@@ -9,8 +9,7 @@ package com.threerings.nexus.io;
  */
 public class TestSerializer extends AbstractSerializer
 {
-    public TestSerializer ()
-    {
+    public TestSerializer () {
         mapStreamer(new Streamer_Widget());
         mapStreamer(Streamers.create(Widget.Color.class));
         mapStreamer(new Streamer_Widget.Wangle());

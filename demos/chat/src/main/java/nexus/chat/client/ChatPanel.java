@@ -31,8 +31,7 @@ import nexus.chat.distrib.RoomObject;
  */
 public class ChatPanel extends JPanel
 {
-    public ChatPanel (ChatContext ctx, ChatObject chatobj)
-    {
+    public ChatPanel (ChatContext ctx, ChatObject chatobj) {
         _ctx  = ctx;
         _chatobj = chatobj;
         setLayout(new BorderLayout(5, 5));
@@ -133,8 +132,7 @@ public class ChatPanel extends JPanel
         refreshRooms();
     }
 
-    protected void refreshRooms ()
-    {
+    protected void refreshRooms () {
         _chatobj.chatSvc.get().getRooms(callback(new Action<List<String>>() {
             public void onSuccess (final List<String> rooms) {
                 _rooms.setModel(new AbstractListModel() {
@@ -149,8 +147,7 @@ public class ChatPanel extends JPanel
         }, "Failed to fetch rooms"));
     }
 
-    protected void updateNickname (final String nickname)
-    {
+    protected void updateNickname (final String nickname) {
         if (nickname.length() == 0) {
             feedback("Error: can't use blank nickname");
         } else {
@@ -162,8 +159,7 @@ public class ChatPanel extends JPanel
         }
     }
 
-    protected void joinRoom (final String name)
-    {
+    protected void joinRoom (final String name) {
         if (_roomobj != null && _roomobj.name.equals(name)) {
             return; // no point in noopin'
         }
@@ -177,8 +173,7 @@ public class ChatPanel extends JPanel
                 callback(onJoin, "Failed to join room '" + name + "'")));
     }
 
-    protected void createRoom (final String name)
-    {
+    protected void createRoom (final String name) {
         Action<RoomObject> onCreate = new Action<RoomObject>() {
             public void onSuccess (RoomObject room) {
                 joinedRoom(room);
@@ -190,8 +185,7 @@ public class ChatPanel extends JPanel
                 callback(onCreate, "Failed to create room '" + name + "'")));
     }
 
-    protected void joinedRoom (RoomObject room)
-    {
+    protected void joinedRoom (RoomObject room) {
         if (_roomobj != null) {
             _ctx.getClient().unsubscribe(_roomobj);
         }
@@ -211,13 +205,11 @@ public class ChatPanel extends JPanel
         _entry.requestFocusInWindow();
     }
 
-    protected void feedback (String message)
-    {
+    protected void feedback (String message) {
         _chat.append(message + "\n");
     }
 
-    protected <T> Callback<T> callback (final Action<T> action, final String errpre)
-    {
+    protected <T> Callback<T> callback (final Action<T> action, final String errpre) {
         return new Callback<T>() {
             public void onSuccess (T result) {
                 action.onSuccess(result);

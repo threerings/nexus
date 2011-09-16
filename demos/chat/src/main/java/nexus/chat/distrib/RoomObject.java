@@ -18,8 +18,7 @@ public class RoomObject extends NexusObject
     implements Keyed
 {
     /** An event emitted when a chat message is sent. */
-    public static class ChatEvent implements Streamable
-    {
+    public static class ChatEvent implements Streamable {
         /** The nickname of the sender of this message. */
         public final String nickname;
 
@@ -42,20 +41,17 @@ public class RoomObject extends NexusObject
     public final DSignal<ChatEvent> chatEvent = DSignal.create();
 
     // from interface Keyed
-    public Comparable<?> getKey ()
-    {
+    public Comparable<?> getKey () {
         return name;
     }
 
-    public RoomObject (String name, DService<RoomService> roomSvc)
-    {
+    public RoomObject (String name, DService<RoomService> roomSvc) {
         this.name = name;
         this.roomSvc = roomSvc;
     }
 
     @Override
-    protected DAttribute getAttribute (int index)
-    {
+    protected DAttribute getAttribute (int index) {
         switch (index) {
         case 0: return roomSvc;
         case 1: return chatEvent;
@@ -64,8 +60,7 @@ public class RoomObject extends NexusObject
     }
 
     @Override
-    protected int getAttributeCount ()
-    {
+    protected int getAttributeCount () {
         return 2;
     }
 }

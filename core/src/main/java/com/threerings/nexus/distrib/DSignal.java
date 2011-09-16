@@ -64,8 +64,7 @@ public class DSignal<T> extends react.AbstractSignal<T>
     }
 
     /** An event emitted when an event is emitted. How meta! */
-    protected static class EmitEvent<T> extends DAttribute.Event
-    {
+    protected static class EmitEvent<T> extends DAttribute.Event {
         public EmitEvent (int targetId, short index, T event) {
             super(targetId, index);
             _event = event;

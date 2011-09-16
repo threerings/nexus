@@ -24,9 +24,7 @@ import nexus.chat.web.ChatSerializer;
  */
 public class ChatServer
 {
-    public static void main (String[] args)
-        throws IOException
-    {
+    public static void main (String[] args) throws IOException {
         Properties props = new Properties();
         props.setProperty("nexus.node", "test");
         props.setProperty("nexus.hostname", "localhost");

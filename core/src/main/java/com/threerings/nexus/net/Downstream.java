@@ -33,8 +33,7 @@ public interface Downstream extends Streamable
     }
 
     /** A successful response to a subscription request. */
-    public static class Subscribe implements Downstream
-    {
+    public static class Subscribe implements Downstream {
         /** The requested object. */
         public final NexusObject object;
 
@@ -49,8 +48,7 @@ public interface Downstream extends Streamable
     }
 
     /** A failure response to a subscription request. */
-    public static class SubscribeFailure implements Downstream
-    {
+    public static class SubscribeFailure implements Downstream {
         /** The address of the object requested. */
         public final Address<?> addr;
 
@@ -72,8 +70,7 @@ public interface Downstream extends Streamable
     }
 
     /** Notifies the client of an event originating from the server. */
-    public static class DispatchEvent implements Downstream
-    {
+    public static class DispatchEvent implements Downstream {
         /** The event to be dispatched. */
         public final NexusEvent event;
 
@@ -88,8 +85,7 @@ public interface Downstream extends Streamable
     }
 
     /** Delivers a response to a service call from the server. */
-    public static class ServiceResponse implements Downstream
-    {
+    public static class ServiceResponse implements Downstream {
         /** The id of the originating call. */
         public final int callId;
 
@@ -111,8 +107,7 @@ public interface Downstream extends Streamable
     }
 
     /** Delivers a failure response to a service call from the server. */
-    public static class ServiceFailure implements Downstream
-    {
+    public static class ServiceFailure implements Downstream {
         /** The id of the originating call. */
         public final int callId;
 

@@ -21,38 +21,32 @@ import com.threerings.nexus.distrib.NexusService;
 public abstract class AbstractSerializer implements GWTIO.Serializer
 {
     // from interface GWTIO.Serializer
-    public Class<?> getClass (short code)
-    {
+    public Class<?> getClass (short code) {
         return nonNull(_classes.get(code), "Unknown class code ", code);
     }
 
     // from interface GWTIO.Serializer
-    public Streamer<?> getStreamer (short code)
-    {
+    public Streamer<?> getStreamer (short code) {
         return nonNull(_streamers.get(code), "Unknown class code ", code);
     }
 
     // from interface GWTIO.Serializer
-    public ServiceFactory<?> getServiceFactory (short code)
-    {
+    public ServiceFactory<?> getServiceFactory (short code) {
         return nonNull(_services.get(code), "Unknown service code ", code);
     }
 
     // from interface GWTIO.Serializer
-    public short getCode (Class<?> clazz)
-    {
+    public short getCode (Class<?> clazz) {
         return nonNull(_codes.get(clazz), "Unknown streamable class ", clazz);
     }
 
     // from interface GWTIO.Serializer
-    public short getServiceCode (Class<? extends NexusService> clazz)
-    {
+    public short getServiceCode (Class<? extends NexusService> clazz) {
         return nonNull(_serviceCodes.get(clazz), "Unknown service class ", clazz);
     }
 
     // from interface GWTIO.Serializer
-    public <T> Streamer<T> writeStreamer (Streamable.Output out, T value)
-    {
+    public <T> Streamer<T> writeStreamer (Streamable.Output out, T value) {
         if (value == null) {
             return this.<T>writeClass(out, (short)0); // null streamer has code 0
         }
@@ -82,30 +76,26 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
     }
 
     @SuppressWarnings("unchecked") 
-    protected final <T> Streamer<T> writeClass (Streamable.Output out, Short code)
-    {
+    protected final <T> Streamer<T> writeClass (Streamable.Output out, Short code) {
         out.writeShort(code);
         return (Streamer<T>)_streamers.get(code);
     }
 
-    protected void mapStreamer (Streamer<?> streamer)
-    {
+    protected void mapStreamer (Streamer<?> streamer) {
         short code = (short)++_nextCode;
         _classes.put(code, streamer.getObjectClass());
         _streamers.put(code, streamer);
         _codes.put(streamer.getObjectClass(), code);
     }
 
-    protected void mapService (ServiceFactory<?> factory, Class<? extends NexusService> clazz)
-    {
+    protected void mapService (ServiceFactory<?> factory, Class<? extends NexusService> clazz) {
         short code = (short)++_nextServiceCode;
         _services.put(code, factory);
         _serviceCodes.put(clazz, code);
     }
 
     @SuppressWarnings("rawtypes")
-    protected AbstractSerializer ()
-    {
+    protected AbstractSerializer () {
         // map the streamers for our basic types
         mapStreamer(new Streamers.Streamer_Null());
         mapStreamer(new Streamers.Streamer_Boolean());
@@ -145,8 +135,7 @@ public abstract class AbstractSerializer implements GWTIO.Serializer
         // END TEMP
     }
 
-    protected static <T> T nonNull (T value, String errmsg, Object data)
-    {
+    protected static <T> T nonNull (T value, String errmsg, Object data) {
         if (value == null) throw new NexusException(errmsg + data);
         return value;
     }

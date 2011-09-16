@@ -15,8 +15,7 @@ public class UIUtil
     /**
      * Creates a text field that prefers the supplied width.
      */
-    public static JTextField newTextField (final int width)
-    {
+    public static JTextField newTextField (final int width) {
         // that this is not achievable more simply, simply boggles the mind
         return new JTextField() {
             public Dimension getPreferredSize() {

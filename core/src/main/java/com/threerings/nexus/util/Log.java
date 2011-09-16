@@ -24,8 +24,7 @@ public class Log
         /** Disables info logging, shows only warnings and above. */
         public abstract void setWarnOnly ();
 
-        protected void format (Object level, String message, Object... args)
-        {
+        protected void format (Object level, String message, Object... args) {
             StringBuilder sb = new StringBuilder();
             sb.append(message);
             if (args.length > 1) {
@@ -52,8 +51,7 @@ public class Log
 
     private Log () {} // no constructsky
 
-    protected static class JavaLogger extends Logger
-    {
+    protected static class JavaLogger extends Logger {
         public JavaLogger (String name) {
             _impl = java.util.logging.Logger.getLogger(name);
         }

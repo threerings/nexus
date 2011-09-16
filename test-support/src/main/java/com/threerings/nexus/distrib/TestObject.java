@@ -14,14 +14,12 @@ public class TestObject extends NexusObject
 
     public final DService<TestService> testsvc;
 
-    public TestObject (DService<TestService> testsvc)
-    {
+    public TestObject (DService<TestService> testsvc) {
         this.testsvc = testsvc;
     }
 
     @Override
-    protected DAttribute getAttribute (int index)
-    {
+    protected DAttribute getAttribute (int index) {
         switch (index) {
         case 0: return value;
         case 1: return testsvc;
@@ -30,8 +28,7 @@ public class TestObject extends NexusObject
     }
 
     @Override
-    protected int getAttributeCount ()
-    {
+    protected int getAttributeCount () {
         return 2;
     }
 }

@@ -32,8 +32,7 @@ public class NexusServer implements Nexus
      * @param exec the executor to use for dispatching events and actions. An executor that uses a
      * pool of threads is appropriate.
      */
-    public NexusServer (NexusConfig config, ExecutorService exec)
-    {
+    public NexusServer (NexusConfig config, ExecutorService exec) {
         _config = config;
         _omgr = new ObjectManager(config, exec);
         _smgr = new SessionManager(_omgr);
@@ -42,82 +41,69 @@ public class NexusServer implements Nexus
     /**
      * Returns the session manager used by this server.
      */
-    public SessionManager getSessionManager ()
-    {
+    public SessionManager getSessionManager () {
         return _smgr;
     }
 
     /**
      * Shuts down this server and cleans up any resources it is using.
      */
-    public void shutdown ()
-    {
+    public void shutdown () {
         _timer.cancel();
     }
 
     // from interface Nexus
-    public void register (NexusObject object)
-    {
+    public void register (NexusObject object) {
         _omgr.register(object);
     }
 
     // from interface Nexus
-    public void register (NexusObject child, Singleton parent)
-    {
+    public void register (NexusObject child, Singleton parent) {
         _omgr.register(child, parent);
     }
 
     // from interface Nexus
-    public void register (NexusObject child, Keyed parent)
-    {
+    public void register (NexusObject child, Keyed parent) {
         _omgr.register(child, parent);
     }
 
     // from interface Nexus
-    public void registerSingleton (Singleton entity)
-    {
+    public void registerSingleton (Singleton entity) {
         _omgr.registerSingleton(entity);
     }
 
     // from interface Nexus
-    public void registerSingleton (Singleton child, Singleton parent)
-    {
+    public void registerSingleton (Singleton child, Singleton parent) {
         _omgr.registerSingleton(child, parent);
     }
 
     // from interface Nexus
-    public void registerKeyed (Keyed entity)
-    {
+    public void registerKeyed (Keyed entity) {
         _omgr.registerKeyed(entity);
     }
 
     // from interface Nexus
-    public void registerKeyed (Keyed child, Keyed parent)
-    {
+    public void registerKeyed (Keyed child, Keyed parent) {
         _omgr.registerKeyed(child, parent);
     }
 
     // from interface Nexus
-    public void clear (NexusObject object)
-    {
+    public void clear (NexusObject object) {
         _omgr.clear(object);
     }
 
     // from interface Nexus
-    public void clearSingleton (Singleton entity)
-    {
+    public void clearSingleton (Singleton entity) {
         _omgr.clearSingleton(entity);
     }
 
     // from interface Nexus
-    public void clearKeyed (Keyed entity)
-    {
+    public void clearKeyed (Keyed entity) {
         _omgr.clearKeyed(entity);
     }
 
     // from interface Nexus
-    public <E, T extends Singleton> Slot<E> routed (T entity, final Slot<E> slot)
-    {
+    public <E, T extends Singleton> Slot<E> routed (T entity, final Slot<E> slot) {
         // javac isn't smart enough to know that all the T's are the same here
         @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
         return new Slot<E>() {
@@ -132,8 +118,7 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
-    public <E, T extends Keyed> Slot<E> routed (T entity, final Slot<E> slot)
-    {
+    public <E, T extends Keyed> Slot<E> routed (T entity, final Slot<E> slot) {
         // javac isn't smart enough to know that all the T's are the same here
         @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
         final Comparable<?> key = entity.getKey();
@@ -149,35 +134,30 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action)
-    {
+    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action) {
         _omgr.invoke(eclass, action);
     }
 
     // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<T> action)
-    {
+    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<T> action) {
         // TODO: determine whether the entity is local or remote
         _omgr.invoke(kclass, key, action);
     }
 
     // from interface Nexus
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request)
-    {
+    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request) {
         return _omgr.invoke(eclass, request);
     }
 
     // from interface Nexus
-    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request)
-    {
+    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request) {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
     }
 
     // from interface Nexus
     public <T extends Singleton> Deferred invokeAfter (
-        final Class<T> eclass, long delay, final Action<T> action)
-    {
+        final Class<T> eclass, long delay, final Action<T> action) {
         return schedule(new Runnable() {
             public void run () {
                 invoke(eclass, action);
@@ -187,8 +167,7 @@ public class NexusServer implements Nexus
 
     // from interface Nexus
     public <T extends Keyed> Deferred invokeAfter (
-        final Class<T> eclass, final Comparable<?> key, long delay, final Action<T> action)
-    {
+        final Class<T> eclass, final Comparable<?> key, long delay, final Action<T> action) {
         return schedule(new Runnable() {
             public void run () {
                 invoke(eclass, key, action);

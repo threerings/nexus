@@ -17,14 +17,12 @@ public class Chatter
     /** This chatter's configured nickname. */
     public String nickname;
 
-    public Chatter (Nexus nexus, String nickname)
-    {
+    public Chatter (Nexus nexus, String nickname) {
         this.nickname = nickname;
         _nexus = nexus;
     }
 
-    public void enterRoom (String name)
-    {
+    public void enterRoom (String name) {
         leaveRoom(); // leave any current room
         _name = name;
         _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {
@@ -34,8 +32,7 @@ public class Chatter
         });
     }
 
-    public void leaveRoom ()
-    {
+    public void leaveRoom () {
         if (_name != null) {
             _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {
                 public void invoke (RoomManager mgr) {
@@ -46,8 +43,7 @@ public class Chatter
         }
     }
 
-    public void updateNick (final String nickname)
-    {
+    public void updateNick (final String nickname) {
         if (_name != null) {
             final String onickname = this.nickname;
             _nexus.invoke(RoomManager.class, _name, new Action<RoomManager>() {

@@ -23,8 +23,8 @@ public class GWTConnection extends Connection
      * Creates an instance which will initiate a Nexus protocol connection with the specified host.
      * @param callback will be notified on connection completion, or failure.
      */
-    public GWTConnection (String host, int port, GWTIO.Serializer szer, Callback<Connection> callback)
-    {
+    public GWTConnection (String host, int port, GWTIO.Serializer szer,
+                          Callback<Connection> callback) {
         super(host);
         _szer = szer;
         _callback = callback;
@@ -32,40 +32,34 @@ public class GWTConnection extends Connection
     }
 
     @Override // from Connection
-    public void close ()
-    {
+    public void close () {
         wsClose(_ws);
     }
 
     @Override // from Connection
-    protected void send (Upstream request)
-    {
+    protected void send (Upstream request) {
         StringBuffer payload = new StringBuffer();
         GWTIO.newOutput(_szer, payload).writeValue(request);
         wsSend(_ws, payload.toString());
     }
 
     @Override // from Connection
-    protected void dispatch (Runnable run)
-    {
+    protected void dispatch (Runnable run) {
         // we have no threads in the browser, so we run things directly
         run.run();
     }
 
-    protected void onOpen (JavaScriptObject ws)
-    {
+    protected void onOpen (JavaScriptObject ws) {
         _ws = ws;
         _callback.onSuccess(this);
         _callback = null; // note that we successfully connected
     }
 
-    protected void onMessage (String data)
-    {
+    protected void onMessage (String data) {
         onReceive(GWTIO.newInput(_szer, data).<Downstream>readValue());
     }
 
-    protected void onError (String reason)
-    {
+    protected void onError (String reason) {
         if (_callback != null) {
             // if we were trying to connect, report to our listener that connection failed
             _callback.onFailure(new NexusException(reason));
@@ -75,8 +69,7 @@ public class GWTConnection extends Connection
         }
     }
 
-    protected void onClose ()
-    {
+    protected void onClose () {
         // TODO: notify someone?
     }
 

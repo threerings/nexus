@@ -53,8 +53,7 @@ public class DValue<T> extends react.Value<T> implements DAttribute
     }
 
     /** An event emitted when a value changes. */
-    protected static class ChangeEvent<T> extends DAttribute.Event
-    {
+    protected static class ChangeEvent<T> extends DAttribute.Event {
         public T oldValue = DistribUtil.<T>sentinelValue();
 
         public ChangeEvent (int targetId, short index, T value) {

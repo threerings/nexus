@@ -14,8 +14,7 @@ import com.threerings.nexus.distrib.NexusService;
  */
 class ClientInput extends Streamable.Input
 {
-    public ClientInput (GWTIO.Serializer szer, String data)
-    {
+    public ClientInput (GWTIO.Serializer szer, String data) {
         _szer = szer;
         _values = decode(data);
     }
@@ -75,20 +74,17 @@ class ClientInput extends Streamable.Input
             this.@com.threerings.nexus.io.ClientInput::_nextValIdx++];
     }-*/;
 
-    @Override public <T extends Streamable> Class<T> readClass ()
-    {
+    @Override public <T extends Streamable> Class<T> readClass () {
         @SuppressWarnings("unchecked") Class<T> clazz = (Class<T>)_szer.getClass(readShort());
         return clazz;
     }
 
-    @Override protected <T> Streamer<T> readStreamer ()
-    {
+    @Override protected <T> Streamer<T> readStreamer () {
         @SuppressWarnings("unchecked") Streamer<T> ts = (Streamer<T>)_szer.getStreamer(readShort());
         return ts;
     }
 
-    @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory ()
-    {
+    @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory () {
         @SuppressWarnings("unchecked") ServiceFactory<T> factory =
             (ServiceFactory<T>)_szer.getServiceFactory(readShort());
         return factory;

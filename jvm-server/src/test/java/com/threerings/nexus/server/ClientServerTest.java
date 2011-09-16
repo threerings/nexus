@@ -69,9 +69,7 @@ public class ClientServerTest
     }
 
     @Test
-    public void testSubscribeAndAttrChange ()
-        throws IOException
-    {
+    public void testSubscribeAndAttrChange () throws IOException {
         runTest(new TestAction() {
             public void onInit () {
                 _test.value.update("bob");
@@ -101,9 +99,7 @@ public class ClientServerTest
     }
 
     @Test
-    public void testServiceCall ()
-        throws IOException
-    {
+    public void testServiceCall () throws IOException {
         runTest(new TestAction() {
             public void onSubscribe (TestObject test) {
                 // call our test service
@@ -120,9 +116,7 @@ public class ClientServerTest
         });
     }
 
-    protected void runTest (final TestAction action)
-        throws IOException
-    {
+    protected void runTest (final TestAction action) throws IOException {
         // create a server with a thread pool
         NexusConfig config = TestUtil.createTestConfig();
         ExecutorService exec = Executors.newFixedThreadPool(3);

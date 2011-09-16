@@ -17,55 +17,45 @@ class ClientOutput extends Streamable.Output
     /** The character used to separate values in an encoded payload. */
     public static final char SEPARATOR = '|';
 
-    public ClientOutput (GWTIO.Serializer szer, StringBuffer output)
-    {
+    public ClientOutput (GWTIO.Serializer szer, StringBuffer output) {
         _szer = szer;
         _output = output;
     }
 
-    @Override public void writeBoolean (boolean value)
-    {
+    @Override public void writeBoolean (boolean value) {
         append(value ? "1" : "0");
     }
 
-    @Override public void writeByte (byte value)
-    {
+    @Override public void writeByte (byte value) {
         append(String.valueOf(value));
     }
 
-    @Override public void writeShort (short value)
-    {
+    @Override public void writeShort (short value) {
         append(String.valueOf(value));
     }
 
-    @Override public void writeChar (char value)
-    {
+    @Override public void writeChar (char value) {
         // use an int, to avoid having to cope with escaping things
         writeInt((int)value);
     }
 
-    @Override public void writeInt (int value)
-    {
+    @Override public void writeInt (int value) {
         append(String.valueOf(value));
     }
 
-    @Override public void writeLong (long value)
-    {
+    @Override public void writeLong (long value) {
         append(LongLib.toBase64(value));
     }
 
-    @Override public void writeFloat (float value)
-    {
+    @Override public void writeFloat (float value) {
         writeDouble(value);
     }
 
-    @Override public void writeDouble (double value)
-    {
+    @Override public void writeDouble (double value) {
         append(String.valueOf(value));
     }
 
-    @Override public void writeString (String value)
-    {
+    @Override public void writeString (String value) {
         if (value == null) {
             writeBoolean(false);
         } else {
@@ -74,28 +64,23 @@ class ClientOutput extends Streamable.Output
         }
     }
 
-    @Override public void writeClass (Class<? extends Streamable> clazz)
-    {
+    @Override public void writeClass (Class<? extends Streamable> clazz) {
         writeShort(_szer.getCode(clazz));
     }
 
-    @Override public void writeService (DService<?> service)
-    {
+    @Override public void writeService (DService<?> service) {
         writeShort(_szer.getServiceCode(service.getServiceClass()));
     }
 
-    @Override protected <T> Streamer<T> writeStreamer (T value)
-    {
+    @Override protected <T> Streamer<T> writeStreamer (T value) {
         return _szer.<T>writeStreamer(this, value);
     }
 
-    protected String quoteString (String value)
-    {
+    protected String quoteString (String value) {
         return value; // TODO
     }
 
-    protected void append (String token)
-    {
+    protected void append (String token) {
         _output.append(token);
         _output.append(SEPARATOR);
     }

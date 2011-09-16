@@ -29,14 +29,12 @@ import static com.threerings.nexus.util.Log.log;
 public class JVMServerConnection
     implements JVMConnectionManager.IOHandler, SessionManager.Output
 {
-    public JVMServerConnection (JVMConnectionManager cmgr, SocketChannel chan)
-    {
+    public JVMServerConnection (JVMConnectionManager cmgr, SocketChannel chan) {
         _cmgr = cmgr;
         _chan = chan;
     }
 
-    public void setSession (SessionManager.Input input)
-    {
+    public void setSession (SessionManager.Input input) {
         _input = input;
     }
 
@@ -44,8 +42,7 @@ public class JVMServerConnection
      * Called by the connection manager I/O writer thread to instruct this connection to write its
      * pending outgoing messages.
      */
-    public void writeMessages ()
-    {
+    public void writeMessages () {
         try {
             ByteBuffer frame;
             while ((frame = _outq.peek()) != null) {
@@ -74,8 +71,7 @@ public class JVMServerConnection
     }
     
     // from interface SessionManager.Output
-    public synchronized void send (Downstream msg)
-    {
+    public synchronized void send (Downstream msg) {
         // we may be called from many threads, this method is serialized to avoid conflicting
         // accesses to the output streams
         _fout.prepareFrame();
@@ -96,14 +92,12 @@ public class JVMServerConnection
     }
 
     // from interface SessionManager.Output
-    public void disconnect ()
-    {
+    public void disconnect () {
         // TODO: shutdown the socket and see what happens?
     }
 
     // from interface JVMConnectionManager.IOHandler
-    public void handleIO ()
-    {
+    public void handleIO () {
         try {
             // keep reading and processing frames while we have them
             ByteBuffer frame;
@@ -126,8 +120,7 @@ public class JVMServerConnection
         }
     }
 
-    protected void onClose (IOException cause)
-    {
+    protected void onClose (IOException cause) {
         if (_chan == null) return; // no double closeage
         try {
             _chan.close();

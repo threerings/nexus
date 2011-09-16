@@ -42,14 +42,12 @@ public class ObjectManager
     implements EventSink
 {
     /** An interface implemented by sessions, which must forward object events to clients. */
-    public interface Subscriber
-    {
+    public interface Subscriber {
         /** Notifies the subscriber of an event which must be forwarded. */
         void forwardEvent (NexusEvent event);
     }
 
-    public ObjectManager (NexusConfig config, Executor exec)
-    {
+    public ObjectManager (NexusConfig config, Executor exec) {
         _config = config;
         _exec = exec;
     }
@@ -57,16 +55,14 @@ public class ObjectManager
     /**
      * Registers the supplied object in its own context.
      */
-    public void register (NexusObject object)
-    {
+    public void register (NexusObject object) {
         register(object, new EntityContext(_exec));
     }
 
     /**
      * Registers the supplied object in the context of its parent.
      */
-    public void register (NexusObject child, Singleton parent)
-    {
+    public void register (NexusObject child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
             parent.getClass(), "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
@@ -75,8 +71,7 @@ public class ObjectManager
     /**
      * Registers the supplied object in the context of its parent.
      */
-    public void register (NexusObject child, Keyed parent)
-    {
+    public void register (NexusObject child, Keyed parent) {
         Binding<Keyed> pbind = requireKeyed(
             parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
         register(child, pbind.context);
@@ -87,16 +82,14 @@ public class ObjectManager
      *
      * @throws NexusException if an entity is already mapped for this singleton type.
      */
-    public void registerSingleton (Singleton entity)
-    {
+    public void registerSingleton (Singleton entity) {
         register(entity, new EntityContext(_exec));
     }
 
     /**
      * Registers the supplied singleton in the context of its parent.
      */
-    public void registerSingleton (Singleton child, Singleton parent)
-    {
+    public void registerSingleton (Singleton child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
             parent.getClass(), "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
@@ -107,16 +100,14 @@ public class ObjectManager
      *
      * @throws NexusException if an entity is already mapped with the entity's key.
      */
-    public void registerKeyed (Keyed entity)
-    {
+    public void registerKeyed (Keyed entity) {
         register(entity, new EntityContext(_exec));
     }
 
     /**
      * Registers the supplied keyed entity in the context of its parent.
      */
-    public void registerKeyed (Keyed child, Keyed parent)
-    {
+    public void registerKeyed (Keyed child, Keyed parent) {
         Binding<Keyed> pbind = requireKeyed(
             parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
         register(child, pbind.context);
@@ -125,8 +116,7 @@ public class ObjectManager
     /**
      * Returns true if we host the specified keyed entity, false if not.
      */
-    public boolean hostsKeyed (Class<?> eclass, Comparable<?> key)
-    {
+    public boolean hostsKeyed (Class<?> eclass, Comparable<?> key) {
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(eclass);
         return (emap == null) ? false : emap.containsKey(key);
     }
@@ -134,8 +124,7 @@ public class ObjectManager
     /**
      * Clears an anonymous or child object registration.
      */
-    public void clear (NexusObject object)
-    {
+    public void clear (NexusObject object) {
         final int id = object.getId();
         Binding<NexusObject> bind = _objects.get(id);
         if (bind == null) {
@@ -162,8 +151,7 @@ public class ObjectManager
      * Clears a singleton entity registration. If the entity is also a {@link NexusObject} its
      * object registration is also cleared.
      */
-    public void clearSingleton (Singleton entity)
-    {
+    public void clearSingleton (Singleton entity) {
         if (_singletons.remove(entity.getClass()) == null) {
             log.warning("Requested to clear unknown singleton", "class", entity.getClass());
         }
@@ -176,8 +164,7 @@ public class ObjectManager
      * Clears a keyed entity registration. If the entity is also a {@link NexusObject} its object
      * registration is also cleared.
      */
-    public void clearKeyed (Keyed entity)
-    {
+    public void clearKeyed (Keyed entity) {
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(entity.getClass());
         if (emap.remove(entity.getKey()) == null) {
             log.warning("Requested to clear unknown keyed entity",
@@ -193,8 +180,7 @@ public class ObjectManager
      *
      * @throws NexusException if no singleton instance is registered for the specified type.
      */
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action)
-    {
+    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action) {
         invoke(requireSingleton(eclass, "No singleton registered for"), action);
     }
 
@@ -202,8 +188,7 @@ public class ObjectManager
      * Invokes the supplied action on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised.
      */
-    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<T> action)
-    {
+    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<T> action) {
         invoke(requireKeyed(eclass, key, "No singleton registered for"), action);
     }
 
@@ -213,8 +198,7 @@ public class ObjectManager
      *
      * @throws NexusException wrapping any exception thrown by the request.
      */
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request)
-    {
+    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request) {
         return invoke(requireSingleton(eclass, "No singleton registered for"), request);
     }
 
@@ -222,16 +206,14 @@ public class ObjectManager
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised. The caller will block until the request is processed.
      */
-    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<T,R> request)
-    {
+    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<T,R> request) {
         return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 
     /**
      * Invokes an action on the supplied target object, if it exists.
      */
-    public void invoke (int id, Action<NexusObject> action)
-    {
+    public void invoke (int id, Action<NexusObject> action) {
         invoke(requireObject(id, "No object registered with id "), action);
     }
 
@@ -242,8 +224,7 @@ public class ObjectManager
      * @throws NexusException if the requested object does not exist, or if the instance registered
      * at the address is not a NexusObject, or if the request fails due to access control.
      */
-    public <T extends NexusObject> T addSubscriber (Address<T> addr, Subscriber sub)
-    {
+    public <T extends NexusObject> T addSubscriber (Address<T> addr, Subscriber sub) {
         Binding<?> bind;
         if (addr instanceof Address.OfKeyed) {
             Address.OfKeyed<?> kaddr = (Address.OfKeyed<?>)addr;
@@ -271,8 +252,7 @@ public class ObjectManager
     /**
      * Requests that the supplied subscriber be removed from the object with the specified id.
      */
-    public void clearSubscriber (int id, Subscriber sub)
-    {
+    public void clearSubscriber (int id, Subscriber sub) {
         Set<Subscriber> subs;
         synchronized (_subscribers) {
             subs = _subscribers.get(id);
@@ -288,8 +268,7 @@ public class ObjectManager
      * Dispatches the supplied event to the appropriate object, on the appropriate thread.
      * @param source the session from which the event originated, or null.
      */
-    public void dispatchEvent (final NexusEvent event, final Session source)
-    {
+    public void dispatchEvent (final NexusEvent event, final Session source) {
         final Set<Subscriber> subs;
         synchronized (_subscribers) {
             subs = _subscribers.get(event.targetId);
@@ -323,8 +302,7 @@ public class ObjectManager
      * @param source the session from which the call originated, or null.
      */
     public void dispatchCall (int objId, final short attrIdx, final short methId,
-                              final Object[] args, final Session source)
-    {
+                              final Object[] args, final Session source) {
         invoke(objId, new Action<NexusObject>() {
             public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
@@ -341,34 +319,29 @@ public class ObjectManager
     }
 
     // from interface EventSink
-    public void postEvent (NexusEvent event)
-    {
+    public void postEvent (NexusEvent event) {
         // events that originate on the server are dispatched directly
         dispatchEvent(event, null);
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIdx, short methId, Object[] args)
-    {
+    public void postCall (NexusObject source, short attrIdx, short methId, Object[] args) {
         // calls that originate on the server are dispatched directly
         dispatchCall(source.getId(), attrIdx, methId, args, null);
     }
 
     // from interface EventSink
-    public String getHost ()
-    {
+    public String getHost () {
         return _config.publicHostname;
     }
 
     // from interface EventSink
-    public void postEvent (NexusObject source, final NexusEvent event)
-    {
+    public void postEvent (NexusObject source, final NexusEvent event) {
         // TODO: fancy aggregation using thread-local accumulators
         postEvent(event);
     }
 
-    protected void register (Singleton entity, EntityContext ctx)
-    {
+    protected void register (Singleton entity, EntityContext ctx) {
         Binding<Singleton> bind = new Binding<Singleton>(entity, ctx);
         Class<?> sclass = entity.getClass();
         if (_singletons.putIfAbsent(sclass, bind) != null) {
@@ -382,8 +355,7 @@ public class ObjectManager
         }
     }
 
-    protected void register (Keyed entity, EntityContext ctx)
-    {
+    protected void register (Keyed entity, EntityContext ctx) {
         // TODO: ensure that the key class is non-null and a legal streamable type
         Class<?> kclass = entity.getClass();
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
@@ -411,15 +383,13 @@ public class ObjectManager
         // TODO: report to the PeerManager that we host this keyed entity
     }
 
-    protected void register (NexusObject object, EntityContext ctx)
-    {
+    protected void register (NexusObject object, EntityContext ctx) {
         int id = getNextObjectId();
         DistribUtil.init(object, id, this);
         _objects.put(id, new Binding<NexusObject>(object, ctx));
     }
 
-    protected Binding<Singleton> requireSingleton (Class<?> eclass, String errmsg)
-    {
+    protected Binding<Singleton> requireSingleton (Class<?> eclass, String errmsg) {
         Binding<Singleton> bind = _singletons.get(eclass);
         if (bind == null) {
             throw new NexusException(errmsg + " " + eclass.getName());
@@ -427,8 +397,7 @@ public class ObjectManager
         return bind;
     }
 
-    protected Binding<Keyed> requireKeyed (Class<?> eclass, Comparable<?> key, String errmsg)
-    {
+    protected Binding<Keyed> requireKeyed (Class<?> eclass, Comparable<?> key, String errmsg) {
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(eclass);
         if (emap == null) {
             throw new NexusException(errmsg + " " + eclass + ":" + key);
@@ -440,8 +409,7 @@ public class ObjectManager
         return bind;
     }
 
-    protected Binding<NexusObject> requireObject (int id, String errmsg)
-    {
+    protected Binding<NexusObject> requireObject (int id, String errmsg) {
         Binding<NexusObject> bind = _objects.get(id);
         if (bind == null) {
             throw new NexusException(errmsg + id);
@@ -449,8 +417,7 @@ public class ObjectManager
         return bind;
     }
 
-    protected <T> void invoke (Binding<?> bind, final Action<T> action)
-    {
+    protected <T> void invoke (Binding<?> bind, final Action<T> action) {
         @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
         bind.context.postOp(new Runnable() {
             public void run () {
@@ -459,8 +426,7 @@ public class ObjectManager
         });
     }
 
-    protected <T,R> R invoke (Binding<?> bind, final Request<T,R> request)
-    {
+    protected <T,R> R invoke (Binding<?> bind, final Request<T,R> request) {
         @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
 
         // post the request execution as a future task
@@ -482,8 +448,7 @@ public class ObjectManager
         }
     }
 
-    protected Set<Subscriber> getSubscriberSet (int targetId)
-    {
+    protected Set<Subscriber> getSubscriberSet (int targetId) {
         synchronized (_subscribers) {
             Set<Subscriber> subs = _subscribers.get(targetId);
             if (subs == null) {
@@ -494,8 +459,7 @@ public class ObjectManager
         }
     }
 
-    protected final synchronized int getNextObjectId ()
-    {
+    protected final synchronized int getNextObjectId () {
         // look for the next unused oid; if we had two billion objects, this would loop infinitely,
         // but the world will come to an end long before we have two billion objects
         do {
@@ -527,7 +491,8 @@ public class ObjectManager
     protected final ConcurrentMap<Integer,Binding<NexusObject>> _objects = Maps.newConcurrentMap();
 
     /** A mapping of all singleton entities hosted on this server. */
-    protected final ConcurrentMap<Class<?>,Binding<Singleton>> _singletons = Maps.newConcurrentMap();
+    protected final ConcurrentMap<Class<?>,Binding<Singleton>> _singletons =
+        Maps.newConcurrentMap();
 
     /** A mapping of all keyed entities hosted on this server. */
     protected final ConcurrentMap<Class<?>,ConcurrentMap<Comparable<?>,Binding<Keyed>>> _keyeds =

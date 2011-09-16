@@ -16,8 +16,7 @@ public class SessionLocal
      * attribute is currently configured for the supplied key.
      * @throws IllegalStateException if there is no current session.
      */
-    public static <T> T get (Class<T> key)
-    {
+    public static <T> T get (Class<T> key) {
         return requireSession().getLocal(key);
     }
 
@@ -26,8 +25,7 @@ public class SessionLocal
      * @return the previously configured value for that key. (TODO: reject overwrites instead?)
      * @throws IllegalStateException if there is no current session.
      */
-    public static <T> T set (Class<T> key, T value)
-    {
+    public static <T> T set (Class<T> key, T value) {
         return requireSession().setLocal(key, value);
     }
 
@@ -35,8 +33,7 @@ public class SessionLocal
      * Returns the current thread-local session.
      * @throws IllegalStateException if there is no current session.
      */
-    public static Session requireSession ()
-    {
+    public static Session requireSession () {
         Session session = getSession();
         if (session == null) {
             throw new IllegalStateException("No current session.");
@@ -48,8 +45,7 @@ public class SessionLocal
      * Returns the current thread-local session, or null if the current thread is not processing a
      * request that originated from a session.
      */
-    public static Session getSession ()
-    {
+    public static Session getSession () {
         return _currentSession.get();
     }
 
@@ -57,8 +53,7 @@ public class SessionLocal
      * Marks this session as the current session for the current thread. This should be called in a
      * try/finally clause, with the finally clause calling {@link #clearCurrent}.
      */
-    protected static void setCurrent (Session current)
-    {
+    protected static void setCurrent (Session current) {
         _currentSession.set(current);
     }
 
@@ -66,8 +61,7 @@ public class SessionLocal
      * Clears the configured current session. This should be called in a try/finally clause with
      * {@link #setCurrent}.
      */
-    protected static void clearCurrent ()
-    {
+    protected static void clearCurrent () {
         _currentSession.set(null);
     }
 

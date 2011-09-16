@@ -36,16 +36,14 @@ public class Widget implements Streamable
     public final Color color;
     public final String name;
 
-    public Widget (Color color, String name, Wangle wangle)
-    {
+    public Widget (Color color, String name, Wangle wangle) {
         this.color = color;
         this.name = name;
         _wangle = wangle;
     }
 
     @Override
-    public boolean equals (Object other)
-    {
+    public boolean equals (Object other) {
         if (!(other instanceof Widget)) {
             return false;
         }

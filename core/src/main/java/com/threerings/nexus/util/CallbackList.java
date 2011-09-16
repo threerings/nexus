@@ -16,8 +16,7 @@ public class CallbackList<T> implements Callback<T>
     /**
      * Creates a callback list, populated with the supplied callback.
      */
-    public static <T> CallbackList<T> create (Callback<T> callback)
-    {
+    public static <T> CallbackList<T> create (Callback<T> callback) {
         CallbackList<T> list = new CallbackList<T>();
         list.add(callback);
         return list;
@@ -28,8 +27,7 @@ public class CallbackList<T> implements Callback<T>
      *
      * @throws IllegalStateException if this callback has already fired.
      */
-    public void add (Callback<T> callback)
-    {
+    public void add (Callback<T> callback) {
         checkState();
         _callbacks.add(callback);
     }
@@ -39,42 +37,36 @@ public class CallbackList<T> implements Callback<T>
      *
      * @throws IllegalStateException if this callback has already fired.
      */
-    public void remove (Callback<T> callback)
-    {
+    public void remove (Callback<T> callback) {
         checkState();
         _callbacks.remove(callback);
     }
 
     // from interface Callback
-    public void onSuccess (T result)
-    {
+    public void onSuccess (T result) {
         propagateSuccess(result);
     }
 
     // from interface Callback
-    public void onFailure (Throwable cause)
-    {
+    public void onFailure (Throwable cause) {
         propagateFailure(cause);
     }
 
-    protected void propagateSuccess (T result)
-    {
+    protected void propagateSuccess (T result) {
         for (Callback<T> cb : _callbacks) {
             cb.onSuccess(result);
         }
         _callbacks = null; // note that we've fired
     }
 
-    protected void propagateFailure (Throwable cause)
-    {
+    protected void propagateFailure (Throwable cause) {
         for (Callback<T> cb : _callbacks) {
             cb.onFailure(cause);
         }
         _callbacks = null; // note that we've fired
     }
 
-    protected void checkState ()
-    {
+    protected void checkState () {
         if (_callbacks == null) {
             throw new IllegalStateException("CallbackList has already fired.");
         }

@@ -17,16 +17,14 @@ public abstract class NexusObject
     /**
      * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.
      */
-    public int getId ()
-    {
+    public int getId () {
         return _id;
     }
 
     /**
      * Returns the address of this object.
      */
-    public Address<?> getAddress ()
-    {
+    public Address<?> getAddress () {
         if (this instanceof Keyed) {
             @SuppressWarnings("unchecked") Class<DummyKeyed> clz = (Class<DummyKeyed>)getClass();
             return Address.create(_sink.getHost(), clz, ((Keyed)this).getKey());
@@ -41,8 +39,7 @@ public abstract class NexusObject
     /**
      * Reads the contents of this object from the supplied input.
      */
-    public void readContents (Streamable.Input in)
-    {
+    public void readContents (Streamable.Input in) {
         _id = in.readInt();
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).readContents(in);
@@ -52,8 +49,7 @@ public abstract class NexusObject
     /**
      * Writes the contents of this object to the supplied output.
      */
-    public void writeContents (Streamable.Output out)
-    {
+    public void writeContents (Streamable.Output out) {
         out.writeInt(_id);
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
             getAttribute(ii).writeContents(out);
@@ -61,8 +57,7 @@ public abstract class NexusObject
     }
 
     @Override // from NexusService.ObjectResponse
-    public NexusObject[] getObjects ()
-    {
+    public NexusObject[] getObjects () {
         return new NexusObject[] { this };
     }
 
@@ -72,8 +67,7 @@ public abstract class NexusObject
      * dispatcher on its originating server, and when it is read off the network on a subscribing
      * client (though in this latter case the id is not changed).
      */
-    protected void init (int id, EventSink sink)
-    {
+    protected void init (int id, EventSink sink) {
         _id = id;
         _sink = sink;
         for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
@@ -85,8 +79,7 @@ public abstract class NexusObject
      * Clears out this object's distributed id and event sink. Called by the object manager when
      * this object is unregistered.
      */
-    protected void clear ()
-    {
+    protected void clear () {
         _id = 0;
         _sink = null;
     }
@@ -96,8 +89,7 @@ public abstract class NexusObject
      *
      * @exception IndexOutOfBoundsException if an attribute at illegal index is requested.
      */
-    protected DAttribute getAttribute (int index)
-    {
+    protected DAttribute getAttribute (int index) {
         throw new IndexOutOfBoundsException("Invalid attribute index " + index);
     }
 
@@ -105,16 +97,14 @@ public abstract class NexusObject
      * Returns the number of attributes owned by this object. Values from 0 to {@link
      * #getAttributeCount}-1 may be legally passed to {@link #getAttribute}.
      */
-    protected int getAttributeCount ()
-    {
+    protected int getAttributeCount () {
         return 0;
     }
 
     /**
      * Requests that the supplied event be posted to this object.
      */
-    protected void postEvent (NexusEvent event)
-    {
+    protected void postEvent (NexusEvent event) {
         if (_id > 0) {
             assert(event.targetId == getId());
             _sink.postEvent(this, event);
@@ -127,8 +117,7 @@ public abstract class NexusObject
     /**
      * Requests that a service call be posted to this object.
      */
-    protected void postCall (short attrIndex, short methodId, Object[] args)
-    {
+    protected void postCall (short attrIndex, short methodId, Object[] args) {
         _sink.postCall(this, attrIndex, methodId, args);
     }
 

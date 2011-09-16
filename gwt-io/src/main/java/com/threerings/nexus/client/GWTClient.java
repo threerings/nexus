@@ -22,20 +22,17 @@ public class GWTClient extends NexusClient
      * @param port the port on which to make WebSocket connections.
      * @param szer the serializer that knows about all types that will cross the wire.
      */
-    public static NexusClient create (int port, GWTIO.Serializer szer)
-    {
+    public static NexusClient create (int port, GWTIO.Serializer szer) {
         Log.log = GWT_LOGGER; // configure the logger to use GWT
         return new GWTClient(port, szer);
     }
 
-    protected GWTClient (int port, GWTIO.Serializer szer)
-    {
+    protected GWTClient (int port, GWTIO.Serializer szer) {
         _port = port;
         _szer = szer;
     }
 
-    protected void connect (String host, Callback<Connection> callback)
-    {
+    protected void connect (String host, Callback<Connection> callback) {
         new GWTConnection(host, _port, _szer, callback);
     }
 

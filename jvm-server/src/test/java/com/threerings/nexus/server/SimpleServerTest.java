@@ -28,8 +28,7 @@ public class SimpleServerTest
     }
 
     @Test
-    public void testStartupShutdown ()
-    {
+    public void testStartupShutdown () {
         // create a server with a thread pool
         NexusConfig config = TestUtil.createTestConfig();
         final ExecutorService exec = Executors.newFixedThreadPool(3);
@@ -47,9 +46,7 @@ public class SimpleServerTest
     }
 
     @Test
-    public void testStartupShutdownWithConMgr ()
-        throws IOException
-    {
+    public void testStartupShutdownWithConMgr () throws IOException {
         // create a server with a thread pool
         NexusConfig config = TestUtil.createTestConfig();
         final ExecutorService exec = Executors.newFixedThreadPool(3);
@@ -78,8 +75,7 @@ public class SimpleServerTest
         TestUtil.awaitTermination(exec);
     }
 
-    protected void testEventDispatchAndShutdown (NexusServer server, final Runnable onComplete)
-    {
+    protected void testEventDispatchAndShutdown (NexusServer server, final Runnable onComplete) {
         TestObject test = new TestObject(TestUtil.createTestServiceAttr());
         server.registerSingleton(test);
 

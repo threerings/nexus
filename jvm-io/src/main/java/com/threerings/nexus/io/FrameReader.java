@@ -24,9 +24,7 @@ public class FrameReader
      * @throws IOException if an error occurs reading from the underlying channel.
      * @throws EOFException if EOF is reported while attempting to read a frame.
      */
-    public ByteBuffer readFrame (ReadableByteChannel source)
-        throws IOException
-    {
+    public ByteBuffer readFrame (ReadableByteChannel source) throws IOException {
         // flush data from any previous frame from the buffer
         if (_buffer.limit() == _length) {
             // this will remove the old frame's bytes from the buffer, shift our old data to the
@@ -89,8 +87,7 @@ public class FrameReader
      * Decodes and returns the length of the current frame from the buffer, if possible. Returns -1
      * otherwise.
      */
-    protected final int decodeLength ()
-    {
+    protected final int decodeLength () {
         // if we don't have enough bytes to determine our frame size, stop here and let the caller
         // know that we're not ready
         return (_have < HEADER_SIZE) ? -1 : _buffer.getInt(0);
@@ -100,8 +97,7 @@ public class FrameReader
      * Returns a buffer that acts as a view of our frame data, if a complete frame is in the
      * buffer, null otherwise.
      */
-    protected final ByteBuffer checkForCompleteFrame ()
-    {
+    protected final ByteBuffer checkForCompleteFrame () {
         if (_length == -1 || _have < _length) {
             return null;
         }

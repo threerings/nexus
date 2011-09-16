@@ -17,8 +17,7 @@ import static org.junit.Assert.*;
 public class ServerInputTest
 {
     @Test
-    public void testBasicTypes ()
-    {
+    public void testBasicTypes () {
         final String PAYLOAD =
             "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
             "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
@@ -52,8 +51,7 @@ public class ServerInputTest
     }
 
     @Test
-    public void testValueInput ()
-    {
+    public void testValueInput () {
         final String PAYLOAD = "31|1|RED|1|foo|33|42|31|1|GREEN|1|bar|33|21|31|1|BLUE|1|baz|33|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         for (Widget w : Widget.WS) {
@@ -62,8 +60,7 @@ public class ServerInputTest
     }
 
     @Test
-    public void testValuesInput ()
-    {
+    public void testValuesInput () {
         final String PAYLOAD = "3|31|1|RED|1|foo|33|42|1|GREEN|1|bar|33|21|1|BLUE|1|baz|33|7|";
         Streamable.Input in = GWTServerIO.newInput(new TestSerializer(), PAYLOAD);
         List<Widget> into = new ArrayList<Widget>();

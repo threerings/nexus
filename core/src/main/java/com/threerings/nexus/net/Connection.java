@@ -31,8 +31,7 @@ public abstract class Connection
      * Requests to subscribe to the specified Nexus object. Success (i.e. the object) or failure
      * will be communicated via the supplied callback.
      */
-    public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb)
-    {
+    public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb) {
         if (!_penders.addPender(addr, cb)) {
             send(new Upstream.Subscribe(addr));
         }
@@ -41,8 +40,7 @@ public abstract class Connection
     /**
      * Requests to unsubscribe from the specified Nexus object.
      */
-    public void unsubscribe (NexusObject object)
-    {
+    public void unsubscribe (NexusObject object) {
         if (_objects.remove(object.getId()) == null) {
             log.warning("Requested to unsubscribe from unknown object", "id", object.getId());
             return;
@@ -62,20 +60,17 @@ public abstract class Connection
     public abstract void close ();
 
     // from interface EventSink
-    public String getHost ()
-    {
+    public String getHost () {
         return _host;
     }
 
     // from interface EventSink
-    public void postEvent (NexusObject source, NexusEvent event)
-    {
+    public void postEvent (NexusObject source, NexusEvent event) {
         send(new Upstream.PostEvent(event));
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
-    {
+    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args) {
         // determine whether we have a callback (which the service generator code will enforce is
         // always the final argument of the method)
         int callId, lastIdx = args.length-1;
@@ -96,8 +91,7 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onSubscribe (Downstream.Subscribe msg)
-    {
+    public void onSubscribe (Downstream.Subscribe msg) {
         // let this object know that we are its event sink
         DistribUtil.init(msg.object, msg.object.getId(), this);
         // the above must precede this call, as obtaining the object's address requires that the
@@ -122,8 +116,7 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onSubscribeFailure (Downstream.SubscribeFailure msg)
-    {
+    public void onSubscribeFailure (Downstream.SubscribeFailure msg) {
         List<Callback<?>> penders = _penders.getPenders(msg.addr);
         if (penders == null) {
             log.warning("Missing pender list", "addr", msg.addr);
@@ -136,8 +129,7 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onDispatchEvent (final Downstream.DispatchEvent msg)
-    {
+    public void onDispatchEvent (final Downstream.DispatchEvent msg) {
         final NexusObject target = _objects.get(msg.event.targetId);
         if (target == null) {
             log.warning("Missing target of event", "event", msg.event);
@@ -147,8 +139,7 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onServiceResponse (Downstream.ServiceResponse msg)
-    {
+    public void onServiceResponse (Downstream.ServiceResponse msg) {
         Callback<?> callback = _calls.remove(msg.callId);
         if (callback == null) {
             log.warning("Received service response for unknown call", "msg", msg);
@@ -169,8 +160,7 @@ public abstract class Connection
     }
 
     // from interface Downstream.Handler
-    public void onServiceFailure (Downstream.ServiceFailure msg)
-    {
+    public void onServiceFailure (Downstream.ServiceFailure msg) {
         Callback<?> callback = _calls.remove(msg.callId);
         if (callback == null) {
             log.warning("Received service failure for unknown call", "msg", msg);
@@ -183,8 +173,7 @@ public abstract class Connection
         }
     }
 
-    protected Connection (String host)
-    {
+    protected Connection (String host) {
         _host = host;
     }
 
@@ -202,8 +191,7 @@ public abstract class Connection
     /**
      * Called when a message is received from the server.
      */
-    protected void onReceive (final Downstream message)
-    {
+    protected void onReceive (final Downstream message) {
         log.info("Received "+ message);
         dispatch(new Runnable() {
             public void run () {
@@ -213,8 +201,7 @@ public abstract class Connection
     }
 
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
-    protected static class PenderMap
-    {
+    protected static class PenderMap {
         public synchronized boolean addPender (Address<?> addr, Callback<?> cb) {
             boolean wasPending = true;
             List<Callback<?>> penders = _penders.get(addr);

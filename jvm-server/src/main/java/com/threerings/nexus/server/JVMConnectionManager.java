@@ -31,9 +31,7 @@ public class JVMConnectionManager
      * Creates a connection manager that will listen for connections on the specified host/port
      * combination and establish sessions with the supplied session manager.
      */
-    public JVMConnectionManager (SessionManager smgr)
-        throws IOException
-    {
+    public JVMConnectionManager (SessionManager smgr) throws IOException {
         _smgr = smgr;
         _selector = Selector.open();
     }
@@ -44,8 +42,7 @@ public class JVMConnectionManager
      * @param bindPort the port on which to listen.
      * @throws IOException if a failure occurs binding the socket.
      */
-    public void listen (String bindHost, int bindPort) throws IOException
-    {
+    public void listen (String bindHost, int bindPort) throws IOException {
         final ServerSocketChannel ssocket = ServerSocketChannel.open();
         ssocket.configureBlocking(false);
         InetSocketAddress addr = Strings.isNullOrEmpty(bindHost) ?
@@ -66,8 +63,7 @@ public class JVMConnectionManager
     /**
      * Starts the I/O thread that will handle reading from and writing to all sockets.
      */
-    public void start ()
-    {
+    public void start () {
         Preconditions.checkState(_state == State.INIT, "Must not call more than once.");
         // note that we're now running (in reading and writing state)
         _state = State.READ_WRITE;
@@ -75,7 +71,8 @@ public class JVMConnectionManager
         // start the I/O reader thread
         (_reader = new Thread("JVMConnectionManager I/O reader") {
             public void run () {
-                while (_state == JVMConnectionManager.State.READ_WRITE && readLoop()) { /* loop! */ }
+                while (_state == JVMConnectionManager.State.READ_WRITE &&
+                       readLoop()) { /* loop! */ }
             };
         }).start();
 
@@ -94,8 +91,7 @@ public class JVMConnectionManager
      * This allows any pending outgoing messages to be sent before a call to {@link #shutdown}
      * fully terminates the I/O thread.
      */
-    public void disconnect ()
-    {
+    public void disconnect () {
         Preconditions.checkState(
             _state == State.READ_WRITE, "Must call start() prior to disconnect().");
 
@@ -118,8 +114,7 @@ public class JVMConnectionManager
     /**
      * Shuts down the writer thread and completes the termination of the connection manager.
      */
-    public void shutdown ()
-    {
+    public void shutdown () {
         Preconditions.checkState(
             _state == State.WRITE_ONLY, "Must call disconnect() prior to shutdown().");
 
@@ -133,16 +128,14 @@ public class JVMConnectionManager
      * Returns true if neither the reader nor writer thread are any longer executing. This is only
      * really used by the test framework to ensure that we don't break the shutdown process.
      */
-    public boolean isTerminated ()
-    {
+    public boolean isTerminated () {
         return (_state == State.TERMINATED) && !_reader.isAlive() && !_writer.isAlive();
     }
 
     /**
      * Called when one of our listening sockets has a connection ready to be accepted.
      */
-    protected void handleAccept (ServerSocketChannel ssock)
-    {
+    protected void handleAccept (ServerSocketChannel ssock) {
         SocketChannel chan = null;
         try {
             chan = ssock.accept();
@@ -176,8 +169,7 @@ public class JVMConnectionManager
      * Queues up a connection that has outgoing messages to send. The I/O writer thread will
      * process this connection on its next iteration through the write loop.
      */
-    protected void queueWriter (JVMServerConnection conn)
-    {
+    protected void queueWriter (JVMServerConnection conn) {
         _outq.offer(conn);
     }
 
@@ -185,8 +177,7 @@ public class JVMConnectionManager
      * Queues up a connection that has pending writes but is not currently able to write them (due
      * to full outgoing socket buffers or a still pending asynchronous connection).
      */
-    protected void requeueWriter (JVMServerConnection conn)
-    {
+    protected void requeueWriter (JVMServerConnection conn) {
         // TODO: introduce a delay in case we have nothing else to do but spin trying to write this
         // full writer?
         queueWriter(conn);
@@ -196,8 +187,7 @@ public class JVMConnectionManager
      * Called by a connection when it has been closed (in an orderly fashion, or due to failure).
      * @param cause the cause of failure, if the shutdown was not orderly, null otherwise.
      */
-    protected void connectionClosed (SocketChannel chan, IOException cause)
-    {
+    protected void connectionClosed (SocketChannel chan, IOException cause) {
         log.info("Connection closed", "addr", chan.socket().getInetAddress(), "cause", cause);
         // the key itself is automatically canceled when the socket is closed, so we don't need to
         // remove it from our selector, and the handler is attached to they key, so garbage
@@ -209,8 +199,7 @@ public class JVMConnectionManager
      * over and over again repeatedly until it returns false or we transition to the write-only or
      * terminated state.
      */
-    protected boolean readLoop ()
-    {
+    protected boolean readLoop () {
         int eventCount; // TODO: what do we need this for?
         try {
             eventCount = _selector.select();
@@ -241,8 +230,7 @@ public class JVMConnectionManager
         return true;
     }
 
-    protected void writeLoop ()
-    {
+    protected void writeLoop () {
         // TODO: we could create a separate selector for postponed writes, which would allow us to
         // block, waiting for a full outgoing channel to have room for its pending writes; this
         // would prevent degeneration into a spinning loop, attempting to write to full sockets in

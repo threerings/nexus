@@ -7,7 +7,8 @@
 package com.threerings.nexus.distrib;
 
 /**
- * An action invoked in the context of a Nexus entity. The sender does not block awaiting a response.
+ * An action invoked in the context of a Nexus entity. The sender does not block awaiting a
+ * response.
  */
 public interface Action<E>
 {
