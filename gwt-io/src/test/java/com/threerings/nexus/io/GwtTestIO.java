@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
  * gwt-server). These are combined into one test to mitigate the massive 15-20 second overhead of
  * running a GWT test (yay!).
  */
-public class GWTIOTest extends GWTTestCase
+public class GwtTestIO extends GWTTestCase
 {
     public String getModuleName () {
         return "com.threerings.nexus.GWTIO";
