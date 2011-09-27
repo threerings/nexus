@@ -16,7 +16,7 @@ class Locals (locals :(String, String, ModuleID)*) {
 
 object NexusBuild extends Build {
   val locals = new Locals(
-    ("react", null,  "com.threerings" % "react" % "1.0-SNAPSHOT")
+    ("react", null,  "com.threerings" % "react" % "1.1-SNAPSHOT")
   )
 
   // common build configuration

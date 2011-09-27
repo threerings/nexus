@@ -235,7 +235,7 @@ public class DMapTest
     protected <K, V> void prepPutCheck (
         final DMap<K, V> map, final K ekey, final V evalue, final V eoldValue)
     {
-        map.listen(new DMap.Listener<K, V>() {
+        map.connect(new DMap.Listener<K, V>() {
             public void onPut (K key, V value, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(evalue, value);
@@ -247,7 +247,7 @@ public class DMapTest
     protected <K, V> void prepRemoveCheck (
         final DMap<K, V> map, final K ekey, final V eoldValue)
     {
-        map.listen(new DMap.Listener<K, V>() {
+        map.connect(new DMap.Listener<K, V>() {
             public void onRemove (K key, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(eoldValue, oldValue);

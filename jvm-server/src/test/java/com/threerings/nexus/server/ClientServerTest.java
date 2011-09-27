@@ -80,7 +80,7 @@ public class ClientServerTest
 
                 // add a listener for changes to the test value
                 final String ovalue = test.value.get();
-                test.value.listen(new DValue.Listener<String>() {
+                test.value.connect(new DValue.Listener<String>() {
                     public void onChange (String value, String oldValue) {
                         assertEquals("updated", value);
                         assertEquals(ovalue, oldValue);
