@@ -20,13 +20,23 @@
       <artifactId>nexus-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <!-- dependencies that need to be provided by the client app -->
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-user</artifactId>
       <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- gwt-maven-plugin complains about this, but we need it for UnsafeNativeLong -->
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-dev</artifactId>
+      <version>${gwt.version}</version>
+      <scope>provided</scope>
     </dependency>
 
-    <!-- build and test dependencies -->
+    <!-- test dependencies -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>nexus-test-support</artifactId>
@@ -38,29 +48,6 @@
       <artifactId>junit</artifactId>
       <version>4.8.1</version>
       <scope>test</scope>
-    </dependency>
-
-    <!-- gwt-maven-plugin will complain about this, but we need it for UnsafeNativeLong -->
-    <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-dev</artifactId>
-      <version>${gwt.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <!-- only needed to suppress errors during GWT compilation -->
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>1.0.0.GA</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>1.0.0.GA</version>
-      <classifier>sources</classifier>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 

@@ -32,24 +32,34 @@
       <artifactId>nexus-gwt-io</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <!-- dependencies that need to be provided by the client app -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>8.0.0.M2</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-websocket</artifactId>
       <version>8.0.0.M2</version>
+      <scope>provided</scope>
     </dependency>
-
-    <!-- build and test dependencies -->
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-user</artifactId>
+      <version>${gwt.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-dev</artifactId>
-      <version>2.1.0</version>
+      <version>${gwt.version}</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- test dependencies -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>nexus-test-support</artifactId>
