@@ -25,11 +25,12 @@ public class GWTConnection extends Connection
      * Creates an instance which will initiate a Nexus protocol connection with the specified host.
      * @param callback will be notified on connection completion, or failure.
      */
-    public GWTConnection (String host, int port, Serializer szer, Callback<Connection> callback) {
+    public GWTConnection (String host, int port, String path, Serializer szer,
+                          Callback<Connection> callback) {
         super(host);
         _szer = szer;
         _callback = callback;
-        wsConnect("ws://" + host + ":" + port + "/" + WS_PATH);
+        wsConnect("ws://" + host + ":" + port + path);
     }
 
     @Override // from Connection
