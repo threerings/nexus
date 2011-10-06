@@ -5,8 +5,10 @@
 package com.threerings.nexus.net;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.GWTIO;
+import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
@@ -23,8 +25,7 @@ public class GWTConnection extends Connection
      * Creates an instance which will initiate a Nexus protocol connection with the specified host.
      * @param callback will be notified on connection completion, or failure.
      */
-    public GWTConnection (String host, int port, GWTIO.Serializer szer,
-                          Callback<Connection> callback) {
+    public GWTConnection (String host, int port, Serializer szer, Callback<Connection> callback) {
         super(host);
         _szer = szer;
         _callback = callback;
@@ -108,7 +109,7 @@ public class GWTConnection extends Connection
         ws.close();
     }-*/;
 
-    protected final GWTIO.Serializer _szer;
+    protected final Serializer _szer;
     protected Callback<Connection> _callback;
     protected JavaScriptObject _ws;
 }

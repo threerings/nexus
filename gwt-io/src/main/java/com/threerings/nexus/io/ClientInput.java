@@ -14,7 +14,7 @@ import com.threerings.nexus.distrib.NexusService;
  */
 class ClientInput extends Streamable.Input
 {
-    public ClientInput (GWTIO.Serializer szer, String data) {
+    public ClientInput (Serializer szer, String data) {
         _szer = szer;
         _values = decode(data);
     }
@@ -103,7 +103,7 @@ class ClientInput extends Streamable.Input
         return array.length;
     }-*/;
 
-    protected final GWTIO.Serializer _szer;
+    protected final Serializer _szer;
     protected final JavaScriptObject _values;
     protected int _nextValIdx;
 }

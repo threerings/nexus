@@ -16,7 +16,7 @@ import com.threerings.nexus.distrib.NexusService;
  */
 public class ServerInput extends Streamable.Input
 {
-    public ServerInput (GWTIO.Serializer szer, final String data) {
+    public ServerInput (Serializer szer, final String data) {
         _szer = szer;
 
         // create an iterator that will extract delimited values
@@ -93,6 +93,6 @@ public class ServerInput extends Streamable.Input
         return sf;
     }
 
-    protected final GWTIO.Serializer _szer;
+    protected final Serializer _szer;
     protected final Iterator<String> _valiter;
 }

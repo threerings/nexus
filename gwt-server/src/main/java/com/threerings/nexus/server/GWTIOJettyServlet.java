@@ -16,6 +16,7 @@ import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 
 import com.threerings.nexus.io.GWTIO;
+import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.net.Downstream;
 import com.threerings.nexus.net.Upstream;
 import com.threerings.nexus.server.SessionManager;
@@ -27,7 +28,7 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class GWTIOJettyServlet extends WebSocketServlet
 {
-    public GWTIOJettyServlet (SessionManager smgr, GWTIO.Serializer szer) {
+    public GWTIOJettyServlet (SessionManager smgr, Serializer szer) {
         _smgr = smgr;
         _szer = szer;
     }
@@ -115,5 +116,5 @@ public class GWTIOJettyServlet extends WebSocketServlet
     }
 
     protected SessionManager _smgr;
-    protected GWTIO.Serializer _szer;
+    protected Serializer _szer;
 }

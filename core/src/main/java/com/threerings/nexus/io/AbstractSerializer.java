@@ -1,5 +1,5 @@
 //
-// Nexus GWTIO - I/O and network services for Nexus built on GWT and WebSockets
+// Nexus Core - a framework for developing distributed applications
 // http://github.com/threerings/nexus/blob/master/LICENSE
 
 package com.threerings.nexus.io;
@@ -15,37 +15,37 @@ import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusService;
 
 /**
- * A basic {@linkS GWTIO.Serializer} implementation that handles standard types. This is extended
- * by generated serializers to add support for project classes.
+ * A basic {@link Serializer} implementation that handles standard types. This is extended by
+ * generated serializers to add support for project classes.
  */
-public abstract class AbstractSerializer implements GWTIO.Serializer
+public abstract class AbstractSerializer implements Serializer
 {
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public Class<?> getClass (short code) {
         return nonNull(_classes.get(code), "Unknown class code ", code);
     }
 
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public Streamer<?> getStreamer (short code) {
         return nonNull(_streamers.get(code), "Unknown class code ", code);
     }
 
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public ServiceFactory<?> getServiceFactory (short code) {
         return nonNull(_services.get(code), "Unknown service code ", code);
     }
 
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public short getCode (Class<?> clazz) {
         return nonNull(_codes.get(clazz), "Unknown streamable class ", clazz);
     }
 
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public short getServiceCode (Class<? extends NexusService> clazz) {
         return nonNull(_serviceCodes.get(clazz), "Unknown service class ", clazz);
     }
 
-    // from interface GWTIO.Serializer
+    // from interface Serializer
     public <T> Streamer<T> writeStreamer (Streamable.Output out, T value) {
         if (value == null) {
             return this.<T>writeClass(out, (short)0); // null streamer has code 0

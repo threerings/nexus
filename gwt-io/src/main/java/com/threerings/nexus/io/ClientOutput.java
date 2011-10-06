@@ -17,7 +17,7 @@ class ClientOutput extends Streamable.Output
     /** The character used to separate values in an encoded payload. */
     public static final char SEPARATOR = '|';
 
-    public ClientOutput (GWTIO.Serializer szer, StringBuffer output) {
+    public ClientOutput (Serializer szer, StringBuffer output) {
         _szer = szer;
         _output = output;
     }
@@ -85,6 +85,6 @@ class ClientOutput extends Streamable.Output
         _output.append(SEPARATOR);
     }
 
-    protected final GWTIO.Serializer _szer;
+    protected final Serializer _szer;
     protected final StringBuffer _output;
 }

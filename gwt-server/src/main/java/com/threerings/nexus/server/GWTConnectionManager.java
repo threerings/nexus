@@ -22,7 +22,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import com.threerings.nexus.distrib.NexusException;
-import com.threerings.nexus.io.GWTIO;
+import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.net.GWTConnection;
 
 import static com.threerings.nexus.util.Log.log;
@@ -34,8 +34,7 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class GWTConnectionManager
 {
-    public GWTConnectionManager (SessionManager smgr, GWTIO.Serializer szer,
-                                 String hostname, int port) {
+    public GWTConnectionManager (SessionManager smgr, Serializer szer, String hostname, int port) {
         _jetty = new Server();
 
         // use a custom connector that works around some jetty non-awesomeness

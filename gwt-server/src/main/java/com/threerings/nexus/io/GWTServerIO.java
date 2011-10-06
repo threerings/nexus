@@ -42,7 +42,7 @@ public class GWTServerIO
      * Returns a {@link Streamable#Input} that obtains its underlying data from the supplied string
      * payload.
      */
-    public static Streamable.Input newInput (GWTIO.Serializer szer, String data) {
+    public static Streamable.Input newInput (Serializer szer, String data) {
         return new ServerInput(szer, data);
     }
 
@@ -50,7 +50,7 @@ public class GWTServerIO
      * Returns a {@link Streamable#Output} that obtains its underlying data from the supplied output
      * stream.
      */
-    public static Streamable.Output newOutput (GWTIO.Serializer szer, PayloadBuffer buffer) {
+    public static Streamable.Output newOutput (Serializer szer, PayloadBuffer buffer) {
         return new ServerOutput(szer, buffer);
     }
 

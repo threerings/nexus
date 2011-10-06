@@ -14,7 +14,7 @@ import com.google.gwt.user.server.Base64Utils;
  */
 public class ServerOutput extends Streamable.Output
 {
-    public ServerOutput (GWTIO.Serializer szer, GWTServerIO.PayloadBuffer output) {
+    public ServerOutput (Serializer szer, GWTServerIO.PayloadBuffer output) {
         _szer = szer;
         _output = output;
         _output.prepare();
@@ -84,6 +84,6 @@ public class ServerOutput extends Streamable.Output
         return value; // TODO
     }
 
-    protected final GWTIO.Serializer _szer;
+    protected final Serializer _szer;
     protected final GWTServerIO.PayloadBuffer _output;
 }
