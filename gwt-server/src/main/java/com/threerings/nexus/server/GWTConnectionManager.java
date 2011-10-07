@@ -21,9 +21,9 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import com.threerings.nexus.client.GWTClient;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.Serializer;
-import com.threerings.nexus.net.GWTConnection;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -34,7 +34,20 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class GWTConnectionManager
 {
+    /**
+     * Creates a Jetty server that listens on the specified hostname and port and binds the
+     * WebSocket servlet to the {@link GWTClient#DEFAULT_WS_PATH}.
+     */
     public GWTConnectionManager (SessionManager smgr, Serializer szer, String hostname, int port) {
+        this(smgr, szer, hostname, port, GWTClient.DEFAULT_WS_PATH);
+    }
+
+    /**
+     * Creates a Jetty server that listens on the specified hostname and port and binds the
+     * WebSocket servlet to the specified path.
+     */
+    public GWTConnectionManager (SessionManager smgr, Serializer szer,
+                                 String hostname, int port, String path) {
         _jetty = new Server();
 
         // use a custom connector that works around some jetty non-awesomeness
@@ -44,8 +57,7 @@ public class GWTConnectionManager
 
         ServletContextHandler shandler = new ServletContextHandler();
         shandler.setContextPath("/");
-        shandler.addServlet(new ServletHolder(new GWTIOJettyServlet(smgr, szer)),
-                            "/" + GWTConnection.WS_PATH);
+        shandler.addServlet(new ServletHolder(new GWTIOJettyServlet(smgr, szer)), path);
 
         _rhandler = new ResourceHandler();
         _rhandler.setResourceBase("disabled");

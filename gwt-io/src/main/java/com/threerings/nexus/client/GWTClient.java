@@ -18,6 +18,9 @@ import com.threerings.nexus.util.Log;
  */
 public class GWTClient extends NexusClient
 {
+    /** The default (root-relative) path at which we will make our WebSocket connections. */
+    public static final String DEFAULT_WS_PATH = "/nexusws";
+
     /**
      * Creates a Nexus client which will use WebSockets to connect to hosts.
      * @param port the port on which to make WebSocket connections.
@@ -32,12 +35,12 @@ public class GWTClient extends NexusClient
 
     /**
      * Creates a Nexus client which will use WebSockets to connect to hosts. Uses the default
-     * servlet path (i.e. {@link GWTConnection#WS_PATH}).
+     * servlet path (i.e. {@link #DEFAULT_WS_PATH}).
      * @param port the port on which to make WebSocket connections.
      * @param szer the serializer that knows about all types that will cross the wire.
      */
     public static NexusClient create (int port, Serializer szer) {
-        return create(port, "/"+GWTConnection.WS_PATH, szer);
+        return create(port, DEFAULT_WS_PATH, szer);
     }
 
     protected GWTClient (int port, String path, Serializer szer) {

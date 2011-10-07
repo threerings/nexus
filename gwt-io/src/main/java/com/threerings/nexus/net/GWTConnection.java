@@ -18,9 +18,6 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class GWTConnection extends Connection
 {
-    /** The (root-relative) path at which we will make our WebSocket connections. */
-    public static final String WS_PATH = "nexusws";
-
     /**
      * Creates an instance which will initiate a Nexus protocol connection with the specified host.
      * @param callback will be notified on connection completion, or failure.
