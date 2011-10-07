@@ -18,7 +18,7 @@ import static com.threerings.nexus.util.Log.log;
 /**
  * Handles a web socket client.
  */
-public class GWTIOWebSocket implements WebSocket, SessionManager.Output
+public class GWTIOWebSocket implements WebSocket, WebSocket.OnTextMessage, SessionManager.Output
 {
     public GWTIOWebSocket (SessionManager smgr, Serializer szer, String ipaddress) {
         _smgr = smgr;
@@ -27,19 +27,13 @@ public class GWTIOWebSocket implements WebSocket, SessionManager.Output
     }
 
     // from interface WebSocket
-    public void onConnect (Outbound outbound) {
-        _outbound = outbound;
+    public void onOpen (WebSocket.Connection conn) {
+        _conn = conn;
         _input = _smgr.createSession(_ipaddress, this);
     }
 
-    // from interface WebSocket
-    public void onMessage (byte frame, byte[] data, int offset, int length) {
-        log.info("Got binary message " + frame);
-        // TODO: is this really supported?
-    }
-
-    // from interface WebSocket
-    public void onMessage (byte frame, String data) {
+    // from interface WebSocket.OnTextMessage
+    public void onMessage (String data) {
         try {
             _input.onMessage(GWTServerIO.newInput(_szer, data).<Upstream>readValue());
         } catch (Throwable t) {
@@ -48,19 +42,14 @@ public class GWTIOWebSocket implements WebSocket, SessionManager.Output
     }
 
     // from interface WebSocket
-    public void onDisconnect () {
+    public void onClose (int closeCode, String message) {
+        // TODO: interpret closeCode?
         _input.onDisconnect();
-    }
-
-    // from interface WebSocket
-    public void onFragment (boolean more, byte opcode, byte[] data, int offset, int length) {
-        log.info("Got fragment " + more + "/" + opcode);
-        // nada
     }
 
     // from interface SessionManager.Input
     public void send (Downstream msg) {
-        if (!_outbound.isOpen()) {
+        if (!_conn.isOpen()) {
             log.warning("Dropping outbound message to closed WebSocket", "addr", _ipaddress);
             return;
         }
@@ -73,17 +62,17 @@ public class GWTIOWebSocket implements WebSocket, SessionManager.Output
         }
 
         try {
-            _outbound.sendMessage(data);
+            _conn.sendMessage(data);
         } catch (IOException ioe) {
             log.warning("WebSocket send failure", "addr", _ipaddress, "data", data, ioe);
             _input.onSendError(ioe);
-            _outbound.disconnect();
+            _conn.disconnect();
         }
     }
 
     // from interface SessionManager.Input
     public void disconnect () {
-        _outbound.disconnect();
+        _conn.disconnect();
     }
 
     protected final SessionManager _smgr;
@@ -91,6 +80,6 @@ public class GWTIOWebSocket implements WebSocket, SessionManager.Output
     protected final String _ipaddress;
 
     protected SessionManager.Input _input;
-    protected Outbound _outbound;
+    protected WebSocket.Connection _conn;
     protected GWTServerIO.PayloadBuffer _buffer = new GWTServerIO.PayloadBuffer();
 }
