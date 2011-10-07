@@ -88,6 +88,10 @@ public abstract class AbstractSerializer implements Serializer
         _codes.put(streamer.getObjectClass(), code);
     }
 
+    protected <T extends Enum<T>> void mapEnumStreamer (Class<T> eclass) {
+        mapStreamer(Streamers.create(eclass));
+    }
+
     protected void mapService (ServiceFactory<?> factory, Class<? extends NexusService> clazz) {
         short code = (short)++_nextServiceCode;
         _services.put(code, factory);
