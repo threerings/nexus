@@ -95,7 +95,7 @@ public interface Upstream extends Streamable
         public ServiceCall (int callId, int objectId, short attrIndex,
                             short methodId, List<Object> args) {
             // le cheques du sanity
-            assert(callId > 0);
+            assert(callId >= 0);
             assert(objectId > 0);
             assert(attrIndex >= 0);
             assert(methodId > 0);
