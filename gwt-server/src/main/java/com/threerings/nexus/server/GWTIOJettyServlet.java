@@ -28,8 +28,8 @@ public class GWTIOJettyServlet extends WebSocketServlet
     @Override
     protected void doGet (HttpServletRequest req, HttpServletResponse rsp)
         throws ServletException, IOException {
-        RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-        rd.forward(req, rsp);
+        // TODO: we should never get here, send back a server error
+        getServletContext().getNamedDispatcher("default").forward(req, rsp);
     }
 
     @Override
