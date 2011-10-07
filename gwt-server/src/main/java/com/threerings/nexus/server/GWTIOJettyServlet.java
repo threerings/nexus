@@ -26,15 +26,15 @@ public class GWTIOJettyServlet extends WebSocketServlet
     }
 
     @Override
+    public WebSocket doWebSocketConnect (HttpServletRequest req, String protocol) {
+        return new GWTIOWebSocket(_smgr, _szer, req.getRemoteAddr());
+    }
+
+    @Override
     protected void doGet (HttpServletRequest req, HttpServletResponse rsp)
         throws ServletException, IOException {
         // TODO: we should never get here, send back a server error
         getServletContext().getNamedDispatcher("default").forward(req, rsp);
-    }
-
-    @Override
-    protected WebSocket doWebSocketConnect (HttpServletRequest req, String protocol) {
-        return new GWTIOWebSocket(_smgr, _szer, req.getRemoteAddr());
     }
 
     protected SessionManager _smgr;
