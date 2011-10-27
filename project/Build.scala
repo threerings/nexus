@@ -65,6 +65,7 @@ object NexusBuild extends Build {
     libraryDependencies ++= Seq(
       "org.eclipse.jetty" % "jetty-servlet" % "7.4.3.v20110701",
       "org.eclipse.jetty" % "jetty-websocket" % "7.4.3.v20110701",
+      "com.google.gwt" % "gwt-user" % gwtVers % "provided",
       "com.google.gwt" % "gwt-dev" % gwtVers % "provided"
     )
   )) dependsOn(server, gwtIO)
