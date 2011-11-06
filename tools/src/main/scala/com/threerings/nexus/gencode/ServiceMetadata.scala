@@ -43,7 +43,7 @@ object ServiceMetadata {
 
   case class Method (elem :ExecutableElement) {
     val name = elem.getSimpleName.toString
-    val args :JList[Arg] = elem.getParameters.zipWithIndex.map((Arg.apply _).tupled)
+    val args :JList[Arg] = elem.getParameters.zipWithIndex.map(Arg.tupled)
     override def toString () = String.format("%s(%s)", name, args.mkString(", "))
   }
 }
