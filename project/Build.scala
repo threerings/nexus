@@ -2,10 +2,6 @@ import sbt._
 import Keys._
 
 object NexusBuild extends Build {
-  val locals = new com.samskivert.condep.Depends(
-    ("react", null,  "com.threerings" % "react" % "1.1-SNAPSHOT")
-  )
-
   // common build configuration
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization     := "com.threerings.nexus",
@@ -42,8 +38,11 @@ object NexusBuild extends Build {
   )
 
   // core projects
-  lazy val core = locals.addDeps(subProject("core", gwtSettings ++ Seq(
-    libraryDependencies ++= locals.libDeps
+  val coreLocals = new com.samskivert.condep.Depends(
+    ("react", null,  "com.threerings" % "react" % "1.1")
+  )
+  lazy val core = coreLocals.addDeps(subProject("core", gwtSettings ++ Seq(
+    libraryDependencies ++= coreLocals.libDeps
   )))
   lazy val testSupport = subProject("test-support") dependsOn(core)
   lazy val server = subProject("server", Seq(
