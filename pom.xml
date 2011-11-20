@@ -38,8 +38,8 @@
   </developers>
 
   <scm>
-    <connection>scm:git://github.com/threerings/nexus.git</connection>
-    <developerConnection>scm:git@github.com:threerings/nexus.git</developerConnection>
+    <connection>scm:git:git://github.com/threerings/nexus.git</connection>
+    <developerConnection>scm:git:git@github.com:threerings/nexus.git</developerConnection>
     <url>http://github.com/threerings/nexus</url>
   </scm>
 
