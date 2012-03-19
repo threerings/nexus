@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +20,6 @@ import com.google.common.collect.Maps;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Address;
-import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.DistribUtil;
 import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.Keyed;
@@ -30,8 +28,6 @@ import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.Request;
 import com.threerings.nexus.distrib.Singleton;
-import com.threerings.nexus.util.Callback;
-
 import static com.threerings.nexus.util.Log.log;
 
 /**
@@ -189,7 +185,7 @@ public class ObjectManager
      * server or an exception will be raised.
      */
     public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<T> action) {
-        invoke(requireKeyed(eclass, key, "No singleton registered for"), action);
+        invoke(requireKeyed(eclass, key, "No keyed entity registered for"), action);
     }
 
     /**
