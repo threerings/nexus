@@ -74,7 +74,7 @@ public abstract class Connection
         // determine whether we have a callback (which the service generator code will enforce is
         // always the final argument of the method)
         int callId, lastIdx = args.length-1;
-        if (args[lastIdx] instanceof Callback<?>) {
+        if (lastIdx > -1 && args[lastIdx] instanceof Callback<?>) {
             callId = 1;
             for (Integer key : _calls.keySet()) {
                 callId = Math.max(callId, key+1);

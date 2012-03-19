@@ -23,7 +23,7 @@ public class DistribUtil
     }
 
     public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args) {
-        Object cb = args[args.length-1];
+        Object cb = (args.length == 0) ? null : args[args.length-1];
         DService.Dispatcher<?> disp = null;
         try {
             disp = (DService.Dispatcher<?>)object.getAttribute(attrIdx);
