@@ -87,7 +87,7 @@ public class SimpleServerTest
         final String nvalue = "newValue";
         final boolean[] triggered = new boolean[1];
         test.value.connect(new DValue.Listener<String>() {
-            public void onChange (String value, String oldValue) {
+            @Override public void onChange (String value, String oldValue) {
                 assertEquals(ovalue, oldValue);
                 assertEquals(nvalue, value);
                 triggered[0] = true;

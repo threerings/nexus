@@ -56,23 +56,23 @@ public class Log
             _impl = java.util.logging.Logger.getLogger(name);
         }
 
-        public void info (String message, Object... args) {
+        @Override public void info (String message, Object... args) {
             if (_impl.isLoggable(java.util.logging.Level.INFO)) {
                 format(java.util.logging.Level.INFO, message, args);
             }
         }
 
-        public void warning (String message, Object... args) {
+        @Override public void warning (String message, Object... args) {
             if (_impl.isLoggable(java.util.logging.Level.WARNING)) {
                 format(java.util.logging.Level.WARNING, message, args);
             }
         }
 
-        public void setWarnOnly () {
+        @Override public void setWarnOnly () {
             _impl.setLevel(java.util.logging.Level.WARNING);
         }
 
-        protected void log (Object level, String message, Throwable cause) {
+        @Override protected void log (Object level, String message, Throwable cause) {
             _impl.log((java.util.logging.Level)level, message, cause);
         }
 

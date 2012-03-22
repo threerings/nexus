@@ -9,14 +9,9 @@ package com.threerings.nexus.server;
 import java.util.concurrent.Executor;
 
 import com.threerings.nexus.distrib.Action;
-import com.threerings.nexus.distrib.DAttribute;
 import com.threerings.nexus.distrib.DValue;
-import com.threerings.nexus.distrib.Keyed;
 import com.threerings.nexus.distrib.NexusException;
-import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.Request;
-import com.threerings.nexus.distrib.Singleton;
-
 import com.threerings.nexus.distrib.TestObject;
 
 import org.junit.*;
@@ -43,7 +38,7 @@ public class ObjectManagerTest
         final String nvalue = "newValue";
         final boolean[] triggered = new boolean[1];
         test.value.connect(new DValue.Listener<String>() {
-            public void onChange (String value, String oldValue) {
+            @Override public void onChange (String value, String oldValue) {
                 assertEquals(ovalue, oldValue);
                 assertEquals(nvalue, value);
                 triggered[0] = true;

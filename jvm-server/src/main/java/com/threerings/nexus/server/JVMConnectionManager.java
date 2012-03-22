@@ -70,7 +70,7 @@ public class JVMConnectionManager
 
         // start the I/O reader thread
         (_reader = new Thread("JVMConnectionManager I/O reader") {
-            public void run () {
+            @Override public void run () {
                 while (_state == JVMConnectionManager.State.READ_WRITE &&
                        readLoop()) { /* loop! */ }
             };
@@ -78,7 +78,7 @@ public class JVMConnectionManager
 
         // start the I/O writer thread
         (_writer = new Thread("JVMConnectionManager I/O writer") {
-            public void run () {
+            @Override public void run () {
                 while (_state != JVMConnectionManager.State.TERMINATED) {
                     writeLoop();
                 }

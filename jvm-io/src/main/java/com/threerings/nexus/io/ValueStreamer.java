@@ -18,82 +18,82 @@ import com.threerings.nexus.io.Streamable;
 public enum ValueStreamer
 {
     NULL(0) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return null;
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             // noop!
         }
     },
     BOOLEAN(1, Boolean.TYPE, Boolean.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readBoolean();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeBoolean((Boolean)value);
         }
     },
     BYTE(2, Byte.TYPE, Byte.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readByte();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeByte((Byte)value);
         }
     },
     CHAR(3, Character.TYPE, Character.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readChar();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeChar((Character)value);
         }
     },
     SHORT(4, Short.TYPE, Short.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readShort();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeShort((Short)value);
         }
     },
     INT(5, Integer.TYPE, Integer.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readInt();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeInt((Integer)value);
         }
     },
     LONG(6, Long.TYPE, Long.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readLong();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeLong((Long)value);
         }
     },
     FLOAT(7, Float.TYPE, Float.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readFloat();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeFloat((Float)value);
         }
     },
     DOUBLE(8, Double.TYPE, Double.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readDouble();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeDouble((Double)value);
         }
     },
     STRING(9, String.class) {
-        public Object readValue (Streamable.Input in) {
+        @Override public Object readValue (Streamable.Input in) {
             return in.readString();
         }
-        public void writeValue (Streamable.Output out, Object value) {
+        @Override public void writeValue (Streamable.Output out, Object value) {
             out.writeString((String)value);
         }
     };

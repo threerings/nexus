@@ -26,7 +26,7 @@ public class Widget implements Streamable
             this.size = size;
         }
 
-        public boolean equals (Object other) {
+        @Override public boolean equals (Object other) {
             return (other instanceof Wangle) && size == ((Wangle)other).size;
         }
     }

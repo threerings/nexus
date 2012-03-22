@@ -7,7 +7,6 @@ package com.threerings.nexus.client;
 import java.awt.EventQueue;
 import java.util.concurrent.Executor;
 
-import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.net.Connection;
 import com.threerings.nexus.net.JVMConnection;
 import com.threerings.nexus.util.Callback;
@@ -43,7 +42,7 @@ public class JVMClient extends NexusClient
         _port = port;
     }
 
-    protected void connect (String host, Callback<Connection> callback) {
+    @Override protected void connect (String host, Callback<Connection> callback) {
         new JVMConnection(host, _port, _exec, callback);
     }
 

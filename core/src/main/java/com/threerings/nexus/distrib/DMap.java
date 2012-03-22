@@ -8,8 +8,6 @@ import java.util.Map;
 
 import com.threerings.nexus.io.Streamable;
 
-import static com.threerings.nexus.util.Log.log;
-
 /**
  * A map attribute for a Nexus object. Contains a mapping from keys to values.
  */
@@ -40,7 +38,7 @@ public class DMap<K,V> extends react.RMap<K,V>
         super(impl);
     }
 
-    protected void emitPut (K key, V value, V oldValue) {
+    @Override protected void emitPut (K key, V value, V oldValue) {
         // we don't call super as we defer notification until the event is dispatched
         PutEvent<K,V> event = new PutEvent<K,V>(_owner.getId(), _index, key, value);
         event.oldValue = oldValue;
@@ -55,7 +53,7 @@ public class DMap<K,V> extends react.RMap<K,V>
         notifyPut(key, value, oldValue);
     }
 
-    protected void emitRemove (K key, V oldValue) {
+    @Override protected void emitRemove (K key, V oldValue) {
         // we don't call super as we defer notification until the event is dispatched
         RemoveEvent<K,V> event = new RemoveEvent<K,V>(_owner.getId(), _index, key);
         event.oldValue = oldValue;

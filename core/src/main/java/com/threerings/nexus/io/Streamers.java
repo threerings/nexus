@@ -203,14 +203,14 @@ public class Streamers
             final Iterator<K> kiter = keys.iterator();
             final Map<K,V> map = new HashMap<K,V>(keys.size());
             readSequence(in, new AbstractCollection<V>() {
-                public boolean add (V elem) {
+                @Override public boolean add (V elem) {
                     map.put(kiter.next(), elem);
                     return true;
                 }
-                public int size () {
+                @Override public int size () {
                     return map.size();
                 }
-                public Iterator<V> iterator () {
+                @Override public Iterator<V> iterator () {
                     throw new UnsupportedOperationException();
                 }
             });

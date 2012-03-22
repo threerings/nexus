@@ -5,13 +5,11 @@
 package com.threerings.nexus.io;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gwt.junit.client.GWTTestCase;
 
 import org.junit.*;
-import static org.junit.Assert.*;
 
 /**
  * Tests the client input and server output pair (in conjunction with ServerOutputTest in
@@ -21,7 +19,7 @@ import static org.junit.Assert.*;
  */
 public class GwtTestIO extends GWTTestCase
 {
-    public String getModuleName () {
+    @Override public String getModuleName () {
         return "com.threerings.nexus.GWTIO";
     }
 

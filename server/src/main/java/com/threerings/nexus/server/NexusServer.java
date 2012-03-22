@@ -107,7 +107,7 @@ public class NexusServer implements Nexus
         // javac isn't smart enough to know that all the T's are the same here
         @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
         return new Slot<E>() {
-            public void onEmit (final E event) {
+            @Override public void onEmit (final E event) {
                 invoke(eclass, new Action<T>() {
                     public void invoke (T entity) {
                         slot.onEmit(event);
@@ -123,7 +123,7 @@ public class NexusServer implements Nexus
         @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
         final Comparable<?> key = entity.getKey();
         return new Slot<E>() {
-            public void onEmit (final E event) {
+            @Override public void onEmit (final E event) {
                 invoke(eclass, key, new Action<T>() {
                     public void invoke (T entity) {
                         slot.onEmit(event);
@@ -195,7 +195,7 @@ public class NexusServer implements Nexus
             }
             private TimerTask createTask () {
                 return new TimerTask() {
-                    public void run () {
+                    @Override public void run () {
                         action.run();
                     }
                 };

@@ -6,7 +6,6 @@ package com.threerings.nexus.client;
 
 import com.google.gwt.core.client.GWT;
 
-import com.threerings.nexus.io.GWTIO;
 import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.net.Connection;
 import com.threerings.nexus.net.GWTConnection;
@@ -49,7 +48,7 @@ public class GWTClient extends NexusClient
         _szer = szer;
     }
 
-    protected void connect (String host, Callback<Connection> callback) {
+    @Override protected void connect (String host, Callback<Connection> callback) {
         new GWTConnection(host, _port, _path, _szer, callback);
     }
 
@@ -58,18 +57,18 @@ public class GWTClient extends NexusClient
     protected final Serializer _szer;
 
     protected static final Log.Logger GWT_LOGGER = new Log.Logger() {
-        public void info (String message, Object... args) {
+        @Override public void info (String message, Object... args) {
             if (!_warnOnly) {
                 format(null, message, args);
             }
         }
-        public void warning (String message, Object... args) {
+        @Override public void warning (String message, Object... args) {
             format(null, message, args);
         }
-        public void log (Object level, String message, Throwable cause) {
+        @Override public void log (Object level, String message, Throwable cause) {
             GWT.log(message, cause);
         }
-        public void setWarnOnly () {
+        @Override public void setWarnOnly () {
             _warnOnly = true;
         }
         protected boolean _warnOnly;

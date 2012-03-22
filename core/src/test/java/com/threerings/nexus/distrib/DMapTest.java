@@ -236,7 +236,7 @@ public class DMapTest
         final DMap<K, V> map, final K ekey, final V evalue, final V eoldValue)
     {
         map.connect(new DMap.Listener<K, V>() {
-            public void onPut (K key, V value, V oldValue) {
+            @Override public void onPut (K key, V value, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(evalue, value);
                 assertEquals(eoldValue, oldValue);
@@ -248,7 +248,7 @@ public class DMapTest
         final DMap<K, V> map, final K ekey, final V eoldValue)
     {
         map.connect(new DMap.Listener<K, V>() {
-            public void onRemove (K key, V oldValue) {
+            @Override public void onRemove (K key, V oldValue) {
                 assertEquals(ekey, key);
                 assertEquals(eoldValue, oldValue);
             }

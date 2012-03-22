@@ -71,17 +71,17 @@ public class ClientServerTest
     @Test
     public void testSubscribeAndAttrChange () throws IOException {
         runTest(new TestAction() {
-            public void onInit () {
+            @Override public void onInit () {
                 _test.value.update("bob");
             }
-            public void onSubscribe (TestObject test) {
+            @Override public void onSubscribe (TestObject test) {
                 // make sure the value we got here is the same as the value from the server
                 assertEquals(_test.value.get(), test.value.get());
 
                 // add a listener for changes to the test value
                 final String ovalue = test.value.get();
                 test.value.connect(new DValue.Listener<String>() {
-                    public void onChange (String value, String oldValue) {
+                    @Override public void onChange (String value, String oldValue) {
                         assertEquals("updated", value);
                         assertEquals(ovalue, oldValue);
                         testComplete();
@@ -101,7 +101,7 @@ public class ClientServerTest
     @Test
     public void testServiceCall () throws IOException {
         runTest(new TestAction() {
-            public void onSubscribe (TestObject test) {
+            @Override public void onSubscribe (TestObject test) {
                 // call our test service
                 test.testsvc.get().addOne(41, new Callback<Integer>() {
                     public void onSuccess (Integer value) {
