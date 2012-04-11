@@ -86,11 +86,11 @@ object FactoryTestCompiler extends TestCompiler {
 
   override protected def stockObjects = List(nexusServiceObj, callbackObj)
 
-  private val nexusServiceObj = mkTestObject("NexusService.java", """
+  private def nexusServiceObj = mkTestObject("NexusService.java", """
     package com.threerings.nexus.distrib;
     public interface NexusService {}
   """)
-  private val callbackObj = mkTestObject("Callback.java", """
+  private def callbackObj = mkTestObject("Callback.java", """
     package com.threerings.nexus.util;
     public interface Callback<T> {}
   """)

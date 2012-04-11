@@ -102,6 +102,8 @@ class StreamerGenTest
       }
       """)
     // System.err.println(source)
+    // TODO: capture diagnostics during compile, mess up super ctor arg ordering and ensure that
+    // warning is generated
   }
 
   @Test def testInheritFromInterface {
@@ -256,7 +258,7 @@ class StreamerGenTest
         }
       }
       """)
-    // make sure our ctorArgs are not reordered due to LocalHashMap.keys funny biz
+    // make sure our ctorArgs are not reordered due to LinkedHashMap.keys funny biz
     assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.localCtorArgs)
     assertEquals(metas.head.ctorArgs.keys.toSeq, metas.head.orderedFieldNames)
   }
@@ -351,14 +353,14 @@ object StreamerTestCompiler extends TestCompiler {
 
   override protected def stockObjects = List(streamObj, nexobjObj)
 
-  private val streamObj = mkTestObject("Streamable.java", """
+  private def streamObj = mkTestObject("Streamable.java", """
     package com.threerings.nexus.io;
     public interface Streamable {
       public interface Input {}
       public interface Output {}
     }
   """)
-  private val nexobjObj = mkTestObject("NexusObject.java", """
+  private def nexobjObj = mkTestObject("NexusObject.java", """
     package com.threerings.nexus.distrib;
     import com.threerings.nexus.io.Streamable;
     public abstract class NexusObject implements Streamable {

@@ -18,8 +18,8 @@ abstract class TestCompiler {
 
   def process[R] (filename :String, content :String, proc :TestProcessor[R]) :R = {
     val files = stockObjects :+ mkTestObject(filename, content)
-    val options = List("-processor", "com.threerings.nexus.gencode.Processor", "-proc:only")
-    val task = _compiler.getTask(null, null, null, options, null, files)
+    val options = List("-proc:only")
+    val task = ToolProvider.getSystemJavaCompiler.getTask(null, null, null, options, null, files)
     task.setProcessors(List(proc))
     task.call
     proc.result
@@ -31,6 +31,4 @@ abstract class TestCompiler {
     new SimpleJavaFileObject(URI.create("test:/" + file), JavaFileObject.Kind.SOURCE) {
       override def getCharContent (ignoreEncodingErrors :Boolean) :CharSequence = content
     }
-
-  private val _compiler = ToolProvider.getSystemJavaCompiler
 }
