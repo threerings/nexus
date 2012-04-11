@@ -15,15 +15,15 @@ import javax.lang.model.`type`.{DeclaredType, TypeMirror}
  * @param elem the class's type element.
  */
 class StreamableMetadata (val elem :TypeElement) extends Metadata {
-  /** The number of args to our supertype constructor. */
-  def superCtorArgs :Int = Utils.countSuperCtorArgs(elem)
+  /** The names of the args to our supertype constructor. */
+  lazy val superCtorArgs :Seq[String] = Utils.getSuperCtorArgs(elem)
 
   /** An ordered mapping from constructor argument name to type. */
   val ctorArgs = LHMap[String,TypeMirror]()
 
   /** The constructor arguments with the first `superCtorArgs` arguments dropped.
    * These arguments should correspond to fields declared by this class. */
-  lazy val localCtorArgs :Seq[String] = ctorArgs.keys.toSeq.drop(superCtorArgs)
+  lazy val localCtorArgs :Seq[String] = ctorArgs.keys.toSeq.drop(superCtorArgs.size)
 
   /** An unordered mapping from field name to type. Includes supertype fields. */
   val fields = MMap[String,TypeMirror]()

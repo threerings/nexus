@@ -87,6 +87,13 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
           // skip private streamables (which could never be instantiated by a streamer and thus
           // probably exist only to assuage the type system in some circumstance)
           meta.elem.getModifiers.contains(Modifier.PRIVATE)) None
+      // make sure our super constructor's arguments are first in our argument list
+      else if (!meta.ctorArgs.keys.toSeq.startsWith(meta.superCtorArgs)) {
+        msg.printMessage(
+          Diagnostic.Kind.ERROR, "Arguments passed to super() must come first in argument list: " +
+          meta.typ + ": " + meta.superCtorArgs.mkString(", "))
+        None
+      }
       // check that we extracted valid metadata
       else if (meta.unmatchedCtorArgs.isEmpty) Some(meta)
       else {

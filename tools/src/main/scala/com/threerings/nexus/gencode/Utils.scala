@@ -153,10 +153,10 @@ object Utils
   }
 
   /**
-   * Returns the number of arguments taken by the supplied type element's supertype. The supertype
+   * Returns the names of the arguments to the element's supertype's constructor. The supertype
    * must declare only one constructor (all `Streamable` types must have only one constructor).
    */
-  def countSuperCtorArgs (e :TypeElement) = e.getSuperclass match {
+  def getSuperCtorArgs (e :TypeElement) :Seq[String] = e.getSuperclass match {
     case stype :DeclaredType => {
       var ctors :List[ExecutableElement] = Nil
       val se = stype.asElement
@@ -170,11 +170,14 @@ object Utils
           if (e.getKind == ElementKind.CONSTRUCTOR) ctors = e :: ctors
         }
       }.scan(se)
-      if (ctors.size > 1) throw new IllegalArgumentException(
-        "Supertype has multiple ctors! " + e + ": " + ctors.mkString(", "))
-      if (ctors.isEmpty) 0 else ctors.head.getParameters.size
+      ctors.size match {
+        case 1 => ctors.head.getParameters.toSeq.map(_.getSimpleName.toString)
+        case 0 => Seq()
+        case _ => throw new IllegalArgumentException(
+          "Supertype has multiple ctors! " + e + ": " + ctors.mkString(", "))
+      }
     }
-    case _ :NoType => 0 // Object's "supertype" takes zero arguments
+    case _ :NoType => Seq() // Object's "supertype" takes zero arguments
   }
 
   /**
