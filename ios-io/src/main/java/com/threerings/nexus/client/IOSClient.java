@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.Executor;
 
+import cli.MonoTouch.Foundation.NSAction;
+import cli.MonoTouch.Foundation.NSObject;
 import cli.System.Console;
 
 import com.threerings.nexus.net.Connection;
@@ -30,14 +32,19 @@ public class IOSClient extends NexusClient
     }
 
     /**
-     * Creates a Nexus client that will dispatch events on the current thread.
+     * Creates a Nexus client that will dispatch events on an NSObject's main thread.
+     * @param obj the object on which to dispatch distributed object events.
      * @param port the port on which to connect to servers.
      */
-    public static NexusClient create (int port) {
+    public static NexusClient create (final NSObject obj, int port) {
         return create(new Executor() {
-            public void execute (Runnable command) {
-                // TODO(bruno): Is this right, or should this go on another thread?
-                command.run();
+            public void execute (final Runnable command) {
+                obj.InvokeOnMainThread(new NSAction(
+                    new NSAction.Method () {
+                        public void Invoke () {
+                            command.run();
+                        }
+                    }));
             }
         }, port);
     }
