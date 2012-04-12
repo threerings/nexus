@@ -39,12 +39,11 @@ public class IOSClient extends NexusClient
     public static NexusClient create (final NSObject obj, int port) {
         return create(new Executor() {
             public void execute (final Runnable command) {
-                obj.InvokeOnMainThread(new NSAction(
-                    new NSAction.Method () {
-                        public void Invoke () {
-                            command.run();
-                        }
-                    }));
+                obj.InvokeOnMainThread(new NSAction(new NSAction.Method() {
+                    public void Invoke () {
+                        command.run();
+                    }
+                }));
             }
         }, port);
     }
