@@ -110,6 +110,45 @@ object Utils
   def isEnum (t :TypeMirror) = extendsClass(EnumName, t)
 
   /**
+   * Returns the fqName of the supplied type's parent `Streamer`, if one exists.
+   */
+  def getParentStreamer (te :TypeElement) :Option[String] = te.getSuperclass match {
+    case dt :DeclaredType if (!isStreamable(dt) || qualifiedName(dt) == NexusObjectName) => None
+    case dt :DeclaredType => Some(getStreamerName(dt.asElement))
+    case _ => None
+  }
+
+  /**
+   * Returns the fqStreamerNAme for the supplied type element. For example: `Streamer_Foo.Bar` for
+   * an element `Foo.Bar`.
+   */
+  def getStreamerName (elem :Element) = {
+    def addName (e :Element, buf :StringBuilder) :StringBuilder = e match {
+      case te :TypeElement => {
+        addName(te.getEnclosingElement, buf)
+        if (buf.length > 0) buf.append(".")
+        // if we're enclosed by a package, the buck stops here
+        if (te.getEnclosingElement.isInstanceOf[PackageElement]) buf.append("Streamer_");
+        buf.append(te.getSimpleName)
+      }
+      case pe :PackageElement => buf.append(pe.getQualifiedName.toString) // we're done
+      case _ => throw new IllegalArgumentException(
+        "Unexpected type when generating streamer name [elem=" + elem + ", kind=" + elem.getKind +
+        ", encl=" + e + ", kind=" + e.getKind + "]")
+    }
+    addName(elem, new StringBuilder).toString
+  }
+
+  def directlyExtendsNexusObject (t :TypeMirror) = t match {
+    case dt :DeclaredType => {
+      // the supertype of a declared type is always another declared type
+      val sdt = dt.asElement.asInstanceOf[TypeElement].getSuperclass.asInstanceOf[DeclaredType]
+      (qualifiedName(sdt) == NexusObjectName)
+    }
+    case _ => false
+  }
+
+  /**
    * Returns a string that can be appended to `in.read` or `out.write` to generate the appropriate
    * read or write call for the supplied type.
    */

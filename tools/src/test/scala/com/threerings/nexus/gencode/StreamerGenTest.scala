@@ -106,6 +106,20 @@ class StreamerGenTest
     // warning is generated
   }
 
+  @Test def testInheritsNexusEvent {
+    val source = NEVStreamerTestCompiler.genSource("CustomEvent.java", """
+      package foo.bar;
+      public class CustomEvent extends com.threerings.nexus.distrib.NexusEvent {
+        public CustomEvent (int targetId, int fooId) {
+          _fooId = fooId;
+        }
+        protected final int _fooId;
+      }
+      """)
+    // make sure we imported the streamer for our supertype
+    assertTrue(source.contains("import com.threerings.nexus.distrib.Streamer_NexusEvent"))
+  }
+
   @Test def testInheritFromInterface {
     val metas = StreamerTestCompiler.genMetas("OuterClass.java", """
       package foo.bar;
@@ -324,7 +338,7 @@ class StreamerGenTest
   }
 }
 
-object StreamerTestCompiler extends TestCompiler {
+class StreamerTestCompiler extends TestCompiler {
   def genSource (filename :String, content :String) :String =
     process(filename, content, new GenSourceProcessor)
 
@@ -366,6 +380,22 @@ object StreamerTestCompiler extends TestCompiler {
     public abstract class NexusObject implements Streamable {
       public void readContents (Streamable.Input in) {}
       public void writeContents (Streamable.Output out) {}
+    }
+  """)
+}
+object StreamerTestCompiler extends StreamerTestCompiler
+
+object NEVStreamerTestCompiler extends StreamerTestCompiler {
+  override protected def stockObjects = super.stockObjects :+ nexevObj
+
+  private def nexevObj = mkTestObject("NexusEvent.java", """
+    package com.threerings.nexus.distrib;
+    import com.threerings.nexus.io.Streamable;
+    public abstract class NexusEvent implements Streamable {
+      public final int targetId;
+      protected NexusEvent (int targetId) {
+        this.targetId = targetId;
+      }
     }
   """)
 }

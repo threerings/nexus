@@ -53,9 +53,9 @@ class StreamableMetadata (val elem :TypeElement) extends Metadata {
   /** Returns the imports needed by this class metadata. */
   def imports :Set[String] = {
     val self = Utils.collectImports(elem.asType)
+    val pstr = Utils.getParentStreamer(elem)
     val cimps = ctorArgs.values.map(Utils.collectImports)
-    val fimps = fields.values.map(Utils.collectImports)
-    (self /: (cimps ++ fimps)) { _ ++ _ } // look Ma, it's like APL!
+    ((self ++ pstr) /: cimps) { _ ++ _ } // look Ma, it's like APL!
   }
 
   /** Returns the name of our parent class, including enclosing classes, not including type
