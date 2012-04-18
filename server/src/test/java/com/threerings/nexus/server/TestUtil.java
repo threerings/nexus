@@ -30,6 +30,9 @@ public class TestUtil
         }
     }
 
+    public static class ChildSingleton extends TestSingleton {
+    }
+
     public static class TestKeyed implements Keyed {
         public TestKeyed (int key) {
             _key = key;
@@ -44,6 +47,12 @@ public class TestUtil
         }
 
         protected Integer _key; // box once instead of on every getKey call
+    }
+
+    public static class ChildKeyed extends TestKeyed {
+        public ChildKeyed (int key) {
+            super(key);
+        }
     }
 
     public static NexusConfig createTestConfig () {

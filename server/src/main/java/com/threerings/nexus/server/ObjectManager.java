@@ -60,7 +60,7 @@ public class ObjectManager
      */
     public void register (NexusObject child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
-            parent.getClass(), "Can't bind child to unregistered singleton parent");
+            getSingletonClass(parent.getClass()), "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
     }
 
@@ -69,7 +69,8 @@ public class ObjectManager
      */
     public void register (NexusObject child, Keyed parent) {
         Binding<Keyed> pbind = requireKeyed(
-            parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
+            getKeyedClass(parent.getClass()), parent.getKey(),
+            "Can't bind child to unregistered keyed parent");
         register(child, pbind.context);
     }
 
@@ -87,7 +88,7 @@ public class ObjectManager
      */
     public void registerSingleton (Singleton child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
-            parent.getClass(), "Can't bind child to unregistered singleton parent");
+            getSingletonClass(parent.getClass()), "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
     }
 
@@ -105,7 +106,8 @@ public class ObjectManager
      */
     public void registerKeyed (Keyed child, Keyed parent) {
         Binding<Keyed> pbind = requireKeyed(
-            parent.getClass(), parent.getKey(), "Can't bind child to unregistered keyed parent");
+            getKeyedClass(parent.getClass()), parent.getKey(),
+            "Can't bind child to unregistered keyed parent");
         register(child, pbind.context);
     }
 
@@ -148,8 +150,9 @@ public class ObjectManager
      * object registration is also cleared.
      */
     public void clearSingleton (Singleton entity) {
-        if (_singletons.remove(entity.getClass()) == null) {
-            log.warning("Requested to clear unknown singleton", "class", entity.getClass());
+        Class<?> sclass = getSingletonClass(entity.getClass());
+        if (_singletons.remove(sclass) == null) {
+            log.warning("Requested to clear unknown singleton", "class", sclass);
         }
         if (entity instanceof NexusObject) {
             clear((NexusObject)entity);
@@ -161,10 +164,11 @@ public class ObjectManager
      * registration is also cleared.
      */
     public void clearKeyed (Keyed entity) {
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(entity.getClass());
+        Class<?> kclass = getKeyedClass(entity.getClass());
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
         if (emap.remove(entity.getKey()) == null) {
             log.warning("Requested to clear unknown keyed entity",
-                        "class", entity.getClass(), "key", entity.getKey());
+                        "class", kclass, "key", entity.getKey());
         }
         if (entity instanceof NexusObject) {
             clear((NexusObject)entity);
@@ -348,7 +352,7 @@ public class ObjectManager
 
     protected void register (Singleton entity, EntityContext ctx) {
         Binding<Singleton> bind = new Binding<Singleton>(entity, ctx);
-        Class<?> sclass = entity.getClass();
+        Class<?> sclass = getSingletonClass(entity.getClass());
         if (_singletons.putIfAbsent(sclass, bind) != null) {
             throw new NexusException(
                 "Singleton entity already registered for " + sclass.getName());
@@ -362,7 +366,7 @@ public class ObjectManager
 
     protected void register (Keyed entity, EntityContext ctx) {
         // TODO: ensure that the key class is non-null and a legal streamable type
-        Class<?> kclass = entity.getClass();
+        Class<?> kclass = getKeyedClass(entity.getClass());
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
         if (emap == null) {
             ConcurrentMap<Comparable<?>,Binding<Keyed>> cmap =
@@ -471,6 +475,24 @@ public class ObjectManager
             _nextId = (_nextId == Integer.MAX_VALUE) ? 1 : (_nextId + 1);
         } while (_objects.containsKey(_nextId));
         return _nextId;
+    }
+
+    protected static Class<?> getKeyedClass (Class<?> kclass) {
+        if (kclass == Object.class) throw new AssertionError(
+            "Keyed instance lacks implementation of Keyed interface!?");
+        for (Class<?> iface : kclass.getInterfaces()) {
+            if (iface.equals(Keyed.class)) return kclass;
+        }
+        return getKeyedClass(kclass.getSuperclass());
+    }
+
+    protected static Class<?> getSingletonClass (Class<?> sclass) {
+        if (sclass == Object.class) throw new AssertionError(
+            "Singleton instance lacks implementation of Singleton interface!?");
+        for (Class<?> iface : sclass.getInterfaces()) {
+            if (iface.equals(Singleton.class)) return sclass;
+        }
+        return getSingletonClass(sclass.getSuperclass());
     }
 
     /** Maintains bindings of entities to contexts. */

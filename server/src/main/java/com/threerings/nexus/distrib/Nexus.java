@@ -10,6 +10,39 @@ import react.Slot;
 
 /**
  * The main source for Nexus services.
+ *
+ * <p><b>Note:</b> {@link Keyed} and {@link Singleton} entities are registered and referenced by
+ * their concrete class. However, some special handling is performed to allow for more natural
+ * handling of subclasses. Specifically, the class that actually <em>declares</em> that it
+ * implements {@code Keyed} or {@code Singleton} is the class under which a keyed or singleton
+ * entity will be registered, and that class token must be used to reference the entity. For
+ * example:
+ * <pre>{@code
+ * class BaseKeyed implements Keyed {
+ *   public final int id;
+ *   public BasedKeyed (int id) {
+ *     this.id = id;
+ *   }
+ *   public Comparable<?> getKey () {
+ *     return id;
+ *   }
+ * }
+ *
+ * class SpecializedKeyed extends BaseKeyed {
+ *   public SpecializedKeyed (int id) {
+ *     super(id);
+ *   }
+ * }
+ *
+ * nexus.register(new SpecializedKeyed(15));
+ * nexus.invoke(BaseKeyed.class, 15, new Action<BaseKeyed>() {
+ *   public void invoke (BaseKeyed entity) {
+ *     // entity will be the instance of SpecializedKeyed
+ *   }
+ * });
+ *
+ * // the same holds for singletons, though that is a rarer use case
+ * }</pre>
  */
 public interface Nexus
 {

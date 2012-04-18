@@ -160,6 +160,34 @@ public class ObjectManagerTest
         }
     }
 
+    @Test
+    public void testKeyedSubclass () {
+        ObjectManager omgr = createObjectManager();
+        omgr.registerKeyed(new ChildKeyed(1));
+        final boolean[] invoked = new boolean[1];
+        omgr.invoke(TestKeyed.class, 1, new Action<TestKeyed>() {
+            public void invoke (TestKeyed obj) {
+                assertTrue(obj instanceof ChildKeyed);
+                invoked[0] = true;
+            }
+        });
+        assertTrue(invoked[0]);
+    }
+
+    @Test
+    public void testSingletonSubclass () {
+        ObjectManager omgr = createObjectManager();
+        omgr.registerSingleton(new ChildSingleton());
+        final boolean[] invoked = new boolean[1];
+        omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
+            public void invoke (TestSingleton obj) {
+                assertTrue(obj instanceof ChildSingleton);
+                invoked[0] = true;
+            }
+        });
+        assertTrue(invoked[0]);
+    }
+
     protected ObjectManager createObjectManager () {
         return new ObjectManager(createTestConfig(), createDirectExec());
     }
