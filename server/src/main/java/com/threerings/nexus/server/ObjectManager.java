@@ -41,6 +41,8 @@ public class ObjectManager
     public interface Subscriber {
         /** Notifies the subscriber of an event which must be forwarded. */
         void forwardEvent (NexusEvent event);
+        /** Notifies the subscriber that the specified object was cleared/removed. */
+        void onCleared (int id);
     }
 
     public ObjectManager (NexusConfig config, Executor exec) {
@@ -60,7 +62,8 @@ public class ObjectManager
      */
     public void register (NexusObject child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
-            getSingletonClass(parent.getClass()), "Can't bind child to unregistered singleton parent");
+            getSingletonClass(parent.getClass()),
+            "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
     }
 
@@ -139,7 +142,11 @@ public class ObjectManager
             public void run () {
                 _objects.remove(id);
                 synchronized (_subscribers) {
-                    _subscribers.remove(id);
+                    // remove the subscriber set and notify them that the object was cleared
+                    Set<Subscriber> subs = _subscribers.remove(id);
+                    if (subs != null) {
+                        for (Subscriber sub : subs) sub.onCleared(id);
+                    }
                 }
             }
         });

@@ -41,14 +41,15 @@ public abstract class Connection
      * Requests to unsubscribe from the specified Nexus object.
      */
     public void unsubscribe (NexusObject object) {
-        if (_objects.remove(object.getId()) == null) {
-            log.warning("Requested to unsubscribe from unknown object", "id", object.getId());
+        int id = object.getId();
+        if (_objects.remove(id) == null) {
+            log.warning("Requested to unsubscribe from unknown object", "id", id);
             return;
         }
 
         // TODO: make a note that we just unsubscribed, and so not to warn about events that arrive
         // for this object in the near future (the server doesn't yet know that we've unsubscribed)
-        send(new Upstream.Unsubscribe(object.getId()));
+        send(new Upstream.Unsubscribe(id));
     }
 
     // TODO: how to communicate connection termination/failure?
@@ -172,6 +173,16 @@ public abstract class Connection
         } catch (Throwable t) {
             log.warning("Failure delivering service failure", t);
         }
+    }
+
+    // from interface Downstream.Handler
+    public void onObjectCleared (Downstream.ObjectCleared msg) {
+        final NexusObject target = _objects.remove(msg.id);
+        if (target == null) {
+            log.warning("Unknown object cleared", "id", msg.id);
+            return;
+        }
+        target.onLost.emit(null);
     }
 
     protected Connection (String host) {

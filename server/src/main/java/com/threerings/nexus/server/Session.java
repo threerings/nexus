@@ -11,12 +11,12 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import react.SignalView;
 import react.UnitSignal;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.NexusEvent;
@@ -127,6 +127,10 @@ public class Session
         public void forwardEvent (NexusEvent event) {
             sendMessage(new Downstream.DispatchEvent(event));
         }
+        public void onCleared (int id) {
+            _subscriptions.remove(id);
+            sendMessage(new Downstream.ObjectCleared(id));
+        }
     };
 
     protected final Upstream.Handler _handler = new Upstream.Handler() {
@@ -145,7 +149,8 @@ public class Session
         }
 
         public void onUnsubscribe (Upstream.Unsubscribe msg) {
-            // TODO
+            _subscriptions.remove(msg.id);
+            _omgr.clearSubscriber(msg.id, _subscriber);
         }
 
         public void onPostEvent (Upstream.PostEvent msg) {
@@ -189,7 +194,7 @@ public class Session
     protected final UnitSignal _onDisconnect = new UnitSignal();
 
     /** Tracks our extant object subscriptions. */
-    protected final Set<Integer> _subscriptions = Sets.newHashSet();
+    protected final Set<Integer> _subscriptions = new ConcurrentSkipListSet<Integer>();
 
     /** Tracks session-local attributes. */
     protected final Map<Class<?>, Object> _locals = Maps.newHashMap();

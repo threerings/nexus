@@ -4,6 +4,8 @@
 
 package com.threerings.nexus.distrib;
 
+import react.Signal;
+
 import com.threerings.nexus.io.Streamable;
 
 import static com.threerings.nexus.util.Log.log;
@@ -14,6 +16,15 @@ import static com.threerings.nexus.util.Log.log;
 public abstract class NexusObject
     implements Streamable, NexusService.ObjectResponse
 {
+    /**
+     * A signal that is emitted if the subscription to this object is lost due to the object being
+     * destroyed or due to the connection to the server that hosts this object being lost. The
+     * exception delivered to the signal will be null if the object was destroyed or the cause of
+     * the networking failure if an object is lost due to loss of network connection. This signal
+     * will never be emitted on the hosting server, only on a subscribing client.
+     */
+    public final Signal<Exception> onLost = Signal.create();
+
     /**
      * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.
      */

@@ -30,6 +30,9 @@ public interface Downstream extends Streamable
 
         /** Dispatches a failed service notification from the server. */
         void onServiceFailure (ServiceFailure message);
+
+        /** Dispatches an object cleared notification. */
+        void onObjectCleared (ObjectCleared message);
     }
 
     /** A successful response to a subscription request. */
@@ -125,6 +128,21 @@ public interface Downstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onServiceFailure(this);
+        }
+    }
+
+    /** Delivers an object cleared notification from the server. */
+    public static class ObjectCleared implements Downstream {
+        /** The id of the object that was cleared. */
+        public final int id;
+
+        public ObjectCleared (int id) {
+            assert(id > 0); // le cheque du sanity
+            this.id = id;
+        }
+
+        public void dispatch (Handler handler) {
+            handler.onObjectCleared(this);
         }
     }
 

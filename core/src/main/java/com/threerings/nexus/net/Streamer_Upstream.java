@@ -37,7 +37,7 @@ public class Streamer_Upstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Upstream.Subscribe obj) {
+        public static void writeObjectImpl (Streamable.Output out, Upstream.Subscribe obj) {
             out.writeValue(obj.addr);
         }
     }
@@ -63,7 +63,7 @@ public class Streamer_Upstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Upstream.Unsubscribe obj) {
+        public static void writeObjectImpl (Streamable.Output out, Upstream.Unsubscribe obj) {
             out.writeInt(obj.id);
         }
     }
@@ -89,7 +89,7 @@ public class Streamer_Upstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Upstream.PostEvent obj) {
+        public static void writeObjectImpl (Streamable.Output out, Upstream.PostEvent obj) {
             out.writeValue(obj.event);
         }
     }
@@ -119,7 +119,7 @@ public class Streamer_Upstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Upstream.ServiceCall obj) {
+        public static void writeObjectImpl (Streamable.Output out, Upstream.ServiceCall obj) {
             out.writeInt(obj.callId);
             out.writeInt(obj.objectId);
             out.writeShort(obj.attrIndex);

@@ -36,7 +36,7 @@ public class Streamer_Downstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Downstream.Subscribe obj) {
+        public static void writeObjectImpl (Streamable.Output out, Downstream.Subscribe obj) {
             out.writeValue(obj.object);
         }
     }
@@ -63,7 +63,7 @@ public class Streamer_Downstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Downstream.SubscribeFailure obj) {
+        public static void writeObjectImpl (Streamable.Output out, Downstream.SubscribeFailure obj) {
             out.writeValue(obj.addr);
             out.writeString(obj.cause);
         }
@@ -90,7 +90,7 @@ public class Streamer_Downstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Downstream.DispatchEvent obj) {
+        public static void writeObjectImpl (Streamable.Output out, Downstream.DispatchEvent obj) {
             out.writeValue(obj.event);
         }
     }
@@ -117,7 +117,7 @@ public class Streamer_Downstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Downstream.ServiceResponse obj) {
+        public static void writeObjectImpl (Streamable.Output out, Downstream.ServiceResponse obj) {
             out.writeInt(obj.callId);
             out.writeValue(obj.result);
         }
@@ -145,9 +145,35 @@ public class Streamer_Downstream
             );
         }
 
-        public static  void writeObjectImpl (Streamable.Output out, Downstream.ServiceFailure obj) {
+        public static void writeObjectImpl (Streamable.Output out, Downstream.ServiceFailure obj) {
             out.writeInt(obj.callId);
             out.writeString(obj.cause);
+        }
+    }
+
+    /**
+     * Handles the streaming of {@link Downstream.ObjectCleared} instances.
+     */
+    public static class ObjectCleared implements Streamer<Downstream.ObjectCleared> {
+        @Override
+        public Class<?> getObjectClass () {
+            return Downstream.ObjectCleared.class;
+        }
+
+        @Override
+        public void writeObject (Streamable.Output out, Downstream.ObjectCleared obj) {
+            writeObjectImpl(out, obj);
+        }
+
+        @Override
+        public Downstream.ObjectCleared readObject (Streamable.Input in) {
+            return new Downstream.ObjectCleared(
+                in.readInt()
+            );
+        }
+
+        public static void writeObjectImpl (Streamable.Output out, Downstream.ObjectCleared obj) {
+            out.writeInt(obj.id);
         }
     }
 
