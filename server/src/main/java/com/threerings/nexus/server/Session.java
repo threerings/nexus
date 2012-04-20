@@ -69,9 +69,9 @@ public class Session
     };
 
     /**
-     * A signal that is emitted when this session disconnects. During the emission of this signal,
-     * the session in question will be bound as current, so that {@link SessionLocal} can be used
-     * to access session-local data.
+     * A signal that is emitted when this session disconnects unexpectedly. During the emission of
+     * this signal, the session in question will be bound as current, so that {@link SessionLocal}
+     * can be used to access session-local data.
      */
     public SignalView<Void> onDisconnect () {
         return _onDisconnect;
@@ -101,6 +101,13 @@ public class Session
      */
     public String getIPAddress () {
         return _ipaddress;
+    }
+
+    /**
+     * Disconnects this session.
+     */
+    public void disconnect () {
+        _output.disconnect();
     }
 
     @Override public String toString () {

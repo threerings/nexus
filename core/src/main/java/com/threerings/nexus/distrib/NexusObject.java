@@ -23,7 +23,7 @@ public abstract class NexusObject
      * the networking failure if an object is lost due to loss of network connection. This signal
      * will never be emitted on the hosting server, only on a subscribing client.
      */
-    public final Signal<Exception> onLost = Signal.create();
+    public final Signal<Throwable> onLost = Signal.create();
 
     /**
      * Returns this object's Nexus id. Only valid after the object has been registered with Nexus.

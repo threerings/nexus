@@ -52,8 +52,6 @@ public abstract class Connection
         send(new Upstream.Unsubscribe(id));
     }
 
-    // TODO: how to communicate connection termination/failure?
-
     /**
      * Closes this connection in an orderly fashion. Any messages currently queued up should be
      * delivered prior to closure.
@@ -212,6 +210,32 @@ public abstract class Connection
         });
     }
 
+    /**
+     * Called when our connection is closed. If {@code error} is non-null, the closure will be
+     * treated as an unexpected failure. If {@code error} is null, the closure will be treated as
+     * orderly (as a result of a prior call to {@link #close}.
+     */
+    protected void onClose (Throwable error) {
+        if (error == null) error = new Exception("Connection closed");
+
+        // notify any penders that we're not going to hear back
+        _penders.onClose(error);
+
+        // notify any in-flight service calls that they failed
+        if (!_calls.isEmpty()) {
+            log.info("Clearing " + _calls.size() + " calls.");
+            for (Callback<?> cb : _calls.values()) cb.onFailure(error);
+            _calls.clear();
+        }
+
+        // notify any dangling objects that they were lost
+        if (!_objects.isEmpty()) {
+            log.info("Clearing " + _objects.size() + " objects.");
+            for (NexusObject obj : _objects.values()) obj.onLost.emit(error);
+            _objects.clear();
+        }
+    }
+
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
     protected static class PenderMap {
         public synchronized boolean addPender (Address<?> addr, Callback<?> cb) {
@@ -227,6 +251,15 @@ public abstract class Connection
 
         public synchronized List<Callback<?>> getPenders (Address<?> addr) {
             return _penders.remove(addr);
+        }
+
+        public synchronized void onClose (Throwable error) {
+            if (_penders.isEmpty()) return;
+            log.info("Clearing " + _penders.size() + " penders.");
+            for (List<Callback<?>> penders : _penders.values()) {
+                for (Callback<?> pender : penders) pender.onFailure(error);
+            }
+            _penders.clear();
         }
 
         protected Map<Address<?>, List<Callback<?>>> _penders =

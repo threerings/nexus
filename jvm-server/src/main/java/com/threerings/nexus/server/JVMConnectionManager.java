@@ -121,7 +121,8 @@ public class JVMConnectionManager
         _state = State.TERMINATED;
         // trigger the writer thread to shutdown
         _outq.offer(TERMINATOR);
-        // TODO: close all of our client sockets?
+        // shutdown all of our sessions, which will disconnect their sockets
+        _smgr.shutdown();
     }
 
     /**

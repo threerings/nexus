@@ -78,8 +78,7 @@ public class JVMConnection extends Connection
      * Called by the reader when our socket is fully closed.
      */
     protected void connectionClosed () {
-        log.info("Connection closed. TODO!");
-        // TODO: report to our client (or observer) that we were shutdown
+        onClose(null);
     }
 
     /**
@@ -89,7 +88,8 @@ public class JVMConnection extends Connection
         // close everything down; if the writer failed, this will already have happened, but if the
         // reader failed, this will trigger the writer to close the socket and tidy things up
         close();
-        // TODO: report to our client (or observer) that we failed
+        // report that we failed
+        onClose(cause);
     }
 
     protected static void closeChannel (SocketChannel channel) {

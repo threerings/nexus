@@ -59,7 +59,7 @@ public class JVMServerConnection
             // this means that our async connection is not quite complete, just requeue ourselves
             // and try again later
             _cmgr.requeueWriter(this);
-            
+
         } catch (IOException ioe) {
             // because we may still be lingering in the connection manager's writable queue, clear
             // out our outgoing queue so that any final calls to writeMessages NOOP
@@ -69,7 +69,7 @@ public class JVMServerConnection
             onClose(ioe);
         }
     }
-    
+
     // from interface SessionManager.Output
     public synchronized void send (Downstream msg) {
         // we may be called from many threads, this method is serialized to avoid conflicting
@@ -93,7 +93,11 @@ public class JVMServerConnection
 
     // from interface SessionManager.Output
     public void disconnect () {
-        // TODO: shutdown the socket and see what happens?
+        try {
+            _chan.close();
+        } catch (IOException ioe) {
+            log.warning("Failed to close socket", "socket", _chan, ioe);
+        }
     }
 
     // from interface JVMConnectionManager.IOHandler

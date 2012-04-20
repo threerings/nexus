@@ -83,6 +83,14 @@ public class SessionManager
         return session.input;
     }
 
+    /**
+     * Shuts down this session manager and disconnects all sessions.
+     */
+    public void shutdown () {
+        for (Session sess : _byIP.values()) sess.disconnect();
+        _byIP.clear();
+    }
+
     protected void sessionDisconnected (Session sess) {
         // remove the session from our (ip -> sessions) mapping
         _byIP.remove(sess.getIPAddress(), sess);
