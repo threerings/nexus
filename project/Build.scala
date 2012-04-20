@@ -14,7 +14,7 @@ object NexusBuild extends Build {
       autoScalaLibrary := false, // no scala-library dependency
       publishArtifact in (Compile, packageDoc) := false, // no scaladocs; it fails
       libraryDependencies ++= Seq(
-        "com.novocode" % "junit-interface" % "0.7" % "test->default" // make junit work
+        "com.novocode" % "junit-interface" % "0.8" % "test->default" // make junit work
       )
     )
     override def projectSettings (name :String) = name match {
@@ -27,6 +27,10 @@ object NexusBuild extends Build {
         // adds source files to our jar file (needed by GWT)
         unmanagedResourceDirectories in Compile <+= baseDirectory / "src/main/java"
         // unmanagedBase <<= baseDirectory { base => base / "disabled" }
+      )
+      case "jvm-server" => Seq(
+        // server tests listen on sockets, so we need to run them serially
+        parallelExecution in Test := false
       )
       case "tools" => Seq(
         autoScalaLibrary := true // we want scala-library back
