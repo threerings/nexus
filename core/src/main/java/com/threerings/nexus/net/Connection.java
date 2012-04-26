@@ -219,7 +219,7 @@ public abstract class Connection
         if (error == null) error = new Exception("Connection closed");
 
         // notify any penders that we're not going to hear back
-        _penders.onClose(error);
+        _penders.onClose(error, this);
 
         // notify any in-flight service calls that they failed
         if (!_calls.isEmpty()) {
@@ -253,11 +253,15 @@ public abstract class Connection
             return _penders.remove(addr);
         }
 
-        public synchronized void onClose (Throwable error) {
+        public synchronized void onClose (final Throwable error, Connection conn) {
             if (_penders.isEmpty()) return;
             log.info("Clearing " + _penders.size() + " penders.");
-            for (List<Callback<?>> penders : _penders.values()) {
-                for (Callback<?> pender : penders) pender.onFailure(error);
+            for (final List<Callback<?>> penders : _penders.values()) {
+                conn.dispatch(new Runnable() {
+                    public void run () {
+                        for (Callback<?> pender : penders) pender.onFailure(error);
+                    }
+                });
             }
             _penders.clear();
         }
