@@ -66,11 +66,25 @@ public class GWTClient extends NexusClient
             format(null, message, args);
         }
         @Override public void log (Object level, String message, Throwable cause) {
-            GWT.log(message, cause);
+            if (GWT.isScript()) {
+                sendToBrowserConsole(message, cause);
+            } else {
+                GWT.log(message, cause);
+            }
         }
         @Override public void setWarnOnly () {
             _warnOnly = true;
         }
         protected boolean _warnOnly;
     };
+
+    protected static native void sendToBrowserConsole(String msg, Throwable e) /*-{
+        if ($wnd.console && $wnd.console.info) {
+            if (e != null) {
+                $wnd.console.info(msg, e);
+            } else {
+                $wnd.console.info(msg);
+            }
+        }
+    }-*/;
 }
