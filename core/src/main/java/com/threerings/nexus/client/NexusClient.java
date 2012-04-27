@@ -7,6 +7,8 @@ package com.threerings.nexus.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import react.Slot;
+
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.net.Connection;
@@ -107,13 +109,19 @@ public abstract class NexusClient
         });
     }
 
-    protected synchronized void onConnectSuccess (Connection conn) {
+    protected synchronized void onConnectSuccess (final Connection conn) {
         CallbackList<Connection> plist = _penders.remove(conn.getHost());
         if (plist == null) {
             log.warning("Have no penders for established connection?!", "host", conn.getHost());
             conn.close(); // shutdown and drop connection
         } else {
             _connections.put(conn.getHost(), conn);
+            // we want to be notified when this connection closes
+            conn.onClose.connect(new Slot<Throwable>() {
+                @Override public void onEmit (Throwable error) {
+                    onConnectionClose(conn, error);
+                }
+            });
             plist.onSuccess(conn);
         }
     }
@@ -125,6 +133,11 @@ public abstract class NexusClient
         } else {
             plist.onFailure(cause);
         }
+    }
+
+    protected synchronized void onConnectionClose (Connection conn, Throwable error) {
+        // TODO: do we care about orderly versus exceptional closure?
+        _connections.remove(conn.getHost());
     }
 
     /** A mapping from hostname to connection instance for all active connections. */

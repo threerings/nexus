@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import react.Signal;
+
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.DistribUtil;
 import com.threerings.nexus.distrib.EventSink;
@@ -27,6 +29,10 @@ import static com.threerings.nexus.util.Log.log;
 public abstract class Connection
     implements Downstream.Handler, EventSink
 {
+    /** A signal emitted when this connection is closed. The payload will be non-null if the
+     * connection was closed in error, null if it was closed in an orderly manner. */
+    public final Signal<Throwable> onClose = Signal.create();
+
     /**
      * Requests to subscribe to the specified Nexus object. Success (i.e. the object) or failure
      * will be communicated via the supplied callback.
@@ -216,24 +222,28 @@ public abstract class Connection
      * orderly (as a result of a prior call to {@link #close}.
      */
     protected void onClose (Throwable error) {
-        if (error == null) error = new Exception("Connection closed");
+        // we want to pass a non-null exception to penders, failed calls and lost objects
+        Throwable perror = (error != null) ? error : new Exception("Connection closed");
 
         // notify any penders that we're not going to hear back
-        _penders.onClose(error, this);
+        _penders.onClose(perror, this);
 
         // notify any in-flight service calls that they failed
         if (!_calls.isEmpty()) {
             log.info("Clearing " + _calls.size() + " calls.");
-            for (Callback<?> cb : _calls.values()) cb.onFailure(error);
+            for (Callback<?> cb : _calls.values()) cb.onFailure(perror);
             _calls.clear();
         }
 
         // notify any dangling objects that they were lost
         if (!_objects.isEmpty()) {
             log.info("Clearing " + _objects.size() + " objects.");
-            for (NexusObject obj : _objects.values()) obj.onLost.emit(error);
+            for (NexusObject obj : _objects.values()) obj.onLost.emit(perror);
             _objects.clear();
         }
+
+        // finally notify listeners of our closure (here error may be null)
+        onClose.emit(error);
     }
 
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
