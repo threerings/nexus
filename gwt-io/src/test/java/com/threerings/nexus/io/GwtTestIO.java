@@ -4,12 +4,9 @@
 
 package com.threerings.nexus.io;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.Test;
 
 import com.google.gwt.junit.client.GWTTestCase;
-
-import org.junit.*;
 
 /**
  * Tests the client input and server output pair (in conjunction with ServerOutputTest in
@@ -23,122 +20,54 @@ public class GwtTestIO extends GWTTestCase
         return "com.threerings.nexus.GWTIO";
     }
 
-    // NOTE: changes to these tests should be mirrored in Server{Input|Output}Test in gwt-server
-
     @Test
     public void testBasicTypesInput () {
-        final String PAYLOAD =
-            "[1,0,-128,0,127,-32768,0,32767,0,48,65535,-2147483648,0,2147483647,'IAAAAAAAAAA'," +
-            "'A','H__________',1.401298464324817E-45,0.0,3.4028234663852886E38,4.9E-324,0.0," +
-            "1.7976931348623157E308,null,\"The quick brown fox jumped over the lazy dog.\"]";
-
-        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
-        assertEquals(true, in.readBoolean());
-        assertEquals(false, in.readBoolean());
-        assertEquals(Byte.MIN_VALUE, in.readByte());
-        assertEquals((byte)0, in.readByte());
-        assertEquals(Byte.MAX_VALUE, in.readByte());
-        assertEquals(Short.MIN_VALUE, in.readShort());
-        assertEquals((short)0, in.readShort());
-        assertEquals(Short.MAX_VALUE, in.readShort());
-        assertEquals(Character.MIN_VALUE, in.readChar());
-        assertEquals('0', in.readChar());
-        assertEquals(Character.MAX_VALUE, in.readChar());
-        assertEquals(Integer.MIN_VALUE, in.readInt());
-        assertEquals(0, in.readInt());
-        assertEquals(Integer.MAX_VALUE, in.readInt());
-        assertEquals(Long.MIN_VALUE, in.readLong());
-        assertEquals(0L, in.readLong());
-        assertEquals(Long.MAX_VALUE, in.readLong());
-        assertEquals(Float.MIN_VALUE, in.readFloat(), 0f);
-        assertEquals(0.0f, in.readFloat(), 0f);
-        assertEquals(Float.MAX_VALUE, in.readFloat(), 0f);
-        assertEquals(Double.MIN_VALUE, in.readDouble(), 0.0);
-        assertEquals(0.0, in.readDouble(), 0.0);
-        assertEquals(Double.MAX_VALUE, in.readDouble(), 0.0);
-        assertEquals(null, in.readString());
-        assertEquals("The quick brown fox jumped over the lazy dog.", in.readString());
+        IOTester.checkBasicTypes(
+            GWTIO.newInput(new TestSerializer(), IOTester.BT_IN_PAYLOAD), CHECKER);
     }
 
     @Test
     public void testBasicTypesOutput () {
         StringBuffer buf = new StringBuffer();
-        Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
-        out.writeBoolean(true);
-        out.writeBoolean(false);
-        out.writeByte(Byte.MIN_VALUE);
-        out.writeByte((byte)0);
-        out.writeByte(Byte.MAX_VALUE);
-        out.writeShort(Short.MIN_VALUE);
-        out.writeShort((short)0);
-        out.writeShort(Short.MAX_VALUE);
-        out.writeChar(Character.MIN_VALUE);
-        out.writeChar('0');
-        out.writeChar(Character.MAX_VALUE);
-        out.writeInt(Integer.MIN_VALUE);
-        out.writeInt(0);
-        out.writeInt(Integer.MAX_VALUE);
-        out.writeLong(Long.MIN_VALUE);
-        out.writeLong(0L);
-        out.writeLong(Long.MAX_VALUE);
-        out.writeFloat(Float.MIN_VALUE);
-        out.writeFloat(0.0f);
-        out.writeFloat(Float.MAX_VALUE);
-        out.writeDouble(Double.MIN_VALUE);
-        out.writeDouble(0.0);
-        out.writeDouble(Double.MAX_VALUE);
-        out.writeString(null);
-        out.writeString("The quick brown fox jumped over the lazy dog.");
+        IOTester.writeBasicTypes(GWTIO.newOutput(new TestSerializer(), buf));
         // System.out.println(buf); // for regeneration
-
-        final String PAYLOAD =
-            "1|0|-128|0|127|-32768|0|32767|0|48|65535|-2147483648|0|2147483647|IAAAAAAAAAA|" +
-            "A|H__________|1.401298464324817E-45|0.0|3.4028234663852886E38|4.9E-324|0.0|" +
-            "1.7976931348623157E308|0|1|The quick brown fox jumped over the lazy dog.|";
-        assertEquals(PAYLOAD, buf.toString());
+        assertEquals(IOTester.BT_OUT_PAYLOAD, buf.toString());
     }
 
     @Test
     public void testValueInput () {
-        final String PAYLOAD =
-            "[31,\"RED\",\"foo\",33,42,31,\"GREEN\",\"bar\",33,21,31,\"BLUE\",\"baz\",33,7]";
-        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
-        for (Widget w : Widget.WS) {
-            assertEquals(w, in.<Widget>readValue());
-        }
+        IOTester.checkValue(
+            GWTIO.newInput(new TestSerializer(), IOTester.VALUE_IN_PAYLOAD), CHECKER);
     }
 
     @Test
     public void testValueOutput () {
         StringBuffer buf = new StringBuffer();
-        Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
-        for (Widget w : Widget.WS) {
-            out.writeValue(w);
-        }
+        IOTester.writeValue(GWTIO.newOutput(new TestSerializer(), buf));
         // System.out.println(buf);
-
-        final String PAYLOAD = "31|1|RED|1|foo|33|42|31|1|GREEN|1|bar|33|21|31|1|BLUE|1|baz|33|7|";
-        assertEquals(PAYLOAD, buf.toString());
+        assertEquals(IOTester.VALUE_OUT_PAYLOAD, buf.toString());
     }
 
     @Test
     public void testValuesInput () {
-        final String PAYLOAD =
-            "[3,31,\"RED\",\"foo\",33,42,\"GREEN\",\"bar\",33,21,\"BLUE\",\"baz\",33,7]";
-        Streamable.Input in = GWTIO.newInput(new TestSerializer(), PAYLOAD);
-        List<Widget> into = new ArrayList<Widget>();
-        in.<Widget>readValues(into);
-        assertEquals(Widget.WS, into);
+        IOTester.checkValues(
+            GWTIO.newInput(new TestSerializer(), IOTester.VALUES_IN_PAYLOAD), CHECKER);
     }
 
     @Test
     public void testValuesOutput () {
         StringBuffer buf = new StringBuffer();
-        Streamable.Output out = GWTIO.newOutput(new TestSerializer(), buf);
-        out.writeValues(Widget.WS.size(), Widget.WS.iterator());
+        IOTester.writeValues(GWTIO.newOutput(new TestSerializer(), buf));
         // System.out.println(buf);
-
-        final String PAYLOAD = "3|31|1|RED|1|foo|33|42|1|GREEN|1|bar|33|21|1|BLUE|1|baz|33|7|";
-        assertEquals(PAYLOAD, buf.toString());
+        assertEquals(IOTester.VALUES_OUT_PAYLOAD, buf.toString());
     }
+
+    protected final IOTester.Checker CHECKER = new IOTester.Checker() {
+        public void assertEquals (Object expected, Object got) {
+            GwtTestIO.this.assertEquals(expected, got);
+        }
+        public void assertEquals (double expected, double got, double epsilon) {
+            GwtTestIO.this.assertEquals(expected, got, epsilon);
+        }
+    };
 }

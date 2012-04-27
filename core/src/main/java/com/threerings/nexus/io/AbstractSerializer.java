@@ -132,6 +132,7 @@ public abstract class AbstractSerializer implements Serializer
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.DispatchEvent());
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.ServiceResponse());
         mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.ServiceFailure());
+        mapStreamer(new com.threerings.nexus.net.Streamer_Downstream.ObjectCleared());
         mapStreamer(new com.threerings.nexus.net.Streamer_Upstream.Subscribe());
         mapStreamer(new com.threerings.nexus.net.Streamer_Upstream.Unsubscribe());
         mapStreamer(new com.threerings.nexus.net.Streamer_Upstream.PostEvent());
