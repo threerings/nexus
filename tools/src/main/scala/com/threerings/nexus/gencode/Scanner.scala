@@ -76,7 +76,7 @@ class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
     }
 
     def visitVariable (e :VariableElement) {
-      if (e.getKind == ElementKind.FIELD) {
+      if (e.getKind == ElementKind.FIELD && !e.getModifiers.contains(Modifier.STATIC)) {
         meta.fields += (e.getSimpleName.toString -> e.asType)
       }
     }
