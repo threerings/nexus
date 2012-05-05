@@ -208,7 +208,6 @@ public abstract class Connection
      * Called when a message is received from the server.
      */
     protected void onReceive (final Downstream message) {
-        log.info("Received "+ message);
         dispatch(new Runnable() {
             public void run () {
                 message.dispatch(Connection.this);
