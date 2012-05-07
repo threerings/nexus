@@ -31,7 +31,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         }
 
         @Override public boolean equals (Object other) {
-            if (other.getClass() != getClass()) return false;
+            if (other == null || other.getClass() != getClass()) return false;
             OfKeyed<?> oaddr = (OfKeyed<?>)other;
             return oaddr.key.equals(key) && super.equals(oaddr);
         }
