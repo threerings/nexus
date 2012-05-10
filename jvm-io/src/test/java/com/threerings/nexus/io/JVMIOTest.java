@@ -134,6 +134,21 @@ public class JVMIOTest
         });
     }
 
+    @Test
+    public void testManualStreamer () {
+        final Thunk t1 = new Thunk(42), t2 = new Thunk(0xDEADBEEF);
+        testStreaming(new StreamTester() {
+            public void writeTest (Streamable.Output out) {
+                out.writeValue(t1);
+                out.writeValue(t2);
+            }
+            public void readTest (Streamable.Input in) {
+                assertEquals(t1, in.<Thunk>readValue());
+                assertEquals(t2, in.<Thunk>readValue());
+            }
+        });
+    }
+
     protected void testStreaming (StreamTester tester) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Streamable.Output sout = JVMIO.newOutput(out);
