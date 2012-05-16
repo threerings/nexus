@@ -20,6 +20,16 @@ public interface Callback<T>
         protected Callback<?> _onFailure;
     }
 
+    public static class NoOp<T> implements Callback<T> {
+        @Override public void onSuccess (T result) {
+            // We're a No-Op - do nothing.
+        }
+
+        @Override public void onFailure (Throwable cause) {
+            // We're a No-Op - do nothing.
+        }
+    }
+
     /**
      * Called when the asynchronous request succeeded, supplying its result.
      */
