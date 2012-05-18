@@ -16,7 +16,7 @@ public class CallbackList<T> implements Callback<T>
     /**
      * Creates a callback list, populated with the supplied callback.
      */
-    public static <T> CallbackList<T> create (Callback<T> callback) {
+    public static <T> CallbackList<T> create (Callback<? super T> callback) {
         CallbackList<T> list = new CallbackList<T>();
         list.add(callback);
         return list;
@@ -25,9 +25,9 @@ public class CallbackList<T> implements Callback<T>
     /**
      * Adds the supplied callback to the list.
      *
-     * @throws IllegalStateException if this callback has already fired.
+     * @throws IllegalStateException if this callbackhas already fired.
      */
-    public void add (Callback<T> callback) {
+    public void add (Callback<? super T> callback) {
         checkState();
         _callbacks.add(callback);
     }
@@ -37,7 +37,7 @@ public class CallbackList<T> implements Callback<T>
      *
      * @throws IllegalStateException if this callback has already fired.
      */
-    public void remove (Callback<T> callback) {
+    public void remove (Callback<? super T> callback) {
         checkState();
         _callbacks.remove(callback);
     }
@@ -53,14 +53,14 @@ public class CallbackList<T> implements Callback<T>
     }
 
     protected void propagateSuccess (T result) {
-        for (Callback<T> cb : _callbacks) {
+        for (Callback<? super T> cb : _callbacks) {
             cb.onSuccess(result);
         }
         _callbacks = null; // note that we've fired
     }
 
     protected void propagateFailure (Throwable cause) {
-        for (Callback<T> cb : _callbacks) {
+        for (Callback<? super T> cb : _callbacks) {
             cb.onFailure(cause);
         }
         _callbacks = null; // note that we've fired
@@ -73,5 +73,5 @@ public class CallbackList<T> implements Callback<T>
     }
 
     /** A list of callbacks which will be notified on success or failure. */
-    protected List<Callback<T>> _callbacks = new ArrayList<Callback<T>>();
+    protected List<Callback<? super T>> _callbacks = new ArrayList<Callback<? super T>>();
 }

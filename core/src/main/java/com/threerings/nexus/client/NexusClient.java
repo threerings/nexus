@@ -84,7 +84,8 @@ public abstract class NexusClient
      * Establishes a connection with the supplied host (if one does not already exist), and invokes
      * the supplied action with said connection. Ensures thread-safety in the process.
      */
-    protected synchronized void withConnection (final String host, Callback<Connection> action) {
+    protected synchronized void withConnection (final String host,
+                                                Callback<? super Connection> action) {
         Connection conn = _connections.get(host);
         if (conn != null) {
             action.onSuccess(conn);
