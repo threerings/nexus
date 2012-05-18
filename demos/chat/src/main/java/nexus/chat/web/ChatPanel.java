@@ -181,7 +181,7 @@ public class ChatPanel extends Composite
     protected void appendLine (String line) {
         _chat.add(Widgets.newLabel(line));
     }
-    
+
     protected <T> Callback<T> callback (final Action<T> action, final String errpre) {
         return new Callback<T>() {
             public void onSuccess (T result) {
