@@ -53,12 +53,14 @@ public interface Nexus
          * executed at least once. It is possible that the cancellation occurs simultaneously with
          * the action being queued for execution on its entity, at which point the action cannot be
          * stopped. Thus any deferred action should contain code that confirm that its
-         * preconditions still hold. </p> */
+         * preconditions still hold. </p>
+         * @throws IllegalStateException if this action has already been canceled. */
         void cancel ();
 
         /** Causes this deferred action to repeat every {@code period} millis after its first
          * invocation, until canceled. This must be called immediately after {@link #invokeAfter}.
-         * @return a reference to this instance for convenient chaining. */
+         * @return a reference to this instance for convenient chaining.
+         * @throws IllegalStateException if this action has been canceled. */
         Deferred repeatEvery (long period);
     }
 
