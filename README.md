@@ -13,7 +13,7 @@ It is currently extremely unfinished.
 
 At the top-level run:
 
-    ant maven-deploy
+    ant install
 
 to build the various jar files and install them into your local Maven
 repository.
