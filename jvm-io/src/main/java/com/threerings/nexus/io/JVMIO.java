@@ -344,7 +344,7 @@ public class JVMIO
                 return resolveAndWriteClass(vclass);
             }
 
-            @SuppressWarnings("unchecked") 
+            @SuppressWarnings("unchecked")
             protected final <T> Streamer<T> writeKnownClass (Short code) {
                 writeShort(code);
                 return (Streamer<T>)_streamers.get(code);

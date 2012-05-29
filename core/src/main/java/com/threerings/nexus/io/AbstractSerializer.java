@@ -75,7 +75,7 @@ public abstract class AbstractSerializer implements Serializer
         throw new NexusException("Requested to stream unknown type " + vclass);
     }
 
-    @SuppressWarnings("unchecked") 
+    @SuppressWarnings("unchecked")
     protected final <T> Streamer<T> writeClass (Streamable.Output out, Short code) {
         out.writeShort(code);
         return (Streamer<T>)_streamers.get(code);
