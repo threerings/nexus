@@ -18,7 +18,7 @@ public class Log
 
         /** Logs a warning level message, with the supplied arguments and optional Throwable cause
          * in final position. For example:
-         * {@code log.info("Bad thing happened", "info", data, cause);} */
+         * {@code log.warning("Bad thing happened", "info", data, cause);} */
         public abstract void warning (String message, Object... args);
 
         /** Disables info logging, shows only warnings and above. */
