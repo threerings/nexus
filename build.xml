@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <project name="nexus" default="compile" xmlns:artifact="urn:maven-artifact-ant">
+  <import file="etc/base-build-support.xml"/>
+
   <!-- hey Ant, how do I iterate over a list in a way that doesn't require an extension? -->
   <target name="clean">
     <ant dir="core" target="clean"/>
@@ -25,7 +27,8 @@
     <ant dir="demos/chat" target="compile"/>
   </target>
 
-  <target name="install">
+  <target name="install" depends="-init-ooo">
+    <mavendeploy file="pom.xml" pom="pom.xml"/>
     <ant dir="core" target="install"/>
     <ant dir="test-support" target="install"/>
     <ant dir="server" target="install"/>

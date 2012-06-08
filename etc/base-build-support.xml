@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<project name="nexus-base-support" default="compile" xmlns:artifact="urn:maven-artifact-ant">
+  <dirname property="etc.dir" file="${ant.file.nexus-support}"/>
+  <property name="ooo-build.vers" value="2.6"/>
+  <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
+</project>

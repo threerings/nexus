@@ -9,10 +9,7 @@
   <property name="classes.dir"  value="${target.dir}/classes"/>
   <property name="tclasses.dir" value="${target.dir}/test-classes"/>
 
-  <property name="ooo-build.vers" value="2.6"/>
-  <dirname property="etc.dir" file="${ant.file.nexus-support}"/>
-  <ant antfile="${etc.dir}/bootstrap.xml"/>
-  <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
+  <import file="base-build-support.xml"/>
 
   <target name="-prepare" depends="-init-ooo">
     <mavendep pom="pom.xml" id="pom" path="classpath"/>
