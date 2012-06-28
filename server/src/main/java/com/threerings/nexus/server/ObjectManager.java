@@ -185,7 +185,7 @@ public class ObjectManager
      *
      * @throws NexusException if no singleton instance is registered for the specified type.
      */
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action) {
+    public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
         invoke(requireSingleton(eclass, "No singleton registered for"), action);
     }
 
@@ -193,7 +193,7 @@ public class ObjectManager
      * Invokes the supplied action on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised.
      */
-    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<T> action) {
+    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<? super T> action) {
         invoke(requireKeyed(eclass, key, "No keyed entity registered for"), action);
     }
 
@@ -203,7 +203,7 @@ public class ObjectManager
      *
      * @throws NexusException wrapping any exception thrown by the request.
      */
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request) {
+    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
         return invoke(requireSingleton(eclass, "No singleton registered for"), request);
     }
 
@@ -211,7 +211,7 @@ public class ObjectManager
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised. The caller will block until the request is processed.
      */
-    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<T,R> request) {
+    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<? super T,R> request) {
         return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 

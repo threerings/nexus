@@ -132,30 +132,31 @@ public class NexusServer implements Nexus
     }
 
     // from interface Nexus
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<T> action) {
+    public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
         _omgr.invoke(eclass, action);
     }
 
     // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<T> action) {
+    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action) {
         // TODO: determine whether the entity is local or remote
         _omgr.invoke(kclass, key, action);
     }
 
     // from interface Nexus
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request) {
+    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
         return _omgr.invoke(eclass, request);
     }
 
     // from interface Nexus
-    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request) {
+    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key,
+                                         Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
     }
 
     // from interface Nexus
     public <T extends Singleton> Deferred invokeAfter (
-        final Class<T> eclass, long delay, final Action<T> action) {
+        final Class<T> eclass, long delay, final Action<? super T> action) {
         return schedule(new Runnable() {
             public void run () {
                 invoke(eclass, action);
@@ -165,7 +166,8 @@ public class NexusServer implements Nexus
 
     // from interface Nexus
     public <T extends Keyed> Deferred invokeAfter (
-        final Class<T> eclass, final Comparable<?> key, long delay, final Action<T> action) {
+        final Class<T> eclass, final Comparable<?> key, long delay,
+        final Action<? super T> action) {
         return schedule(new Runnable() {
             public void run () {
                 invoke(eclass, key, action);

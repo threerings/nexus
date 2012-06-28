@@ -150,7 +150,7 @@ public interface Nexus
      * or non-object entity). This call returns immediately, and executes the action at a later
      * time, regardless of whether the caller is already in the target context.
      */
-    <T extends Singleton> void invoke (Class<T> eclass, Action<T> action);
+    <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action);
 
     /**
      * Executes an action in the context (server+thread) of the specified keyed (object or
@@ -159,14 +159,14 @@ public interface Nexus
      * be streamed to another server node if the context for the specified keyed entity is hosted
      * outside the local server node.
      */
-    <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<T> action);
+    <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action);
 
     /**
      * Executes a request in the context (thread) of the specified singleton entity (either object
      * or non-object entity) and returns the result. The caller will remain blocked until the
      * response is received from the target context.
      */
-    <T extends Singleton,R> R invoke (Class<T> eclass, Request<T,R> request);
+    <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
 
     /**
      * Executes a request in the context (server+thread) of the specified keyed (object or
@@ -176,14 +176,15 @@ public interface Nexus
      * server node if the context for the specified keyed entity is hosted outside the local server
      * node.
      */
-    <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<T,R> request);
+    <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
     /**
      * Executes an action in the context (thread) of the specified singleton entity (either object
      * or non-object entity). The action is executed after the specified delay, unless canceled
      * prior.
      */
-    <T extends Singleton> Deferred invokeAfter (Class<T> eclass, long delay, Action<T> action);
+    <T extends Singleton> Deferred invokeAfter (Class<T> eclass, long delay,
+                                                Action<? super T> action);
 
     /**
      * Executes an action in the context (server+thread) of the specified keyed (object or
@@ -192,7 +193,7 @@ public interface Nexus
      * entity is hosted outside the local server node.
      */
     <T extends Keyed> Deferred invokeAfter (Class<T> eclass, Comparable<?> key,
-                                            long delay, Action<T> action);
+                                            long delay, Action<? super T> action);
 
     // TODO: invoke an action on all singletons on all nodes
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?
