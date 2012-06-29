@@ -6,12 +6,13 @@ object NexusBuild extends Build {
   val metaPOM = pomutil.POM.fromFile(file("pom.xml")).get
   val builder = new ProjectBuilder("pom.xml") {
     override val globalSettings = Seq(
-      crossPaths := false,
-      scalaVersion := metaPOM.properties("scala.version"),
-      javacOptions ++= Seq("-Xlint", "-Xlint:-serial", "-source", "1.6", "-target", "1.6"),
+      crossPaths    := false,
+      scalaVersion  := metaPOM.properties("scala.version"),
       scalacOptions ++= Seq("-unchecked", "-deprecation"),
-      fork in Compile := true,
       autoScalaLibrary := false, // no scala-library dependency
+      javacOptions  ++= Seq("-Xlint", "-Xlint:-serial", "-source", "1.6", "-target", "1.6"),
+      javaOptions   ++= Seq("-ea"),
+      fork in Compile := true,
       publishArtifact in (Compile, packageDoc) := false, // no scaladocs; it fails
       libraryDependencies ++= Seq(
         "com.novocode" % "junit-interface" % "0.8" % "test->default" // make junit work
