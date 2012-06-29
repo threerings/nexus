@@ -195,10 +195,10 @@ public class ObjectManagerTest
 
         omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
             public void invoke (TestSingleton obj) {
-                omgr.requireContext(TestSingleton.class);
+                omgr.assertContext(TestSingleton.class);
                 checks[0]++;
                 try {
-                    omgr.requireContext(TestKeyed.class, 5);
+                    omgr.assertContext(TestKeyed.class, 5);
                 } catch (AssertionError ae) {
                     checks[0]++;
                 }
@@ -208,10 +208,10 @@ public class ObjectManagerTest
 
         omgr.invoke(TestKeyed.class, 5, new Action<TestKeyed>() {
             public void invoke (TestKeyed obj) {
-                omgr.requireContext(TestKeyed.class, 5);
+                omgr.assertContext(TestKeyed.class, 5);
                 checks[0]++;
                 try {
-                    omgr.requireContext(TestSingleton.class);
+                    omgr.assertContext(TestSingleton.class);
                 } catch (AssertionError ae) {
                     checks[0]++;
                 }

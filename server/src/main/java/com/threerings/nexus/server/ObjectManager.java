@@ -223,17 +223,17 @@ public class ObjectManager
     }
 
     /**
-     * See {@link Nexus#requireContext(Class)}.
+     * See {@link Nexus#assertContext(Class)}.
      */
-    public <T extends Singleton> void requireContext (Class<T> eclass) {
+    public <T extends Singleton> void assertContext (Class<T> eclass) {
         assert(requireSingleton(eclass, "No singleton registered for").context ==
                EntityContext.current.get());
     }
 
     /**
-     * See {@link Nexus#requireContext(Class,Comparable)}.
+     * See {@link Nexus#assertContext(Class,Comparable)}.
      */
-    public <T extends Keyed> void requireContext (Class<T> kclass, Comparable<?> key) {
+    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
         assert(requireKeyed(kclass, key, "No keyed entity registered for").context ==
                EntityContext.current.get());
     }

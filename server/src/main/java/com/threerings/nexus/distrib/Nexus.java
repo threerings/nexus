@@ -200,14 +200,14 @@ public interface Nexus
      * This check is only made if assertions are enabled in the executing JVM.
      * @throws AssertionError if one is not executing in the required context.
      */
-    <T extends Singleton> void requireContext (Class<T> eclass);
+    <T extends Singleton> void assertContext (Class<T> eclass);
 
     /**
      * Asserts that one is currently executing in the context of the specified keyed entity. This
      * check is only made if assertions are enabled in the executing JVM.
      * @throws AssertionError if one is not executing in the required context.
      */
-    <T extends Keyed> void requireContext (Class<T> kclass, Comparable<?> key);
+    <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key);
 
     // TODO: invoke an action on all singletons on all nodes
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?

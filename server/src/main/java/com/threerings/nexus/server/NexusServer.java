@@ -176,13 +176,13 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void requireContext (Class<T> eclass) {
-        _omgr.requireContext(eclass);
+    public <T extends Singleton> void assertContext (Class<T> eclass) {
+        _omgr.assertContext(eclass);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void requireContext (Class<T> kclass, Comparable<?> key) {
-        _omgr.requireContext(kclass, key);
+    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
+        _omgr.assertContext(kclass, key);
     }
 
     protected Deferred schedule (final Runnable action, final long delay) {
