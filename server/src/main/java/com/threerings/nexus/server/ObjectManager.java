@@ -223,6 +223,22 @@ public class ObjectManager
     }
 
     /**
+     * See {@link Nexus#requireContext(Class)}.
+     */
+    public <T extends Singleton> void requireContext (Class<T> eclass) {
+        assert(requireSingleton(eclass, "No singleton registered for").context ==
+               EntityContext.current.get());
+    }
+
+    /**
+     * See {@link Nexus#requireContext(Class,Comparable)}.
+     */
+    public <T extends Keyed> void requireContext (Class<T> kclass, Comparable<?> key) {
+        assert(requireKeyed(kclass, key, "No keyed entity registered for").context ==
+               EntityContext.current.get());
+    }
+
+    /**
      * Requests that the supplied subscriber be added to the object with the specified address.
      *
      * @return the the object to which a subscriber was added.

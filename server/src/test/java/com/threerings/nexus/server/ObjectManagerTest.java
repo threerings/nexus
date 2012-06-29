@@ -186,6 +186,40 @@ public class ObjectManagerTest
         assertTrue(invoked[0]);
     }
 
+    @Test
+    public void testRequireContext () {
+        final ObjectManager omgr = createObjectManager();
+        omgr.registerSingleton(new TestSingleton());
+        omgr.registerKeyed(new TestKeyed(5));
+        final int[] checks = new int[] { 0 };
+
+        omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
+            public void invoke (TestSingleton obj) {
+                omgr.requireContext(TestSingleton.class);
+                checks[0]++;
+                try {
+                    omgr.requireContext(TestKeyed.class, 5);
+                } catch (AssertionError ae) {
+                    checks[0]++;
+                }
+            }
+        });
+        assertEquals(2, checks[0]);
+
+        omgr.invoke(TestKeyed.class, 5, new Action<TestKeyed>() {
+            public void invoke (TestKeyed obj) {
+                omgr.requireContext(TestKeyed.class, 5);
+                checks[0]++;
+                try {
+                    omgr.requireContext(TestSingleton.class);
+                } catch (AssertionError ae) {
+                    checks[0]++;
+                }
+            }
+        });
+        assertEquals(4, checks[0]);
+    }
+
     protected ObjectManager createObjectManager () {
         return new ObjectManager(createTestConfig(), createDirectExec());
     }

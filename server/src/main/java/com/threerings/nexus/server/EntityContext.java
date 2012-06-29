@@ -19,6 +19,9 @@ import static com.threerings.nexus.util.Log.log;
  */
 public class EntityContext
 {
+    /** Contains a reference to the currently executing entity context. */
+    public static final ThreadLocal<EntityContext> current = new ThreadLocal<EntityContext>();
+
     /**
      * Creates an entity context that will use the supplied executor for executions.
      */
@@ -36,10 +39,12 @@ public class EntityContext
         _ops.offer(new Runnable() {
             public void run () {
                 try {
+                    current.set(EntityContext.this);
                     op.run();
                 } catch (Throwable t) {
                     log.warning("Entity operation failed: " + op, t);
                 } finally {
+                    current.set(null);
                     scheduleNext();
                 }
             }

@@ -195,6 +195,20 @@ public interface Nexus
     <T extends Keyed> Deferred invokeAfter (Class<T> eclass, Comparable<?> key,
                                             long delay, Action<? super T> action);
 
+    /**
+     * Asserts that one is currently executing in the context of the specified singleton entity.
+     * This check is only made if assertions are enabled in the executing JVM.
+     * @throws AssertionError if one is not executing in the required context.
+     */
+    <T extends Singleton> void requireContext (Class<T> eclass);
+
+    /**
+     * Asserts that one is currently executing in the context of the specified keyed entity. This
+     * check is only made if assertions are enabled in the executing JVM.
+     * @throws AssertionError if one is not executing in the required context.
+     */
+    <T extends Keyed> void requireContext (Class<T> kclass, Comparable<?> key);
+
     // TODO: invoke an action on all singletons on all nodes
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?
 }
