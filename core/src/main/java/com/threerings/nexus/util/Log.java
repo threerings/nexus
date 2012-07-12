@@ -46,12 +46,7 @@ public class Log
         protected abstract void log (Object level, String message, Throwable cause);
     }
 
-    /** Dispatch log messages through this instance. */
-    public static Logger log = new JavaLogger("nexus");
-
-    private Log () {} // no constructsky
-
-    protected static class JavaLogger extends Logger {
+    public static class JavaLogger extends Logger {
         public JavaLogger (String name) {
             _impl = java.util.logging.Logger.getLogger(name);
         }
@@ -78,4 +73,9 @@ public class Log
 
         protected final java.util.logging.Logger _impl;
     }
+
+    /** Dispatch log messages through this instance. */
+    public static Logger log = new JavaLogger("nexus");
+
+    private Log () {} // no constructsky
 }
