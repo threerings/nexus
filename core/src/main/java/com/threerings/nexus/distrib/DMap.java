@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.distrib;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.threerings.nexus.io.Streamable;
@@ -14,6 +15,13 @@ import com.threerings.nexus.io.Streamable;
 public class DMap<K,V> extends react.RMap<K,V>
     implements DAttribute
 {
+    /**
+     * Creates a distributed map that uses a {@link HashMap} as its underlying implementation.
+     */
+    public static <K,V> DMap<K,V> create () {
+        return create(new HashMap<K,V>());
+    }
+
     /**
      * Creates a distributed map with the supplied underlying map implementation.
      */
