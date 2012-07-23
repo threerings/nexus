@@ -32,7 +32,7 @@ public class NexusServer implements Nexus
      */
     public NexusServer (NexusConfig config, ExecutorService exec) {
         _config = config;
-        _omgr = new ObjectManager(config, exec);
+        _omgr = new ObjectManager(config, this, exec);
         _smgr = new SessionManager(_omgr);
     }
 
@@ -137,7 +137,8 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action) {
+    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key,
+                                          Action<? super T> action) {
         // TODO: determine whether the entity is local or remote
         _omgr.invoke(kclass, key, action);
     }

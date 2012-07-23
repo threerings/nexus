@@ -84,6 +84,8 @@ public interface Nexus
      * accessible on the server node on which it was created. Code may be executed in this entity's
      * context (thread) via, for example, {@link #invoke(Class,Action}. If the singleton is also a
      * {@link NexusObject}, clients can subscribe to the object using its class.
+     *
+     * @throws NexusException if an entity is already mapped for this singleton type.
      */
     void registerSingleton (Singleton entity);
 
@@ -149,6 +151,8 @@ public interface Nexus
      * Executes an action in the context (thread) of the specified singleton entity (either object
      * or non-object entity). This call returns immediately, and executes the action at a later
      * time, regardless of whether the caller is already in the target context.
+     *
+     * @throws NexusException if no singleton instance is registered for {@code eclass}.
      */
     <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action);
 
@@ -165,6 +169,10 @@ public interface Nexus
      * Executes a request in the context (thread) of the specified singleton entity (either object
      * or non-object entity) and returns the result. The caller will remain blocked until the
      * response is received from the target context.
+     *
+     * @throws NexusException if no singleton instance is registered for {@code eclass}, or if an
+     * exception occurs while processing the request. In the latter case, the triggering exception
+     * wil be available via {@link Exception#getCause}.
      */
     <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
 
@@ -175,6 +183,10 @@ public interface Nexus
      * the concrete implementation being used). The supplied request may be streamed to another
      * server node if the context for the specified keyed entity is hosted outside the local server
      * node.
+     *
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
+     * @throws NexusException if an exception occurs while processing the request. The triggering
+     * exception wil be available via {@link Exception#getCause}.
      */
     <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
@@ -182,6 +194,8 @@ public interface Nexus
      * Executes an action in the context (thread) of the specified singleton entity (either object
      * or non-object entity). The action is executed after the specified delay, unless canceled
      * prior.
+     *
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
      */
     <T extends Singleton> Deferred invokeAfter (Class<T> eclass, long delay,
                                                 Action<? super T> action);

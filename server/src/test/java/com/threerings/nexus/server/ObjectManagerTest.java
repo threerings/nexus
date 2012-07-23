@@ -8,6 +8,7 @@ import java.util.concurrent.Executor;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.DValue;
+import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.Request;
 import com.threerings.nexus.distrib.TestObject;
@@ -125,12 +126,7 @@ public class ObjectManagerTest
 
         // ensure that actions are not dispatched once the entity is cleared
         omgr.clearKeyed(test);
-        try {
-            omgr.invoke(TestKeyed.class, test.getKey(), FAIL_KEYED);
-            fail();
-        } catch (NexusException ne) {
-            // expected
-        }
+        omgr.invoke(TestKeyed.class, test.getKey(), MISSING_KEYED);
 
         // ensure that we no longer report that we currently host this entity
         assertFalse(omgr.hostsKeyed(TestKeyed.class, test.getKey()));
@@ -141,21 +137,11 @@ public class ObjectManagerTest
         ObjectManager omgr = createObjectManager();
 
         // test when there are no registrations at all
-        try {
-            omgr.invoke(TestKeyed.class, 3, FAIL_KEYED);
-            fail();
-        } catch (NexusException ne) {
-            // expected
-        }
+        omgr.invoke(TestKeyed.class, 3, MISSING_KEYED);
 
         // now test just a key mismatch
         omgr.registerKeyed(new TestKeyed(1));
-        try {
-            omgr.invoke(TestKeyed.class, 3, FAIL_KEYED);
-            fail();
-        } catch (NexusException ne) {
-            // expected
-        }
+        omgr.invoke(TestKeyed.class, 3, MISSING_KEYED);
     }
 
     @Test
@@ -221,7 +207,7 @@ public class ObjectManagerTest
     }
 
     protected ObjectManager createObjectManager () {
-        return new ObjectManager(createTestConfig(), createDirectExec());
+        return new ObjectManager(createTestConfig(), null, createDirectExec());
     }
 
     protected Executor createDirectExec () {
@@ -238,9 +224,12 @@ public class ObjectManagerTest
         }
     };
 
-    protected static final Action<TestKeyed> FAIL_KEYED = new Action<TestKeyed>() {
+    protected static final Action<TestKeyed> MISSING_KEYED = new Action<TestKeyed>() {
         public void invoke (TestKeyed obj) {
             fail();
+        }
+        public void onDropped (Nexus nexus, Class<?> eclass, Comparable<?> key) {
+            // expected
         }
     };
 }

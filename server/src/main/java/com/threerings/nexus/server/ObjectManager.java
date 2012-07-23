@@ -19,8 +19,10 @@ import com.google.common.collect.Maps;
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.DistribUtil;
+import com.threerings.nexus.distrib.EntityNotFoundException;
 import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
@@ -43,8 +45,9 @@ public class ObjectManager
         void onCleared (int id);
     }
 
-    public ObjectManager (NexusConfig config, Executor exec) {
+    public ObjectManager (NexusConfig config, Nexus nexus, Executor exec) {
         _config = config;
+        _nexus = nexus;
         _exec = exec;
     }
 
@@ -77,8 +80,6 @@ public class ObjectManager
 
     /**
      * Registers the supplied singleton entity in its own context.
-     *
-     * @throws NexusException if an entity is already mapped for this singleton type.
      */
     public void registerSingleton (Singleton entity) {
         register(entity, new EntityContext(_exec));
@@ -89,7 +90,8 @@ public class ObjectManager
      */
     public void registerSingleton (Singleton child, Singleton parent) {
         Binding<Singleton> pbind = requireSingleton(
-            getSingletonClass(parent.getClass()), "Can't bind child to unregistered singleton parent");
+            getSingletonClass(parent.getClass()),
+            "Can't bind child to unregistered singleton parent");
         register(child, pbind.context);
     }
 
@@ -182,8 +184,6 @@ public class ObjectManager
 
     /**
      * Invokes the supplied action on the specified singleton entity.
-     *
-     * @throws NexusException if no singleton instance is registered for the specified type.
      */
     public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
         invoke(requireSingleton(eclass, "No singleton registered for"), action);
@@ -193,15 +193,18 @@ public class ObjectManager
      * Invokes the supplied action on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised.
      */
-    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key, Action<? super T> action) {
-        invoke(requireKeyed(eclass, key, "No keyed entity registered for"), action);
+    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key,
+                                          Action<? super T> action) {
+        try {
+            invoke(requireKeyed(eclass, key, "No keyed entity registered for"), action);
+        } catch (EntityNotFoundException enfe) {
+            action.onDropped(_nexus, eclass, key);
+        }
     }
 
     /**
      * Invokes the supplied request on the specified singleton entity. The caller will block until
      * the request is processed.
-     *
-     * @throws NexusException wrapping any exception thrown by the request.
      */
     public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
         return invoke(requireSingleton(eclass, "No singleton registered for"), request);
@@ -211,12 +214,13 @@ public class ObjectManager
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised. The caller will block until the request is processed.
      */
-    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key, Request<? super T,R> request) {
+    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key,
+                                         Request<? super T,R> request) {
         return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 
     /**
-     * Invokes an action on the supplied target object, if it exists.
+     * Invokes an action on the supplied target object.
      */
     public void invoke (int id, Action<NexusObject> action) {
         invoke(requireObject(id, "No object registered with id "), action);
@@ -430,11 +434,11 @@ public class ObjectManager
     protected Binding<Keyed> requireKeyed (Class<?> eclass, Comparable<?> key, String errmsg) {
         ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(eclass);
         if (emap == null) {
-            throw new NexusException(errmsg + " " + eclass + ":" + key);
+            throw new EntityNotFoundException(errmsg, eclass, key);
         }
         Binding<Keyed> bind = emap.get(key);
         if (bind == null) {
-            throw new NexusException(errmsg + " " + eclass + ":" + key);
+            throw new EntityNotFoundException(errmsg, eclass, key);
         }
         return bind;
     }
@@ -528,6 +532,9 @@ public class ObjectManager
 
     /** Contains our server configuration. */
     protected NexusConfig _config;
+
+    /** The Nexus in which we're operating. */
+    protected Nexus _nexus;
 
     /** The executor we use to execute actions and requests. */
     protected final Executor _exec;
