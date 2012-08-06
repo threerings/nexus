@@ -8,7 +8,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -46,6 +45,10 @@ public class JVMServerConnection
         try {
             ByteBuffer frame;
             while ((frame = _outq.peek()) != null) {
+                if (_chan == null) {
+                    // The reader must have closed us, stop trying to write...
+                    return;
+                }
                 _chan.write(frame);
                 if (frame.remaining() > 0) {
                     // partial write, requeue ourselves and finish the job later
