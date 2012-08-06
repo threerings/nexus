@@ -308,7 +308,7 @@ public class ObjectManager
             subs = _subscribers.get(event.targetId);
         }
         invoke(event.targetId, new Action<NexusObject>() {
-            public void invoke (NexusObject object) {
+            @Override public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
                 try {
                     // TODO: access control
@@ -338,7 +338,7 @@ public class ObjectManager
     public void dispatchCall (int objId, final short attrIdx, final short methId,
                               final Object[] args, final Session source) {
         invoke(objId, new Action<NexusObject>() {
-            public void invoke (NexusObject object) {
+            @Override public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
                 try {
                     DistribUtil.dispatchCall(object, attrIdx, methId, args);

@@ -107,7 +107,7 @@ public class NexusServer implements Nexus
         return new Slot<E>() {
             @Override public void onEmit (final E event) {
                 invoke(eclass, new Action<T>() {
-                    public void invoke (T entity) {
+                    @Override public void invoke (T entity) {
                         slot.onEmit(event);
                     }
                 });
@@ -123,7 +123,7 @@ public class NexusServer implements Nexus
         return new Slot<E>() {
             @Override public void onEmit (final E event) {
                 invoke(eclass, key, new Action<T>() {
-                    public void invoke (T entity) {
+                    @Override public void invoke (T entity) {
                         slot.onEmit(event);
                     }
                 });

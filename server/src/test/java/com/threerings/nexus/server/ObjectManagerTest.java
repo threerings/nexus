@@ -63,7 +63,7 @@ public class ObjectManagerTest
         // ensure that actions are dispatched on our registered entity
         final boolean[] invoked = new boolean[1];
         omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
-            public void invoke (TestSingleton obj) {
+            @Override public void invoke (TestSingleton obj) {
                 invoked[0] = true;
             }
         });
@@ -110,7 +110,7 @@ public class ObjectManagerTest
         // ensure that actions are dispatched on our registered entity
         final boolean[] invoked = new boolean[1];
         omgr.invoke(TestKeyed.class, test.getKey(), new Action<TestKeyed>() {
-            public void invoke (TestKeyed obj) {
+            @Override public void invoke (TestKeyed obj) {
                 invoked[0] = true;
             }
         });
@@ -150,7 +150,7 @@ public class ObjectManagerTest
         omgr.registerKeyed(new ChildKeyed(1));
         final boolean[] invoked = new boolean[1];
         omgr.invoke(TestKeyed.class, 1, new Action<TestKeyed>() {
-            public void invoke (TestKeyed obj) {
+            @Override public void invoke (TestKeyed obj) {
                 assertTrue(obj instanceof ChildKeyed);
                 invoked[0] = true;
             }
@@ -164,7 +164,7 @@ public class ObjectManagerTest
         omgr.registerSingleton(new ChildSingleton());
         final boolean[] invoked = new boolean[1];
         omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
-            public void invoke (TestSingleton obj) {
+            @Override public void invoke (TestSingleton obj) {
                 assertTrue(obj instanceof ChildSingleton);
                 invoked[0] = true;
             }
@@ -180,7 +180,7 @@ public class ObjectManagerTest
         final int[] checks = new int[] { 0 };
 
         omgr.invoke(TestSingleton.class, new Action<TestSingleton>() {
-            public void invoke (TestSingleton obj) {
+            @Override public void invoke (TestSingleton obj) {
                 omgr.assertContext(TestSingleton.class);
                 checks[0]++;
                 try {
@@ -193,7 +193,7 @@ public class ObjectManagerTest
         assertEquals(2, checks[0]);
 
         omgr.invoke(TestKeyed.class, 5, new Action<TestKeyed>() {
-            public void invoke (TestKeyed obj) {
+            @Override public void invoke (TestKeyed obj) {
                 omgr.assertContext(TestKeyed.class, 5);
                 checks[0]++;
                 try {
@@ -219,16 +219,16 @@ public class ObjectManagerTest
     }
 
     protected static final Action<TestSingleton> FAIL_SINGLE = new Action<TestSingleton>() {
-        public void invoke (TestSingleton obj) {
+        @Override public void invoke (TestSingleton obj) {
             fail();
         }
     };
 
     protected static final Action<TestKeyed> MISSING_KEYED = new Action<TestKeyed>() {
-        public void invoke (TestKeyed obj) {
+        @Override public void invoke (TestKeyed obj) {
             fail();
         }
-        public void onDropped (Nexus nexus, Class<?> eclass, Comparable<?> key) {
+        @Override public void onDropped (Nexus nexus, Class<?> eclass, Comparable<?> key) {
             // expected
         }
     };
