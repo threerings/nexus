@@ -90,7 +90,7 @@ public class ClientServerTest
 
                 // update a test object value (over on the appropriate thread)
                 _server.invoke(TestObject.class, new Action<TestObject>() {
-                    public void invoke (TestObject stest) {
+                    @Override public void invoke (TestObject stest) {
                         stest.value.update("updated");
                     }
                 });

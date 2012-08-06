@@ -100,7 +100,7 @@ public class SimpleServerTest
         // make sure the listener was triggered (we need to queue this check up on the object's
         // action queue so that we can be sure the attribute change goes through first)
         server.invoke(TestObject.class, new Action<TestObject>() {
-            public void invoke (TestObject entity) {
+            @Override public void invoke (TestObject entity) {
                 assertTrue(triggered[0]);
                 onComplete.run(); // let the caller know that we're done
             }
