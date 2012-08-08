@@ -220,35 +220,34 @@ public abstract class Connection
      * treated as an unexpected failure. If {@code error} is null, the closure will be treated as
      * orderly (as a result of a prior call to {@link #close}.
      */
-    protected void onClose (Throwable error) {
+    protected void onClose (final Throwable error) {
         // we want to pass a non-null exception to penders, failed calls and lost objects
         final Throwable perror = (error != null) ? error : new Exception("Connection closed");
 
-        // notify any penders that we're not going to hear back
-        _penders.onClose(perror, this);
+        // do the bulk of our close processing on the dispatch thread
+        dispatch(new Runnable() {
+            public void run () {
+                // notify any penders that we're not going to hear back
+                _penders.onClose(perror, Connection.this);
 
-        // notify any in-flight service calls that they failed
-        if (!_calls.isEmpty()) {
-            log.info("Clearing " + _calls.size() + " calls.");
-            for (Callback<?> cb : _calls.values()) cb.onFailure(perror);
-            _calls.clear();
-        }
+                // notify any in-flight service calls that they failed
+                if (!_calls.isEmpty()) {
+                    log.info("Clearing " + _calls.size() + " calls.");
+                    for (Callback<?> cb : _calls.values()) cb.onFailure(perror);
+                    _calls.clear();
+                }
 
-        // notify any dangling objects that they were lost
-        if (!_objects.isEmpty()) {
-            log.info("Clearing " + _objects.size() + " objects.");
-            for (final NexusObject obj : _objects.values()) {
-                dispatch(new Runnable() {
-                    public void run () {
-                        obj.onLost.emit(perror);
-                    }
-                });
+                // notify any dangling objects that they were lost
+                if (!_objects.isEmpty()) {
+                    log.info("Clearing " + _objects.size() + " objects.");
+                    for (NexusObject obj : _objects.values()) obj.onLost.emit(perror);
+                    _objects.clear();
+                }
+
+                // finally notify listeners of our closure (here error may be null)
+                onClose.emit(error);
             }
-            _objects.clear();
-        }
-
-        // finally notify listeners of our closure (here error may be null)
-        onClose.emit(error);
+        });
     }
 
     /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
@@ -272,11 +271,7 @@ public abstract class Connection
             if (_penders.isEmpty()) return;
             log.info("Clearing " + _penders.size() + " penders.");
             for (final List<Callback<?>> penders : _penders.values()) {
-                conn.dispatch(new Runnable() {
-                    public void run () {
-                        for (Callback<?> pender : penders) pender.onFailure(error);
-                    }
-                });
+                for (Callback<?> pender : penders) pender.onFailure(error);
             }
             _penders.clear();
         }
