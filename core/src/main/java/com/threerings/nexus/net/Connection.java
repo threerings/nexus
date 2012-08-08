@@ -222,7 +222,7 @@ public abstract class Connection
      */
     protected void onClose (Throwable error) {
         // we want to pass a non-null exception to penders, failed calls and lost objects
-        Throwable perror = (error != null) ? error : new Exception("Connection closed");
+        final Throwable perror = (error != null) ? error : new Exception("Connection closed");
 
         // notify any penders that we're not going to hear back
         _penders.onClose(perror, this);
@@ -237,7 +237,13 @@ public abstract class Connection
         // notify any dangling objects that they were lost
         if (!_objects.isEmpty()) {
             log.info("Clearing " + _objects.size() + " objects.");
-            for (NexusObject obj : _objects.values()) obj.onLost.emit(perror);
+            for (final NexusObject obj : _objects.values()) {
+                dispatch(new Runnable() {
+                    public void run () {
+                        obj.onLost.emit(perror);
+                    }
+                });
+            }
             _objects.clear();
         }
 
