@@ -20,6 +20,7 @@ import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.util.Callback;
+import com.threerings.nexus.util.Util;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -116,7 +117,7 @@ public abstract class Connection
         for (Callback<?> pender : penders) {
             @SuppressWarnings("unchecked") Callback<NexusObject> cb =
                 (Callback<NexusObject>)pender;
-            cb.onSuccess(msg.object);
+            Util.notifySuccess(cb, msg.object);
         }
     }
 
@@ -127,9 +128,7 @@ public abstract class Connection
             log.warning("Missing pender list", "addr", msg.addr);
         } else {
             Exception cause = new Exception(msg.cause);
-            for (Callback<?> pender : penders) {
-                pender.onFailure(cause);
-            }
+            for (Callback<?> pender : penders) Util.notifyFailure(pender, cause);
         }
     }
 
@@ -157,12 +156,8 @@ public abstract class Connection
                 _objects.put(obj.getId(), obj); // store the object in our local table
             }
         }
-        try {
-            @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;
-            ccb.onSuccess(msg.result);
-        } catch (Throwable t) {
-            log.warning("Failure delivering service response", t);
-        }
+        @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;
+        Util.notifySuccess(ccb, msg.result);
     }
 
     // from interface Downstream.Handler
@@ -172,11 +167,7 @@ public abstract class Connection
             log.warning("Received service failure for unknown call", "msg", msg);
             return;
         }
-        try {
-            callback.onFailure(new NexusException(msg.cause));
-        } catch (Throwable t) {
-            log.warning("Failure delivering service failure", t);
-        }
+        Util.notifyFailure(callback, new NexusException(msg.cause));
     }
 
     // from interface Downstream.Handler
@@ -186,7 +177,7 @@ public abstract class Connection
             log.warning("Unknown object cleared", "id", msg.id);
             return;
         }
-        target.onLost.emit(null);
+        Util.emit(target.onLost, null);
     }
 
     protected Connection (String host) {
@@ -233,19 +224,19 @@ public abstract class Connection
                 // notify any in-flight service calls that they failed
                 if (!_calls.isEmpty()) {
                     log.info("Clearing " + _calls.size() + " calls.");
-                    for (Callback<?> cb : _calls.values()) cb.onFailure(perror);
+                    for (Callback<?> cb : _calls.values()) Util.notifyFailure(cb, perror);
                     _calls.clear();
                 }
 
                 // notify any dangling objects that they were lost
                 if (!_objects.isEmpty()) {
                     log.info("Clearing " + _objects.size() + " objects.");
-                    for (NexusObject obj : _objects.values()) obj.onLost.emit(perror);
+                    for (NexusObject obj : _objects.values()) Util.emit(obj.onLost, perror);
                     _objects.clear();
                 }
 
                 // finally notify listeners of our closure (here error may be null)
-                onClose.emit(error);
+                Util.emit(onClose, error);
             }
         });
     }
@@ -271,7 +262,7 @@ public abstract class Connection
             if (_penders.isEmpty()) return;
             log.info("Clearing " + _penders.size() + " penders.");
             for (final List<Callback<?>> penders : _penders.values()) {
-                for (Callback<?> pender : penders) pender.onFailure(error);
+                for (Callback<?> pender : penders) Util.notifyFailure(pender, error);
             }
             _penders.clear();
         }
