@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import react.SignalView;
-import react.UnitSignal;
+import react.Signal;
 
 import com.google.common.collect.Maps;
 
@@ -39,18 +39,24 @@ public class Session
         }
 
         public void onSendError (Throwable error) {
-            // TODO
+            // TODO: log something?
+            onDisconnect(error);
         }
 
         public void onReceiveError (Throwable error) {
-            // TODO
+            // TODO: log something?
+            onDisconnect(error);
         }
 
         public void onDisconnect () {
+            onDisconnect(null);
+        }
+
+        protected void onDisconnect (Throwable cause) {
             // let interested parties know that we are audi 5000
             try {
                 SessionLocal.setCurrent(Session.this);
-                _onDisconnect.emit();
+                _onDisconnect.emit(cause);
             } finally {
                 SessionLocal.clearCurrent();
             }
@@ -67,11 +73,13 @@ public class Session
     };
 
     /**
-     * A signal that is emitted when this session disconnects unexpectedly. During the emission of
-     * this signal, the session in question will be bound as current, so that {@link SessionLocal}
-     * can be used to access session-local data.
+     * A signal that is emitted when this session disconnects expectedly or unexpectedly. The
+     * signal will emit an exception if an I/O error encountered during send or receive, or null if
+     * the client connection was simply closed. During the emission of this signal, the session in
+     * question will be bound as current, so that {@link SessionLocal} can be used to access
+     * session-local data.
      */
-    public SignalView<Void> onDisconnect () {
+    public SignalView<Throwable> onDisconnect () {
         return _onDisconnect;
     }
 
@@ -195,8 +203,8 @@ public class Session
     protected final String _ipaddress;
     protected final SessionManager.Output _output;
 
-    /** A signal that's notified when our client disconnects. */
-    protected final UnitSignal _onDisconnect = new UnitSignal();
+    /** A signal that's emitted when our client disconnects. */
+    protected final Signal<Throwable> _onDisconnect = Signal.create();
 
     /** Tracks our extant object subscriptions. */
     protected final Set<Integer> _subscriptions = new ConcurrentSkipListSet<Integer>();
