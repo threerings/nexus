@@ -4,10 +4,10 @@
 
 package com.threerings.nexus.distrib;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.threerings.nexus.io.Streamable;
-import static com.threerings.nexus.util.Log.log;
 
 /**
  * A set attribute for a Nexus object. Contains an unordered set of distinct values.
@@ -15,6 +15,13 @@ import static com.threerings.nexus.util.Log.log;
 public class DSet<T> extends react.RSet<T>
     implements DAttribute
 {
+    /**
+     * Creates a distributed set backed by a @{link HashSet}.
+     */
+    public static <E> DSet<E> create () {
+        return create(new HashSet<E>());
+    }
+
     /**
      * Creates a distributed set with the supplied underlying set implementation.
      */
