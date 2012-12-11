@@ -52,6 +52,10 @@ public class Session
             onDisconnect(null);
         }
 
+        @Override public String toString () {
+            return Session.this.toString();
+        }
+
         protected void onDisconnect (Throwable cause) {
             // let interested parties know that we are audi 5000
             try {
