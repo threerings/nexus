@@ -4,7 +4,6 @@
 
 package nexus.chat.distrib;
 
-import com.threerings.nexus.distrib.DSignal;
 import com.threerings.nexus.io.Streamable;
 import com.threerings.nexus.io.Streamer;
 

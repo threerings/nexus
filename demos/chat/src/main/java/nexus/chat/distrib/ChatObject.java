@@ -16,7 +16,7 @@ public class ChatObject extends NexusObject
     implements Singleton
 {
     /** Provides global chat services. */
-    public DService<ChatService> chatSvc;
+    public final DService<ChatService> chatSvc;
 
     public ChatObject (DService<ChatService> chatSvc) {
         this.chatSvc = chatSvc;
