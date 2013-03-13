@@ -107,6 +107,36 @@ class StreamerGenTest
     // warning is generated
   }
 
+  @Test def testInheritNexusObjectWithService {
+    val source = StreamerTestCompiler.genSource("Container.java", """
+      package foo.bar;
+      import com.threerings.nexus.distrib.NexusObject;
+      import com.threerings.nexus.distrib.DValue;
+      import com.threerings.nexus.distrib.DService;
+      import com.threerings.nexus.distrib.NexusService;
+      public class Container {
+        public class ParentObject extends NexusObject {
+          public final DService<NexusService> service;
+          public final DValue<Integer> foo = DValue.create(0);
+          public ParentObject (DService<NexusService> service) {
+            this.service = service;
+          }
+        }
+        public class ChildObject extends ParentObject {
+          public final DValue<Integer> bar = DValue.create(0);
+          public ChildObject (DService<NexusService> service) {
+            super(service);
+          }
+        }
+      }
+      """)
+    // System.err.println(source)
+    // ChildObject.writeObjectImpl was failing to generate a call to
+    //   Streamer_Container.ParentObject.writeObjectImpl(out, obj);
+    // but only when the DValue<Integer> was part of its values
+    assertTrue(source.contains("Streamer_Container.ParentObject.writeObjectImpl(out, obj);"))
+  }
+
   @Test def testInheritsNexusEvent {
     val source = NEVStreamerTestCompiler.genSource("CustomEvent.java", """
       package foo.bar;

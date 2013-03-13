@@ -76,7 +76,7 @@ class StreamableMetadata (val elem :TypeElement) extends Metadata {
   def orderedFieldNames :Seq[String] = localCtorArgs map(argToField)
 
   /** Whether or not this class needs to call `super.writeObject` (used in template). */
-  def hasSuperWrite = ctorArgs.size > fields.size
+  def hasSuperWrite = !superCtorArgs.isEmpty
 
   /** Returns a list of objects used by the template to format the field writes. */
   def writes :JIterable[AnyRef] = orderedFieldNames map(f => fieldToWrite(f, fields(f)))
