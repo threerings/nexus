@@ -9,7 +9,7 @@ object NexusBuild extends Build {
       crossPaths    := false,
       scalaVersion  := metaPOM.properties("scala.version"),
       scalacOptions ++= Seq("-unchecked", "-deprecation"),
-      autoScalaLibrary := false, // no scala-library dependency
+      autoScalaLibrary in Compile := false, // no scala-library dependency (except for tests)
       javacOptions  ++= Seq("-Xlint", "-Xlint:-serial", "-source", "1.6", "-target", "1.6"),
       javaOptions   ++= Seq("-ea"),
       fork in Compile := true,
