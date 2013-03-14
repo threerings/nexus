@@ -4,12 +4,15 @@
 
 package com.threerings.nexus.server
 
+import scala.collection.mutable.ListBuffer
 import java.util.concurrent.Executor
 
 import com.threerings.nexus.distrib.{Action, DValue, Nexus, NexusException, Request, TestObject}
 
 import org.junit._
 import org.junit.Assert._
+
+import react.UnitSlot
 
 import com.threerings.nexus.server.TestUtil._
 
@@ -154,6 +157,34 @@ class ObjectManagerTest
       }
     })
     assertTrue(invoked)
+  }
+
+  @Test def testGlobalMap {
+    val toExec = ListBuffer[Runnable]()
+    val omgr = new ObjectManager(createTestConfig, null, new Executor {
+      override def execute (op :Runnable) = toExec += op
+    })
+    val map = omgr.registerMap[String,String]("test")
+    var (oneOps, twoOps) = (0, 0)
+    map.getView("one").connect(new UnitSlot {
+      def onEmit = oneOps += 1
+    })
+    map.getView("two").connect(new UnitSlot {
+      def onEmit = twoOps += 1
+    })
+    map.put("one", "one")
+    map.put("one", "two")
+    map.put("two", "two")
+    map.put("three", "two") // will trigger no listener
+    map.remove("one")
+    map.remove("one") // will trigger no listener
+    // no notifications should yet have been sent
+    assertEquals(0, oneOps)
+    assertEquals(0, twoOps)
+    // now execute our pending ops which will dispatch notifications
+    toExec foreach { _.run() }
+    assertEquals(3, oneOps)
+    assertEquals(1, twoOps)
   }
 
   @Test def testRequireContext {

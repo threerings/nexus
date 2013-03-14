@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 
 import com.google.common.base.Preconditions;
 
+import react.RMap;
 import react.Slot;
 
 import com.threerings.nexus.distrib.Action;
@@ -83,6 +84,11 @@ public class NexusServer implements Nexus
     @Override // from interface Nexus
     public void registerKeyed (Keyed child, Keyed parent) {
         _omgr.registerKeyed(child, parent);
+    }
+
+    @Override // from interface Nexus
+    public <K,V> RMap<K,V> registerMap (String id) {
+        return _omgr.registerMap(id);
     }
 
     @Override // from interface Nexus

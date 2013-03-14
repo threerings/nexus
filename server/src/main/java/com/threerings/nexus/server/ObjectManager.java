@@ -16,6 +16,8 @@ import java.util.concurrent.FutureTask;
 
 import com.google.common.collect.Maps;
 
+import react.RMap;
+
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.DistribUtil;
@@ -112,6 +114,18 @@ public class ObjectManager
             getKeyedClass(parent.getClass()), parent.getKey(),
             "Can't bind child to unregistered keyed parent");
         register(child, pbind.context);
+    }
+
+    /**
+     * Registers a global map and its associated context.
+     */
+    public <K,V> RMap<K,V> registerMap (String id) {
+        GlobalMap<K,V> map = new GlobalMap<K,V>(id, this);
+        Binding<GlobalMap<?,?>> bind = new Binding<GlobalMap<?,?>>(map, new EntityContext(_exec));
+        if (_maps.putIfAbsent(id, bind) != null) {
+            throw new NexusException("Map already registered for id: " + id);
+        }
+        return map;
     }
 
     /**
@@ -482,6 +496,47 @@ public class ObjectManager
         }
     }
 
+    protected <K,V> void emitMapPut (String id, K key, V value, V oldValue) {
+        // TODO: send this update off to the peer manager to be sent to the other servers in the
+        // next map broadcast
+        applyMapPut(id, key, value, oldValue);
+    }
+
+    protected <K,V> void emitMapRemove (String id, K key, V oldValue) {
+        // TODO: send this update off to the peer manager to be sent to the other servers in the
+        // next map broadcast
+        applyMapRemove(id, key, oldValue);
+    }
+
+    protected <K,V> void applyMapPut (String id, final K key, final V value, final V oldValue) {
+        Binding<GlobalMap<?,?>> bind = _maps.get(id);
+        if (bind == null) {
+            log.warning("Got put for unknown map", "id", id, "key", key, "value", value,
+                        "ovalue", oldValue);
+            return;
+        }
+        @SuppressWarnings("unchecked") final GlobalMap<K,V> map = (GlobalMap<K,V>)bind.entity;
+        bind.context.postOp(new Runnable() {
+            public void run () {
+                map.applyPut(key, value, oldValue);
+            }
+        });
+    }
+
+    protected <K,V> void applyMapRemove (String id, final K key, final V oldValue) {
+        Binding<GlobalMap<?,?>> bind = _maps.get(id);
+        if (bind == null) {
+            log.warning("Got remove for unknown map", "id", id, "key", key, "ovalue", oldValue);
+            return;
+        }
+        @SuppressWarnings("unchecked") final GlobalMap<K,V> map = (GlobalMap<K,V>)bind.entity;
+        bind.context.postOp(new Runnable() {
+            public void run () {
+                map.applyRemove(key, oldValue);
+            }
+        });
+    }
+
     protected Set<Subscriber> getSubscriberSet (int targetId) {
         synchronized (_subscribers) {
             Set<Subscriber> subs = _subscribers.get(targetId);
@@ -552,6 +607,9 @@ public class ObjectManager
     /** A mapping of all keyed entities hosted on this server. */
     protected final ConcurrentMap<Class<?>,ConcurrentMap<Comparable<?>,Binding<Keyed>>> _keyeds =
         Maps.newConcurrentMap();
+
+    /** A mapping of distributed maps known to this server. */
+    protected final ConcurrentMap<String,Binding<GlobalMap<?,?>>> _maps = Maps.newConcurrentMap();
 
     /** A mapping from object id to subscriber set. The outer mapping will only be modified under
      * synchronization, but the inner-set allows concurrent modifications. */

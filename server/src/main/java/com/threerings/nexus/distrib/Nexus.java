@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.distrib;
 
+import react.RMap;
 import react.Slot;
 
 /**
@@ -108,6 +109,42 @@ public interface Nexus
      * entity will share the same execution context (thread).
      */
     void registerKeyed (Keyed child, Keyed parent);
+
+    /**
+     * Registers a global map, whose contents will be mirrored to all nodes in the Nexus. Maps are
+     * expensive (computationally and with regard to network bandwidth) and should be used
+     * sparingly. Global maps are for situations where some mapping must be known across all nodes
+     * in the network at all times, but where the use of a database is infeasable for performance
+     * reasons. In general, a global map works best when entries are added infrequently and queried
+     * frequently. If entries are updated too frequently, a map can become a serious burden on CPU
+     * and network bandwidth.
+     *
+     * <p>Note: like an entity, each map defines its own execution context. Listeners added to the
+     * map will execute in the map's context. However, it is <em>not</em> necessary that the map
+     * only be read or updated from within its own context. In this way it differs from other
+     * entities. Internally, global maps use a concurrent hash map, which allows reads and updates
+     * to take place on any thread.</p>
+     *
+     * <p>Note: a map must be registered across all nodes during its initialization process.
+     * Because of the way map syncing works, another node might send a newly started node updates
+     * to any map at any time, thus the newly started node should establish the existence of all of
+     * its maps before it joins the network. A map will also exist for the lifetime of the network.
+     * There is no way to remove a map. If a map is no longer useful, one can simply remove all
+     * entries from it and cease updates to reduce its overhead to essentially nil.</p>
+     *
+     * <p>Beware: updates to a global map should not be made frequently by different nodes, as no
+     * mechanism is in place to ensure that updates to a global map from two different nodes will
+     * be applied in a consistent order. Global maps are best suited for situations where one
+     * particular node "controls" a given mapping, and is the only node responsible for updating
+     * it. If two nodes update the same mapping, one node's updates may be applied last (and
+     * therefore "win") on some subset of the nodes, and another node's updates may win on the
+     * remaining nodes.</p>
+     *
+     * @param id a unique string that identifies this map.
+     * @return a reference to the newly registered map.
+     * @throws NexusException if a map is already registered for {@code id}.
+     */
+    <K,V> RMap<K,V> registerMap (String id);
 
     /**
      * Clears a registration created via {@link #register} or either {@link #registerChild}
