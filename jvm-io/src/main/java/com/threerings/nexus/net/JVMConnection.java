@@ -131,13 +131,21 @@ public class JVMConnection extends Connection
 
                 // let our callback know that we're ready to go
                 log.info("Established server connection", "addr", addr);
-                _callback.onSuccess(JVMConnection.this);
+                _exec.execute(new Runnable() {
+                    public void run () {
+                        _callback.onSuccess(JVMConnection.this);
+                    }
+                });
 
-            } catch (IOException ioe) {
+            } catch (final IOException ioe) {
                 if (_channel != null) {
                     closeChannel(_channel);
                 }
-                _callback.onFailure(ioe);
+                _exec.execute(new Runnable() {
+                    public void run () {
+                        _callback.onFailure(ioe);
+                    }
+                });
                 return;
             }
 
