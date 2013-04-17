@@ -38,29 +38,15 @@ public class RoomObject extends NexusObject
     public final DService<RoomService> roomSvc;
 
     /** A slot by which chat events can be listened for, and (on the server), emitted. */
-    public final DSignal<ChatEvent> chatEvent = DSignal.create();
+    public final DSignal<ChatEvent> chatEvent = DSignal.create(this);
 
     // from interface Keyed
     public Comparable<?> getKey () {
         return name;
     }
 
-    public RoomObject (String name, DService<RoomService> roomSvc) {
+    public RoomObject (String name, DService.Factory<RoomService> roomSvc) {
         this.name = name;
-        this.roomSvc = roomSvc;
-    }
-
-    @Override
-    protected DAttribute getAttribute (int index) {
-        switch (index) {
-        case 0: return roomSvc;
-        case 1: return chatEvent;
-        default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
-        }
-    }
-
-    @Override
-    protected int getAttributeCount () {
-        return 2;
+        this.roomSvc = roomSvc.createService(this);
     }
 }

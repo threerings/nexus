@@ -8,61 +8,68 @@ import java.util.List;
 
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.io.ServiceFactory;
+import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.util.Callback;
 
 /**
  * Creates {@link ChatService} marshaller instances.
  */
-public class Factory_ChatService implements ServiceFactory<ChatService>
+public class Factory_ChatService implements DService.Factory<ChatService>
 {
     @Override
-    public DService<ChatService> createService ()
+    public DService<ChatService> createService (NexusObject owner)
     {
-        return new Marshaller();
+        return new Marshaller(owner);
     }
 
-    public static DService<ChatService> createDispatcher (final ChatService service)
+    public static DService.Factory<ChatService> createDispatcher (final ChatService service)
     {
-        return new DService.Dispatcher<ChatService>() {
-            @Override public ChatService get () {
-                return service;
-            }
+        return new DService.Factory<ChatService>() {
+            public DService<ChatService> createService (NexusObject owner) {
+                return new DService.Dispatcher<ChatService>(owner) {
+                    @Override public ChatService get () {
+                        return service;
+                    }
 
-            @Override public Class<ChatService> getServiceClass () {
-                return ChatService.class;
-            }
+                    @Override public Class<ChatService> getServiceClass () {
+                        return ChatService.class;
+                    }
 
-            @Override public void dispatchCall (short methodId, Object[] args) {
-                switch (methodId) {
-                case 1:
-                    service.updateNick(
-                        this.<String>cast(args[0]),
-                        this.<Callback<Void>>cast(args[1]));
-                    break;
-                case 2:
-                    service.getRooms(
-                        this.<Callback<List<String>>>cast(args[0]));
-                    break;
-                case 3:
-                    service.joinRoom(
-                        this.<String>cast(args[0]),
-                        this.<Callback<Address<RoomObject>>>cast(args[1]));
-                    break;
-                case 4:
-                    service.createRoom(
-                        this.<String>cast(args[0]),
-                        this.<Callback<Address<RoomObject>>>cast(args[1]));
-                    break;
-                default:
-                    super.dispatchCall(methodId, args);
-                }
+                    @Override public void dispatchCall (short methodId, Object[] args) {
+                        switch (methodId) {
+                        case 1:
+                            service.updateNick(
+                                this.<String>cast(args[0]),
+                                this.<Callback<Void>>cast(args[1]));
+                            break;
+                        case 2:
+                            service.getRooms(
+                                this.<Callback<List<String>>>cast(args[0]));
+                            break;
+                        case 3:
+                            service.joinRoom(
+                                this.<String>cast(args[0]),
+                                this.<Callback<Address<RoomObject>>>cast(args[1]));
+                            break;
+                        case 4:
+                            service.createRoom(
+                                this.<String>cast(args[0]),
+                                this.<Callback<Address<RoomObject>>>cast(args[1]));
+                            break;
+                        default:
+                            super.dispatchCall(methodId, args);
+                        }
+                    }
+                };
             }
         };
     }
 
     protected static class Marshaller extends DService<ChatService> implements ChatService
     {
+        public Marshaller (NexusObject owner) {
+            super(owner);
+        }
         @Override public ChatService get () {
             return this;
         }
