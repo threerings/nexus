@@ -11,6 +11,13 @@ import com.threerings.nexus.io.Streamable;
  */
 public abstract class DService<T extends NexusService> implements DAttribute
 {
+    /** Used to create service attributes. */
+    public interface Factory<T extends NexusService>
+    {
+        /** Creates a service attribute with the supplied owner. */
+        DService<T> createService (NexusObject owner);
+    }
+
     /** An implementation detail used by service dispatchers. */
     public static abstract class Dispatcher<T extends NexusService> extends DService<T> {
         /** Dispatches a service call that came in over the network. */
@@ -18,6 +25,10 @@ public abstract class DService<T extends NexusService> implements DAttribute
             throw new IllegalArgumentException("Unknown service method [id=" + methodId +
                                                ", obj=" + _owner.getClass().getName() +
                                                ", attrIdx=" + _index + "]");
+        }
+
+        protected Dispatcher (NexusObject owner) {
+            super(owner);
         }
 
         /** Used to concisely, and without warning, cast arguments of generic type. */
@@ -33,17 +44,17 @@ public abstract class DService<T extends NexusService> implements DAttribute
     /** Returns the class for the service encapsulated by this attribute. */
     public abstract Class<T> getServiceClass ();
 
-    @Override public void init (NexusObject owner, short index) {
-        _owner = owner;
-        _index = index;
-    }
-
     @Override public void readContents (Streamable.Input in) {
         // NOOP
     }
 
     @Override public void writeContents (Streamable.Output out) {
         // NOOP
+    }
+
+    protected DService (NexusObject owner) {
+        _owner = owner;
+        _index = owner.registerAttr(this);
     }
 
     /**
@@ -54,8 +65,8 @@ public abstract class DService<T extends NexusService> implements DAttribute
     }
 
     /** The object that owns this attribute. */
-    protected NexusObject _owner;
+    protected final NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected short _index;
+    protected final short _index;
 }

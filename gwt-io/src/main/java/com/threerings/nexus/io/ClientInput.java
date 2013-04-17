@@ -7,6 +7,7 @@ package com.threerings.nexus.io;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.UnsafeNativeLong;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
 
 /**
@@ -79,15 +80,15 @@ class ClientInput extends Streamable.Input
         return clazz;
     }
 
+    @Override public <T extends NexusService> DService.Factory<T> readService () {
+        @SuppressWarnings("unchecked") DService.Factory<T> factory =
+            (DService.Factory<T>)_szer.getServiceFactory(readShort());
+        return factory;
+    }
+
     @Override protected <T> Streamer<T> readStreamer () {
         @SuppressWarnings("unchecked") Streamer<T> ts = (Streamer<T>)_szer.getStreamer(readShort());
         return ts;
-    }
-
-    @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory () {
-        @SuppressWarnings("unchecked") ServiceFactory<T> factory =
-            (ServiceFactory<T>)_szer.getServiceFactory(readShort());
-        return factory;
     }
 
     /** Decodes an encoded payload into a JavaScript array. As the payload is formatted as a

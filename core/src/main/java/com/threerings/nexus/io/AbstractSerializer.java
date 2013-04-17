@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusService;
 
@@ -31,7 +32,7 @@ public abstract class AbstractSerializer implements Serializer
     }
 
     // from interface Serializer
-    public ServiceFactory<?> getServiceFactory (short code) {
+    public DService.Factory<?> getServiceFactory (short code) {
         return nonNull(_services.get(code), "Unknown service code ", code);
     }
 
@@ -92,7 +93,7 @@ public abstract class AbstractSerializer implements Serializer
         mapStreamer(Streamers.create(eclass));
     }
 
-    protected void mapService (ServiceFactory<?> factory, Class<? extends NexusService> clazz) {
+    protected void mapService (DService.Factory<?> factory, Class<? extends NexusService> clazz) {
         short code = (short)++_nextServiceCode;
         _services.put(code, factory);
         _serviceCodes.put(clazz, code);
@@ -153,5 +154,6 @@ public abstract class AbstractSerializer implements Serializer
     protected final Map<Short,Class<?>> _classes = new HashMap<Short,Class<?>>();
 
     protected final Map<Class<?>,Short> _serviceCodes = new HashMap<Class<?>,Short>();
-    protected final Map<Short,ServiceFactory<?>> _services = new HashMap<Short,ServiceFactory<?>>();
+    protected final Map<Short,DService.Factory<?>> _services =
+        new HashMap<Short,DService.Factory<?>>();
 }

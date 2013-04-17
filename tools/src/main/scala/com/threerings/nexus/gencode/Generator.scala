@@ -95,7 +95,7 @@ object Generator
 
     // compute the imports needed for this compilation unit (filtering out classes in the same
     // package as the generated factory)
-    val stockImps = Set(Utils.DServiceName, Utils.ServiceFactoryName)
+    val stockImps = Set(Utils.DServiceName, Utils.NexusObjectName)
     val prunedImps = (stockImps ++ svc.imports) filterNot(fqn => Utils.inPackage(fqn, pkgName))
 
     generate(out, FactoryTmpl, new AnyRef {

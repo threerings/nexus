@@ -20,7 +20,7 @@ import static com.threerings.nexus.util.Log.log;
  *       this.value = value;
  *     }
  *   }
- *   public DSignal<MyEvent> myEvent = DSignal.create();
+ *   public DSignal<MyEvent> myEvent = DSignal.create(this);
  * }
  * MyObject obj = ...;
  * obj.myEvent.connect(new Slot<MyEvent>() {
@@ -33,10 +33,15 @@ public class DSignal<T> extends react.AbstractSignal<T>
     implements DAttribute
 {
     /**
-     * Convenience method for creating a signal without repeating the type parameter.
+     * Convenience method for creating a signal and registering it with its owner.
      */
-    public static <T> DSignal<T> create () {
-        return new DSignal<T>();
+    public static <T> DSignal<T> create (NexusObject owner) {
+        return new DSignal<T>(owner);
+    }
+
+    public DSignal (NexusObject owner) {
+        _owner = owner;
+        _index = owner.registerAttr(this);
     }
 
     /**
@@ -44,11 +49,6 @@ public class DSignal<T> extends react.AbstractSignal<T>
      */
     public void emit (T event) {
         _owner.postEvent(new EmitEvent<T>(_owner.getId(), _index, event));
-    }
-
-    @Override public void init (NexusObject owner, short index) {
-        _owner = owner;
-        _index = index;
     }
 
     @Override public void readContents (Streamable.Input in) {
@@ -71,17 +71,15 @@ public class DSignal<T> extends react.AbstractSignal<T>
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DSignal<T> attr =
-                (DSignal<T>)target.getAttribute(this.index);
-            attr.applyEmit(_event);
+            target.<DSignal<T>>getAttribute(this.index).applyEmit(_event);
         }
 
         protected T _event;
     }
 
     /** The object that owns this attribute. */
-    protected NexusObject _owner;
+    protected final NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected short _index;
+    protected final short _index;
 }

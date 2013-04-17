@@ -4,6 +4,9 @@
 
 package com.threerings.nexus.distrib;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import react.Signal;
 
 import com.threerings.nexus.io.Streamable;
@@ -52,9 +55,7 @@ public abstract class NexusObject
      */
     public void readContents (Streamable.Input in) {
         _id = in.readInt();
-        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
-            getAttribute(ii).readContents(in);
-        }
+        for (DAttribute attr : _attrs) attr.readContents(in);
     }
 
     /**
@@ -62,9 +63,7 @@ public abstract class NexusObject
      */
     public void writeContents (Streamable.Output out) {
         out.writeInt(_id);
-        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
-            getAttribute(ii).writeContents(out);
-        }
+        for (DAttribute attr : _attrs) attr.writeContents(out);
     }
 
     @Override // from NexusService.ObjectResponse
@@ -73,17 +72,13 @@ public abstract class NexusObject
     }
 
     /**
-     * Initializes this object with its id and event sink, which also triggers the initialization
-     * of its distributed attributes. This takes place when the object is registered with
-     * dispatcher on its originating server, and when it is read off the network on a subscribing
-     * client (though in this latter case the id is not changed).
+     * Initializes this object with its id and event sink. This takes place when the object is
+     * registered with dispatcher on its originating server, and when it is read off the network on
+     * a subscribing client (though in this latter case the id is not changed).
      */
     protected void init (int id, EventSink sink) {
         _id = id;
         _sink = sink;
-        for (int ii = 0, ll = getAttributeCount(); ii < ll; ii++) {
-            getAttribute(ii).init(this, (short)ii);
-        }
     }
 
     /**
@@ -96,20 +91,22 @@ public abstract class NexusObject
     }
 
     /**
-     * Returns the distributed attribute at the specified index.
-     *
-     * @exception IndexOutOfBoundsException if an attribute at illegal index is requested.
+     * Registers this attribute with its owning object. This is called automatically by the
+     * attributes' constructors.
+     * @return the attribute's index in this object.
      */
-    protected DAttribute getAttribute (int index) {
-        throw new IndexOutOfBoundsException("Invalid attribute index " + index);
+    protected final short registerAttr (DAttribute attr) {
+        int index = _attrs.size();
+        _attrs.add(attr);
+        return (short)index;
     }
 
     /**
-     * Returns the number of attributes owned by this object. Values from 0 to {@link
-     * #getAttributeCount}-1 may be legally passed to {@link #getAttribute}.
+     * Returns the distributed attribute at the specified index.
      */
-    protected int getAttributeCount () {
-        return 0;
+    protected final <T extends DAttribute> T getAttribute (int index) {
+        @SuppressWarnings("unchecked") T attr = (T)_attrs.get(index);
+        return attr;
     }
 
     /**
@@ -146,4 +143,7 @@ public abstract class NexusObject
 
     /** Handles the dispatch of events on this object. */
     protected EventSink _sink;
+
+    /** All of this object's attributes. Attributes are added during object construction. */
+    protected final List<DAttribute> _attrs = new ArrayList<DAttribute>();
 }

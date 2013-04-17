@@ -14,18 +14,7 @@ public class AttrIndexTest
 {
     public class TestObject extends NexusObject
     {
-        public DValue<Integer> monkeys = DValue.create(0);
-
-        @Override protected DAttribute getAttribute (int index) {
-            switch (index) {
-            case 0: return monkeys;
-            default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
-            }
-        }
-
-        @Override protected int getAttributeCount () {
-            return 1;
-        }
+        public DValue<Integer> monkeys = DValue.create(this, 0);
     }
 
     @Test
@@ -36,7 +25,6 @@ public class AttrIndexTest
         tobj.init(0, null);
 
         // make sure our attributes were wired up properly
-        assertEquals(1, tobj.getAttributeCount());
         assertEquals(0, tobj.monkeys._index);
         assertEquals(tobj, tobj.monkeys._owner);
     }

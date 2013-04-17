@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 
 import com.google.gwt.user.server.Base64Utils;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
 
 /**
@@ -82,15 +83,15 @@ public class ServerInput extends Streamable.Input
         return c;
     }
 
+    @Override public <T extends NexusService> DService.Factory<T> readService () {
+        @SuppressWarnings("unchecked") DService.Factory<T> sf =
+            (DService.Factory<T>)_szer.getServiceFactory(readShort());
+        return sf;
+    }
+
     @Override protected <T> Streamer<T> readStreamer () {
         @SuppressWarnings("unchecked") Streamer<T> s = (Streamer<T>)_szer.getStreamer(readShort());
         return s;
-    }
-
-    @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory () {
-        @SuppressWarnings("unchecked") ServiceFactory<T> sf =
-            (ServiceFactory<T>)_szer.getServiceFactory(readShort());
-        return sf;
     }
 
     protected final Serializer _szer;

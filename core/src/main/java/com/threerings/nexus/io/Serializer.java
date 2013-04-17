@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.io;
 
+import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
 
 /**
@@ -23,7 +24,7 @@ public interface Serializer
 
     /** Returns the service factory for the class assigned the supplied code.
      * @throws NexusException if no service is registered for the supplied code.  */
-    ServiceFactory<?> getServiceFactory (short code);
+    DService.Factory<?> getServiceFactory (short code);
 
     /** Returns the code assigned to the supplied class.
      * @throws NexusException if the class in question is not registered. */

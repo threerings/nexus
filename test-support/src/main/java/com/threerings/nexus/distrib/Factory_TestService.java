@@ -4,50 +4,56 @@
 
 package com.threerings.nexus.distrib;
 
-import com.threerings.nexus.io.ServiceFactory;
 import com.threerings.nexus.util.Callback;
 
 /**
  * Creates {@link TestService} marshaller instances.
  */
-public class Factory_TestService implements ServiceFactory<TestService>
+public class Factory_TestService implements DService.Factory<TestService>
 {
     @Override
-    public DService<TestService> createService ()
+    public DService<TestService> createService (NexusObject owner)
     {
-        return new Marshaller();
+        return new Marshaller(owner);
     }
 
-    public static DService<TestService> createDispatcher (final TestService service)
+    public static DService.Factory<TestService> createDispatcher (final TestService service)
     {
-        return new DService.Dispatcher<TestService>() {
-            @Override public TestService get () {
-                return service;
-            }
+        return new DService.Factory<TestService>() {
+            public DService<TestService> createService (NexusObject owner) {
+                return new DService.Dispatcher<TestService>(owner) {
+                    @Override public TestService get () {
+                        return service;
+                    }
 
-            @Override public Class<TestService> getServiceClass () {
-                return TestService.class;
-            }
+                    @Override public Class<TestService> getServiceClass () {
+                        return TestService.class;
+                    }
 
-            @Override public void dispatchCall (short methodId, Object[] args) {
-                switch (methodId) {
-                case 1:
-                    service.addOne(
-                        this.<Integer>cast(args[0]),
-                        this.<Callback<Integer>>cast(args[1]));
-                    break;
-                case 2:
-                    service.launchMissiles();
-                    break;
-                default:
-                    super.dispatchCall(methodId, args);
-                }
+                    @Override public void dispatchCall (short methodId, Object[] args) {
+                        switch (methodId) {
+                        case 1:
+                            service.addOne(
+                                this.<Integer>cast(args[0]),
+                                this.<Callback<Integer>>cast(args[1]));
+                            break;
+                        case 2:
+                            service.launchMissiles();
+                            break;
+                        default:
+                            super.dispatchCall(methodId, args);
+                        }
+                    }
+                };
             }
         };
     }
 
     protected static class Marshaller extends DService<TestService> implements TestService
     {
+        public Marshaller (NexusObject owner) {
+            super(owner);
+        }
         @Override public TestService get () {
             return this;
         }

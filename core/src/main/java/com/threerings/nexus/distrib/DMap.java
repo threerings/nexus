@@ -18,20 +18,15 @@ public class DMap<K,V> extends react.RMap<K,V>
     /**
      * Creates a distributed map that uses a {@link HashMap} as its underlying implementation.
      */
-    public static <K,V> DMap<K,V> create () {
-        return create(new HashMap<K,V>());
+    public static <K,V> DMap<K,V> create (NexusObject owner) {
+        return create(owner, new HashMap<K,V>());
     }
 
     /**
      * Creates a distributed map with the supplied underlying map implementation.
      */
-    public static <K,V> DMap<K,V> create (Map<K,V> impl) {
-        return new DMap<K,V>(impl);
-    }
-
-    @Override public void init (NexusObject owner, short index) {
-        _owner = owner;
-        _index = index;
+    public static <K,V> DMap<K,V> create (NexusObject owner, Map<K,V> impl) {
+        return new DMap<K,V>(owner, impl);
     }
 
     @Override public void readContents (Streamable.Input in) {
@@ -42,8 +37,10 @@ public class DMap<K,V> extends react.RMap<K,V>
         out.writeValue(_impl);
     }
 
-    protected DMap (Map<K,V> impl) {
+    protected DMap (NexusObject owner, Map<K,V> impl) {
         super(impl);
+        _owner = owner;
+        _index = owner.registerAttr(this);
     }
 
     @Override protected void emitPut (K key, V value, V oldValue) {
@@ -87,9 +84,7 @@ public class DMap<K,V> extends react.RMap<K,V>
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DMap<K,V> attr =
-                (DMap<K,V>)target.getAttribute(this.index);
-            attr.applyPut(_key, _value, oldValue);
+            target.<DMap<K,V>>getAttribute(this.index).applyPut(_key, _value, oldValue);
         }
 
         @Override protected void toString (StringBuilder buf) {
@@ -112,9 +107,7 @@ public class DMap<K,V> extends react.RMap<K,V>
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DMap<K,V> attr =
-                (DMap<K,V>)target.getAttribute(this.index);
-            attr.applyRemove(_key, oldValue);
+            target.<DMap<K,V>>getAttribute(this.index).applyRemove(_key, oldValue);
         }
 
         @Override protected void toString (StringBuilder buf) {
@@ -126,8 +119,8 @@ public class DMap<K,V> extends react.RMap<K,V>
     }
 
     /** The object that owns this attribute. */
-    protected NexusObject _owner;
+    protected final NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected short _index;
+    protected final short _index;
 }

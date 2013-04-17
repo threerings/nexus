@@ -25,42 +25,49 @@ import {{.}};
 /**
  * Creates {@link {{serviceName}}} marshaller instances.
  */
-public class Factory_{{serviceName}} implements ServiceFactory<{{serviceName}}>
+public class Factory_{{serviceName}} implements DService.Factory<{{serviceName}}>
 {
     @Override
-    public DService<{{serviceName}}> createService ()
+    public DService<{{serviceName}}> createService (NexusObject owner)
     {
-        return new Marshaller();
+        return new Marshaller(owner);
     }
 
-    public static DService<{{serviceName}}> createDispatcher (final {{serviceName}} service)
+    public static DService.Factory<{{serviceName}}> createDispatcher (final {{serviceName}} service)
     {
-        return new DService.Dispatcher<{{serviceName}}>() {
-            @Override public {{serviceName}} get () {
-                return service;
-            }
+        return new DService.Factory<{{serviceName}}>() {
+            public DService<{{serviceName}}> createService (NexusObject owner) {
+                return new DService.Dispatcher<{{serviceName}}>(owner) {
+                    @Override public {{serviceName}} get () {
+                        return service;
+                    }
 
-            @Override public Class<{{serviceName}}> getServiceClass () {
-                return {{serviceName}}.class;
-            }
+                    @Override public Class<{{serviceName}}> getServiceClass () {
+                        return {{serviceName}}.class;
+                    }
 
-            @Override public void dispatchCall (short methodId, Object[] args) {
-                switch (methodId) {
+                    @Override public void dispatchCall (short methodId, Object[] args) {
+                        switch (methodId) {
 {{#methods}}
-                case {{-index}}:
-                    service.{{name}}({{#args}}{{^-first}},{{/-first}}
-                        this.<{{boxedType}}>cast(args[{{index}}]){{/args}});
-                    break;
+                        case {{-index}}:
+                            service.{{name}}({{#args}}{{^-first}},{{/-first}}
+                                this.<{{boxedType}}>cast(args[{{index}}]){{/args}});
+                            break;
 {{/methods}}
-                default:
-                    super.dispatchCall(methodId, args);
-                }
+                        default:
+                            super.dispatchCall(methodId, args);
+                        }
+                    }
+                };
             }
         };
     }
 
     protected static class Marshaller extends DService<{{serviceName}}> implements {{serviceName}}
     {
+        public Marshaller (NexusObject owner) {
+            super(owner);
+        }
         @Override public {{serviceName}} get () {
             return this;
         }

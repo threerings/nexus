@@ -20,18 +20,7 @@ import static org.junit.Assert.*;
 public class DMapTest
 {
     public static class MapObject extends NexusObject {
-        public DMap<Integer,String> map = DMap.create(new HashMap<Integer,String>());
-
-        @Override protected DAttribute getAttribute (int index) {
-            switch (index) {
-            case 0: return map;
-            default: throw new IndexOutOfBoundsException("Invalid attribute index " + index);
-            }
-        }
-
-        @Override protected int getAttributeCount () {
-            return 1;
-        }
+        public DMap<Integer,String> map = DMap.create(this, new HashMap<Integer,String>());
     }
 
     @Test

@@ -16,22 +16,17 @@ public class DSet<T> extends react.RSet<T>
     implements DAttribute
 {
     /**
-     * Creates a distributed set backed by a @{link HashSet}.
+     * Creates a distributed set backed by a {@link HashSet}, with the specified owner.
      */
-    public static <E> DSet<E> create () {
-        return create(new HashSet<E>());
+    public static <E> DSet<E> create (NexusObject owner) {
+        return create(owner, new HashSet<E>());
     }
 
     /**
-     * Creates a distributed set with the supplied underlying set implementation.
+     * Creates a distributed set with the specified owner and underlying set implementation.
      */
-    public static <T> DSet<T> create (Set<T> impl) {
-        return new DSet<T>(impl);
-    }
-
-    @Override public void init (NexusObject owner, short index) {
-        _owner = owner;
-        _index = index;
+    public static <T> DSet<T> create (NexusObject owner, Set<T> impl) {
+        return new DSet<T>(owner, impl);
     }
 
     @Override public void readContents (Streamable.Input in) {
@@ -42,8 +37,10 @@ public class DSet<T> extends react.RSet<T>
         out.writeValue(_impl);
     }
 
-    protected DSet (Set<T> impl) {
+    protected DSet (NexusObject owner, Set<T> impl) {
         super(impl);
+        _owner = owner;
+        _index = owner.registerAttr(this);
     }
 
     protected void applyAdd (T elem) {
@@ -72,8 +69,7 @@ public class DSet<T> extends react.RSet<T>
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DSet<T> attr = (DSet<T>)target.getAttribute(this.index);
-            attr.applyAdd(_elem);
+            target.<DSet<T>>getAttribute(this.index).applyAdd(_elem);
         }
 
         @Override protected void toString (StringBuilder buf) {
@@ -92,8 +88,7 @@ public class DSet<T> extends react.RSet<T>
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DSet<T> attr = (DSet<T>)target.getAttribute(this.index);
-            attr.applyRemove(_elem);
+            target.<DSet<T>>getAttribute(this.index).applyRemove(_elem);
         }
 
         @Override protected void toString (StringBuilder buf) {
@@ -105,8 +100,8 @@ public class DSet<T> extends react.RSet<T>
     }
 
     /** The object that owns this attribute. */
-    protected NexusObject _owner;
+    protected final NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected short _index;
+    protected final short _index;
 }

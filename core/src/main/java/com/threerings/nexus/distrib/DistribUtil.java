@@ -26,8 +26,7 @@ public class DistribUtil
         Object cb = (args.length == 0) ? null : args[args.length-1];
         DService.Dispatcher<?> disp = null;
         try {
-            disp = (DService.Dispatcher<?>)object.getAttribute(attrIdx);
-            disp.dispatchCall(methId, args);
+            object.<DService.Dispatcher<?>>getAttribute(attrIdx).dispatchCall(methId, args);
 
         } catch (NexusException ne) {
             if (cb instanceof Callback<?>) {

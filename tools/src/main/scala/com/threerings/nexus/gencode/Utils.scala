@@ -13,7 +13,7 @@ import javax.lang.model.`type`.{ArrayType, DeclaredType, NoType, PrimitiveType, 
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
-import com.threerings.nexus.io.{Streamable, Streamer, ServiceFactory}
+import com.threerings.nexus.io.{Streamable, Streamer}
 import com.threerings.nexus.distrib.{DService, NexusObject, NexusService}
 
 /**
@@ -105,7 +105,8 @@ object Utils
   }
 
   def isNexusObject (t :TypeMirror) = extendsClass(NexusObjectName, t)
-  def isDService (t :TypeMirror) = extendsClass(DServiceName, t)
+  def isDService (t :TypeMirror) = (extendsClass(DServiceName, t) ||
+    implementsIface(DServiceFactoryName, t))
   def isNexusService (t :TypeMirror) = implementsIface(NexusServiceName, t)
   def isStreamable (t :TypeMirror) = implementsIface(StreamableName, t)
   def isEnum (t :TypeMirror) = extendsClass(EnumName, t)
@@ -331,11 +332,17 @@ object Utils
         // as we render all types qualified by their enclosing classes
         val encl = te.getEnclosingElement
         if (encl != null && encl.getKind != ElementKind.PACKAGE) {
+          // we need to note that we're processing an outer type, because we don't want to process
+          // the type variables of the outer type as those will never appear in the fully qualified
+          // expression of the inner type in question
+          _outerNest += 1
           visit(encl.asType, imports)
+          _outerNest -= 1
         } else {
           val fqName = te.getQualifiedName.toString
           if (!inPackage(fqName, "java.lang")) imports += fqName
-          t.getTypeArguments foreach { ta => visit(ta, imports) }
+          // only visit our type variables if we're not processing an outer type
+          if (_outerNest == 0) t.getTypeArguments foreach { ta => visit(ta, imports) }
         }
       }
     }
@@ -350,7 +357,7 @@ object Utils
             visit(t.getUpperBound, imports)
           }
         } else if (t.getLowerBound.getKind != TypeKind.NULL) {
-          visit(t.getUpperBound, imports)
+          visit(t.getLowerBound, imports)
         }
       }
     }
@@ -364,13 +371,15 @@ object Utils
     }
 
     private var _seenVars = Set[TypeVariable]()
+    private var _outerNest = 0
   }
 
   private[gencode] final val NexusObjectName = classOf[NexusObject].getName
   private[gencode] final val NexusServiceName = classOf[NexusService].getName
   private[gencode] final val DServiceName = classOf[DService[_]].getName
+  private[gencode] final val DServiceFactoryName =
+    classOf[DService.Factory[_]].getName.replace('$', '.')
   private[gencode] final val StreamableName = classOf[Streamable].getName
   private[gencode] final val StreamerName = classOf[Streamer[_]].getName
-  private[gencode] final val ServiceFactoryName = classOf[ServiceFactory[_]].getName
   private[gencode] final val EnumName = classOf[Enum[_]].getName
 }

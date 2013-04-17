@@ -126,6 +126,26 @@ public class IOSIO
                 return tclazz;
             }
 
+            @Override public <T extends NexusService> DService.Factory<T> readService () {
+                short code = readShort();
+                if (code < 0) {
+                    code = (short)-code;
+                    String rname = makeAuxName(readString(), "Factory");
+                    try {
+                        _services.put(code, (DService.Factory<?>)Class.forName(rname).newInstance());
+                    } catch (Exception e) {
+                        throw new StreamException(
+                            "Error instantiating service factory " + rname, e);
+                    }
+                }
+                @SuppressWarnings("unchecked") DService.Factory<T> factory =
+                    (DService.Factory<T>)_services.get(code);
+                if (factory == null) {
+                    throw new StreamException("Received unknown service code " + code);
+                }
+                return factory;
+            }
+
             @Override protected <T> Streamer<T> readStreamer () {
                 short code = readResolveClassCode();
                 Streamer<?> s = _streamers.get(code);
@@ -134,26 +154,6 @@ public class IOSIO
                 }
                 @SuppressWarnings("unchecked") Streamer<T> ts = (Streamer<T>)s;
                 return ts;
-            }
-
-            @Override protected <T extends NexusService> ServiceFactory<T> readServiceFactory () {
-                short code = readShort();
-                if (code < 0) {
-                    code = (short)-code;
-                    String rname = makeAuxName(readString(), "Factory");
-                    try {
-                        _services.put(code, (ServiceFactory<?>)Class.forName(rname).newInstance());
-                    } catch (Exception e) {
-                        throw new StreamException(
-                            "Error instantiating service factory " + rname, e);
-                    }
-                }
-                @SuppressWarnings("unchecked") ServiceFactory<T> factory =
-                    (ServiceFactory<T>)_services.get(code);
-                if (factory == null) {
-                    throw new StreamException("Received unknown service code " + code);
-                }
-                return factory;
             }
 
             protected final short readClassCode () {
@@ -199,7 +199,7 @@ public class IOSIO
 
             protected Map<Short, Class<?>> _classes = Maps.newHashMap();
             protected Map<Short, Streamer<?>> _streamers = Maps.newHashMap(STREAMERS);
-            protected Map<Short, ServiceFactory<?>> _services = Maps.newHashMap();
+            protected Map<Short, DService.Factory<?>> _services = Maps.newHashMap();
         };
     }
 

@@ -38,7 +38,7 @@ public class TestUtil
         }
     }
 
-    public static DService<TestService> createTestServiceAttr () {
+    public static DService.Factory<TestService> createTestServiceAttr () {
         return Factory_TestService.createDispatcher(new TestService () {
             public void addOne (int value, Callback<Integer> callback) {
                 callback.onSuccess(value+1);

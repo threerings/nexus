@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.threerings.nexus.distrib.DService;
+import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.NexusService;
 
 /**
@@ -141,10 +142,6 @@ public interface Streamable
             return data;
         }
 
-        public <T extends NexusService> DService<T> readService () {
-            return this.<T>readServiceFactory().createService();
-        }
-
         /**
          * Reads a single value from the input (which must have been written via a call to {@link
          * Output#writeValue}).
@@ -169,15 +166,15 @@ public interface Streamable
         }
 
         /**
+         * Reads a service factory, which can be used to create Nexus service attributes.
+         */
+        public abstract <T extends NexusService> DService.Factory<T> readService ();
+
+        /**
          * Reads a class identifier from the stream and returns the streamer to be used to unstream
          * instances of that class.
          */
         protected abstract <T> Streamer<T> readStreamer ();
-
-        /**
-         * Reads a service factory, which can be used to create Nexus service attributes.
-         */
-        protected abstract <T extends NexusService> ServiceFactory<T> readServiceFactory ();
     }
 
     /**

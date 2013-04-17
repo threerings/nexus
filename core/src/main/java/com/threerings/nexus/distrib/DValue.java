@@ -14,15 +14,10 @@ import static com.threerings.nexus.util.Log.log;
 public class DValue<T> extends react.Value<T> implements DAttribute
 {
     /**
-     * Creates a new attribute with the specified initial value.
+     * Creates a new attribute with the specified owner and initial value.
      */
-    public static <T> DValue<T> create (T value) {
-        return new DValue<T>(value);
-    }
-
-    @Override public void init (NexusObject owner, short index) {
-        _owner = owner;
-        _index = index;
+    public static <T> DValue<T> create (NexusObject owner, T value) {
+        return new DValue<T>(owner, value);
     }
 
     @Override public void readContents (Streamable.Input in) {
@@ -33,8 +28,10 @@ public class DValue<T> extends react.Value<T> implements DAttribute
         out.writeValue(_value);
     }
 
-    protected DValue (T value) {
+    protected DValue (NexusObject owner, T value) {
         super(value);
+        _owner = owner;
+        _index = owner.registerAttr(this);
     }
 
     @Override protected void emitChange (T value, T oldValue) {
@@ -62,9 +59,7 @@ public class DValue<T> extends react.Value<T> implements DAttribute
         }
 
         @Override public void applyTo (NexusObject target) {
-            @SuppressWarnings("unchecked") DValue<T> attr =
-                (DValue<T>)target.getAttribute(this.index);
-            attr.applyChange(_value, oldValue);
+            target.<DValue<T>>getAttribute(this.index).applyChange(_value, oldValue);
         }
 
         @Override protected void toString (StringBuilder buf) {
@@ -76,8 +71,8 @@ public class DValue<T> extends react.Value<T> implements DAttribute
     }
 
     /** The object that owns this attribute. */
-    protected NexusObject _owner;
+    protected final NexusObject _owner;
 
     /** The index of this attribute in its containing object. */
-    protected short _index;
+    protected final short _index;
 }

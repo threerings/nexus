@@ -27,9 +27,6 @@ public interface DAttribute
         }
     }
 
-    /** Configures this attribute with its owning object reference and index. */
-    void init (NexusObject owner, short index);
-
     /**
      * Reads the contents of this attribute from the supplied input.
      */

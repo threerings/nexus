@@ -48,7 +48,7 @@ object TestUtil
     }
   }
 
-  def createTestServiceAttr :DService[TestService] = {
+  def createTestServiceAttr :DService.Factory[TestService] = {
     Factory_TestService.createDispatcher(new TestService () {
       def addOne (value :Int, callback :Callback[java.lang.Integer]) {
         callback.onSuccess(value+1)
