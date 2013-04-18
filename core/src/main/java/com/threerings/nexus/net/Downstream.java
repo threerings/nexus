@@ -48,6 +48,10 @@ public interface Downstream extends Streamable
         public void dispatch (Handler handler) {
             handler.onSubscribe(this);
         }
+
+        @Override public String toString() {
+            return "Subscribe(" + object + ")";
+        }
     }
 
     /** A failure response to a subscription request. */
@@ -70,6 +74,10 @@ public interface Downstream extends Streamable
         public void dispatch (Handler handler) {
             handler.onSubscribeFailure(this);
         }
+
+        @Override public String toString() {
+            return "SubscribeFailure(" + addr + ", " + cause + ")";
+        }
     }
 
     /** Notifies the client of an event originating from the server. */
@@ -84,6 +92,10 @@ public interface Downstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onDispatchEvent(this);
+        }
+
+        @Override public String toString() {
+            return "DispatchEvent(" + event + ")";
         }
     }
 
@@ -107,6 +119,10 @@ public interface Downstream extends Streamable
         public void dispatch (Handler handler) {
             handler.onServiceResponse(this);
         }
+
+        @Override public String toString() {
+            return "ServiceResponse(" + callId + ", " + result + ")";
+        }
     }
 
     /** Delivers a failure response to a service call from the server. */
@@ -129,6 +145,10 @@ public interface Downstream extends Streamable
         public void dispatch (Handler handler) {
             handler.onServiceFailure(this);
         }
+
+        @Override public String toString() {
+            return "ServiceFailure(" + callId + ", " + cause + ")";
+        }
     }
 
     /** Delivers an object cleared notification from the server. */
@@ -143,6 +163,10 @@ public interface Downstream extends Streamable
 
         public void dispatch (Handler handler) {
             handler.onObjectCleared(this);
+        }
+
+        @Override public String toString() {
+            return "ObjectCleared(" + id + ")";
         }
     }
 
