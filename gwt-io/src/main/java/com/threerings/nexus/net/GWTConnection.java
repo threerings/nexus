@@ -64,12 +64,16 @@ public class GWTConnection extends Connection
             _callback.onFailure(new NexusException(reason));
         } else {
             // otherwise we were in the middle of a running session
-            // TODO: notify someone?
+            onClose(new NexusException(reason));
         }
     }
 
     protected void onClose () {
-        // TODO: notify someone?
+        if (_callback != null) {
+            _callback.onFailure(new NexusException("Server unavailable"));
+        } else {
+            onClose(null);
+        }
     }
 
     protected native void wsConnect (String url) /*-{
