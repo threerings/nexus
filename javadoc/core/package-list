@@ -1,2 +1,5 @@
+com.threerings.nexus.client
 com.threerings.nexus.distrib
-com.threerings.nexus.server
+com.threerings.nexus.io
+com.threerings.nexus.net
+com.threerings.nexus.util
