@@ -129,7 +129,7 @@
   <property name="gencode.excludes" value="notused"/>
   <target name="gencode" depends="-prepare" description="Generates marshalling code.">
     <artifact:dependencies pathId="tools.classpath">
-      <dependency groupId="com.threerings.nexus" artifactId="nexus-tools" version="1.0-SNAPSHOT"/>
+      <dependency groupId="com.threerings.nexus" artifactId="nexus-tools" version="1.1-SNAPSHOT"/>
     </artifact:dependencies>
     <javac srcdir="${src.dir}" includeAntRuntime="false"
            source="1.6" target="1.6" encoding="utf-8">
