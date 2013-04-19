@@ -24,7 +24,7 @@ rm -rf META-INF
 SERVER=nexus-server
 SERVERDIR=$HOME/.m2/repository/$GROUP/$SERVER/$1
 echo "Unpacking $SERVER-$1-javadoc.jar..."
-cd ../javadoc/server
+cd ../server
 jar xf $SERVERDIR/$SERVER-$1-javadoc.jar
 rm -rf META-INF
 
