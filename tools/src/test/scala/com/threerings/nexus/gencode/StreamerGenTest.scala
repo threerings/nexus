@@ -42,6 +42,23 @@ class StreamerGenTest
                      "_value4" -> "value4", "value5_" -> "value5"), metas.head.argToField)
   }
 
+  @Test def testNonValueFields {
+    val source = StreamerTestCompiler.genSource("Thing.java", """
+      public class Thing implements com.threerings.nexus.io.Streamable {
+        public final int age;
+        public final String name;
+        public int secret;
+        public Thing (int age, String name) {
+          this.age = age;
+          this.name = name;
+        }
+        private int _secretTwo;
+      }
+      """)
+    // the non-value field should not appear in the streamer
+    assertFalse(source.contains("secret"))
+  }
+
   @Test def testNested {
     val metas = StreamerTestCompiler.genMetas("Container.java", """
       package foo.bar;
@@ -77,6 +94,21 @@ class StreamerGenTest
     // make sure we correctly generate the type name of a type enclosed in an interface
     assertEquals("OuterIface.Inner1", metas.find(_.name == "Inner1").get.typeUse)
     assertEquals("OuterIface.Inner2<T>", metas.find(_.name == "Inner2").get.typeUse)
+  }
+
+  @Test def testEmptyPackage {
+    val source = StreamerTestCompiler.genSource("Thing.java", """
+      public class Thing implements com.threerings.nexus.io.Streamable {
+        public final int age;
+        public final String name;
+        public Thing (int age, String name) {
+          this.age = age;
+          this.name = name;
+        }
+      }
+      """)
+    // we should not generate an import for classes in the top-level package
+    assertFalse(source.contains("import Thing"))
   }
 
   @Test def testServiceInOtherPackage {

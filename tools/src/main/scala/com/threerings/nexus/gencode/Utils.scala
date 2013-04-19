@@ -236,7 +236,8 @@ object Utils
    * only works on outermost types, a fully-qualified nested type will return invalid values.
    */
   def inPackage (fqName :String, pkgName :String) =
-    fqName.substring(0, fqName.lastIndexOf(".")+1) == (pkgName + ".")
+    ((pkgName == null && fqName.indexOf(".") == -1) || // top-level package is repped by null
+     (fqName.substring(0, fqName.lastIndexOf(".")+1) == (pkgName + ".")))
 
   private class ToString (boundVars :Boolean) extends SimpleTypeVisitor6[Unit,StringBuilder] {
     override def visitDeclared (t :DeclaredType, buf :StringBuilder) {
