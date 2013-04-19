@@ -1,0 +1,22 @@
+Updating Nexus Javadocs
+-----------------------
+
+1. Do a standard Maven release.
+
+2. ./updocs.sh M.N (where M.N is the released version)
+
+Or if you fear the shell script, do the following:
+
+2. cd javadoc/core
+3. jar xf $HOME/.m2/com/threerings/nexus/nexus-core/M.N/nexus-core-M.N-javadoc.jar
+4. rm -rf META-INF
+5. cd ../javadoc/server
+6. jar xf $HOME/.m2/com/threerings/nexus/nexus-server/M.N/nexus-server-M.N-javadoc.jar
+7. rm -rf META-INF
+8. cd ..
+9. git add (any newly created files)
+10. cd ..
+11. git commit -m "Updated docs for M.N release." javadoc
+12. git push
+13. git tag -a vM.N -m "Tagged docs for M.N release."
+14. git push origin vM.N
