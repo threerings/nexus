@@ -1,6 +1,6 @@
 #!/bin/sh
 
-GROUP=com/threeings/nexus
+GROUP=com/threerings/nexus
 
 if [ -z "$1" ]; then
     echo "Usage: $0 M.N"
@@ -24,7 +24,7 @@ rm -rf META-INF
 SERVER=nexus-server
 SERVERDIR=$HOME/.m2/repository/$GROUP/$SERVER/$1
 echo "Unpacking $SERVER-$1-javadoc.jar..."
-cd javadoc/server
+cd ../javadoc/server
 jar xf $SERVERDIR/$SERVER-$1-javadoc.jar
 rm -rf META-INF
 
