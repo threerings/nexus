@@ -27,7 +27,7 @@ import static com.threerings.nexus.util.Log.log;
  *   public void onEmit (MyEvent event) { ... }
  * });
  * obj.myEvent.emit(new MyEvent("answer", 42));
- * </pre>
+ * }</pre>
  */
 public class DSignal<T> extends react.AbstractSignal<T>
     implements DAttribute

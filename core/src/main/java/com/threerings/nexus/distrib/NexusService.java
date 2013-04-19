@@ -5,6 +5,7 @@
 package com.threerings.nexus.distrib;
 
 import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.util.Callback;
 
 /**
  * A marker interface identifying a Nexus distributed service.
