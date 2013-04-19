@@ -45,9 +45,13 @@ class Processor extends AbstractProcessor {
   override def process (annotations :Set[_ <: TypeElement], roundEnv :RoundEnvironment) = {
     if (!roundEnv.processingOver) {
       for (elem <- roundEnv.getRootElements) elem match {
-        case telem :TypeElement => {
+        case telem :TypeElement => try {
           val metas = _scanner.scanUnit(elem)
           if (!metas.isEmpty) generate(telem, metas)
+        } catch {
+          case ice :Generator.InvalidCodeException =>
+            _msgr.printMessage(Diagnostic.Kind.ERROR, "Failure processing " + elem + ": " +
+              ice.getMessage)
         }
         case _ => _msgr.printMessage(Diagnostic.Kind.WARNING, "Weird element? " + elem.getClass)
       }

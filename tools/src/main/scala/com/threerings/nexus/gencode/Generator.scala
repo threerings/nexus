@@ -24,6 +24,8 @@ import com.threerings.nexus.distrib.DService
  */
 object Generator
 {
+  class InvalidCodeException (msg :String) extends RuntimeException(msg)
+
   def setSourceHeader (header :String) {
     _header = header
   }
@@ -39,7 +41,7 @@ object Generator
         generateStreamer(outer, sables, out)
         writeToFile(filer.createSourceFile(sname, outer), out.toString)
       } catch {
-        case e => {
+        case e :Throwable => {
           msgr.printMessage(Diagnostic.Kind.ERROR, "Failure generating " + sname + ": " + e)
           e.printStackTrace(System.err)
         }
@@ -56,7 +58,7 @@ object Generator
         generateFactory(outer, svcs, out)
         writeToFile(filer.createSourceFile(fname, outer), out.toString)
       } catch {
-        case e => {
+        case e :Throwable => {
           msgr.printMessage(Diagnostic.Kind.ERROR, "Failure generating " + fname + ": " + e)
           e.printStackTrace(System.err)
         }

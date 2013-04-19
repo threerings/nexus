@@ -31,6 +31,32 @@ class FactoryGenTest {
     // System.err.println(source)
   }
 
+  @Test def testMultipleCallbacks {
+    println("Expect error re: multiple callback args:")
+    val source = FactoryTestCompiler.genSource("TestService.java", """
+      package foo.bar;
+      import com.threerings.nexus.util.Callback;
+      public interface TestService extends com.threerings.nexus.distrib.NexusService {
+        void bogus (int value, Callback<Integer> cb1, Callback<Integer> cb2);
+      }
+    """)
+    // TODO: capture diagnostics during compile, ensure error is generated
+    assertTrue(source == "")
+  }
+
+  @Test def testNonLastArgCallback {
+    println("Expect error re: callback in non-final position:")
+    val source = FactoryTestCompiler.genSource("TestService.java", """
+      package foo.bar;
+      import com.threerings.nexus.util.Callback;
+      public interface TestService extends com.threerings.nexus.distrib.NexusService {
+        void bogus (int value, Callback<Integer> cb1, int bob);
+      }
+    """)
+    // TODO: capture diagnostics during compile, ensure error is generated
+    assertTrue(source == "")
+  }
+
   @Test def testMeta {
     val meta = FactoryTestCompiler.genMeta("TestService.java", """
       import com.threerings.nexus.util.Callback;

@@ -28,7 +28,9 @@ class ServiceMetadata (val elem :TypeElement) extends Metadata {
   def methods :JList[Method] = methodsBuf
 
   /** Adds a method to this metadata. Used when building. */
-  def addMethod (elem :ExecutableElement) { methodsBuf += Method(elem) }
+  def addMethod (elem :ExecutableElement) {
+    methodsBuf += Method(elem)
+  }
   private val methodsBuf = ListBuffer[Method]()
 
   override def toString () = String.format("[name=%s, methods=%s]", serviceName, methods)
@@ -43,8 +45,20 @@ object ServiceMetadata {
   }
 
   case class Method (elem :ExecutableElement) {
+    private val _params = elem.getParameters.zipWithIndex.map(Arg.tupled)
+
+    /*sanity checks (runs in ctor)*/ {
+      val cbs = _params filter(a => a.`type` == "Callback" || (a.`type` startsWith "Callback"))
+      // ensure that we have exactly zero or one callback arguments
+      if (cbs.size > 1) throw new Generator.InvalidCodeException(
+        this + " has more than one Callback argument")
+      // ensure that we don't have a callback in the wrong position
+      if (cbs.size == 1 && _params.last != cbs(0)) throw new Generator.InvalidCodeException(
+        this + " Callback argument in non-final position")
+    }
+
     val name = elem.getSimpleName.toString
-    val args :JList[Arg] = elem.getParameters.zipWithIndex.map(Arg.tupled)
-    override def toString () = String.format("%s(%s)", name, args.mkString(", "))
+    val args :JList[Arg] = _params
+    override def toString () = String.format("%s(%s)", name, _params.mkString(", "))
   }
 }
