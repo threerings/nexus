@@ -338,12 +338,14 @@ object Utils
           _outerNest += 1
           visit(encl.asType, imports)
           _outerNest -= 1
-        } else {
+        }
+        // otherwise we (potentially) need to import this type
+        else {
           val fqName = te.getQualifiedName.toString
           if (!inPackage(fqName, "java.lang")) imports += fqName
-          // only visit our type variables if we're not processing an outer type
-          if (_outerNest == 0) t.getTypeArguments foreach { ta => visit(ta, imports) }
         }
+        // visit our type variables if we're processing the inner-most type
+        if (_outerNest == 0) t.getTypeArguments foreach { ta => visit(ta, imports) }
       }
     }
 
