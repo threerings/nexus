@@ -17,6 +17,12 @@ Nexus servers are generally run via the JVM on any server platform that supports
 Nexus is currently functional for single server systems. Support for scaling a Nexus installation
 to multiple servers is incomplete, but coming soon.
 
+## Documentation
+
+  * [High-level docs](https://github.com/threerings/nexus/wiki)
+  * [Core Javadocs](http://threerings.github.io/nexus/javadoc/core/)
+  * [Server Javadocs](http://threerings.github.io/nexus/javadoc/server/)
+
 ## Building
 
 The Nexus libraries are published to [Maven Central] for easy integration into your build. You can
