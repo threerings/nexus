@@ -1,48 +1,34 @@
 # Nexus
 
-Nexus is a framework for the development of distributed applications
-(including, but not limited to, massively multiplayer online games).
+Nexus is a framework for the development of distributed applications (including, but not limited
+to, massively multiplayer online games).
 
-It is implemented in the Java language, though it is designed to be usable with
-JavaScript-based clients via the Google Web Toolkit Java to JavaScript
-compiler.
+It is implemented in the Java language, though it is designed to be usable with JavaScript-based
+clients via the Google Web Toolkit Java to JavaScript compiler.
 
-It is currently extremely unfinished.
+It is currently functional for single server systems. The support for scaling a Nexus installation
+to multiple servers is not yet complete.
 
 ## Building
 
 At the top-level run:
 
-    ant install
+    mvn install
 
-to build the various jar files and install them into your local Maven
-repository.
+to build the various jar files and install them into your local Maven repository.
 
-## Running the Chat Demo
+## Demos
 
-There is a simple chat demo app. You can run it like so:
+Check out the [nexus-demos] project for demo code.
 
-    cd demos/chat
-    ant server
+## Discuss
 
-You can run the JVM client like so:
+Questions and comments can be directed to the [OOO Google Group].
 
-    cd demos/chat
-    ant client
+## License
 
-You can compile the JavaScript client thusly:
+Nexus is released under the BSD License. See the [LICENSE] file for details.
 
-    cd demos/chat
-    ant gclient
-
-and you will then need to serve the contents of `demos/chat/dist/webapp` from
-some web server. You will then be able to run the chat demo app from any
-WebSockets enabled browser (including iOS and Android browsers).
-
-You can also run the JavaScript client directly from GWT devmode, like so:
-
-    cd demos/chat
-    ant devmode
-
-You will need the GWT devmode plugin installed in whatever browser you're
-using.
+[nexus-demos]: https://github.com/threerings/nexus-demos
+[OOO Google Group]: http://groups.google.com/group/ooo-libs
+[LICENSE]: https://github.com/threerings/nexus/blob/master/LICENSE
