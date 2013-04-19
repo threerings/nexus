@@ -10,7 +10,7 @@
   <groupId>com.threerings.nexus</groupId>
   <artifactId>nexus-project</artifactId>
   <packaging>pom</packaging>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <name>Nexus Meta-Project</name>
   <description>A framework for developing distributed applications.</description>
