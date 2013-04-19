@@ -79,6 +79,31 @@ class StreamerGenTest
     assertEquals("OuterIface.Inner2<T>", metas.find(_.name == "Inner2").get.typeUse)
   }
 
+  @Test def testServiceInOtherPackage {
+    val source = StreamerTestCompiler.genSource(
+      "TwoService.java" -> """
+      package foo.bar.baz;
+      import com.threerings.nexus.distrib.NexusService;
+      public interface TwoService extends NexusService {
+      }
+      """,
+      "One.java" -> """
+      package foo.bar;
+      import com.threerings.nexus.distrib.NexusObject;
+      import com.threerings.nexus.distrib.DService;
+      import foo.bar.baz.TwoService;
+      public class One extends NexusObject {
+        public final DService<TwoService> svc;
+        public One (DService.Factory<TwoService> svc) {
+          this.svc = svc.createService(this);
+        }
+      }
+      """)
+    // System.err.println(source)
+    // make sure we imported the service from the other package
+    assertTrue(source.contains("import foo.bar.baz.TwoService"))
+  }
+
   @Test def testInherit {
     val source = StreamerTestCompiler.genSource("Container.java", """
       package foo.bar;
@@ -371,21 +396,26 @@ class StreamerGenTest
 
 class StreamerTestCompiler extends TestCompiler {
   def genSource (filename :String, content :String) :String =
-    process(filename, content, new GenSourceProcessor)
+    process(new GenSourceProcessor, filename, content)
+
+  def genSource (files :(String, String)*) :String =
+    process(new GenSourceProcessor, files.map((mkTestObject _).tupled) :_*)
 
   @SupportedAnnotationTypes(Array("*"))
   class GenSourceProcessor extends TestProcessor[String] {
     override def result = _source
     override protected def generate (elem :TypeElement, metas :Seq[Metadata]) {
       val out = new java.io.StringWriter
-      Generator.generateStreamer(elem, metas.map(_.asInstanceOf[StreamableMetadata]), out)
+      Generator.generateStreamer(elem, metas.collect {
+        case m :StreamableMetadata => m
+      }, out)
       _source = out.toString
     }
     protected var _source = ""
   }
 
   def genMetas (filename :String, content :String) :Seq[StreamableMetadata] =
-    process(filename, content, new GenMetasProcessor)
+    process(new GenMetasProcessor, filename, content)
 
   @SupportedAnnotationTypes(Array("*"))
   class GenMetasProcessor extends TestProcessor[Seq[StreamableMetadata]] {

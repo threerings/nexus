@@ -17,8 +17,12 @@ abstract class TestCompiler {
     def result :R
   }
 
-  def process[R] (filename :String, content :String, proc :TestProcessor[R]) :R = {
-    val files = stockObjects :+ mkTestObject(filename, content)
+  def process[R] (proc :TestProcessor[R], filename :String, content :String) :R = {
+    process(proc, mkTestObject(filename, content))
+  }
+
+  def process[R] (proc :TestProcessor[R], testObjs :JavaFileObject*) :R = {
+    val files = stockObjects ++ testObjs
     val options = List("-proc:only")
     val task = ToolProvider.getSystemJavaCompiler.getTask(null, null, null, options, null, files)
     task.setProcessors(List(proc))

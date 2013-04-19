@@ -60,7 +60,7 @@ class FactoryGenTest {
 
 object FactoryTestCompiler extends TestCompiler {
   def genSource (filename :String, content :String) :String =
-    process(filename, content, new GenSourceProcessor)
+    process(new GenSourceProcessor, filename, content)
 
   @SupportedAnnotationTypes(Array("*"))
   class GenSourceProcessor extends TestProcessor[String] {
@@ -74,7 +74,7 @@ object FactoryTestCompiler extends TestCompiler {
   }
 
   def genMeta (filename :String, content :String) :ServiceMetadata =
-    process(filename, content, new GenMetaProcessor)
+    process(new GenMetaProcessor, filename, content)
 
   @SupportedAnnotationTypes(Array("*"))
   class GenMetaProcessor extends TestProcessor[ServiceMetadata] {
