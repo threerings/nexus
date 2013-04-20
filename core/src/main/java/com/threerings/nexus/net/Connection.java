@@ -35,8 +35,8 @@ public abstract class Connection
     public final Signal<Throwable> onClose = Signal.create();
 
     /**
-     * Requests to subscribe to the specified Nexus object. Success (i.e. the object) or failure
-     * will be communicated via the supplied callback.
+     * Subscribes to the Nexus object with the specified address. Success (i.e. the object) or
+     * failure will be communicated to {@code cb}.
      */
     public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb) {
         if (!_penders.addPender(addr, cb)) {
@@ -45,10 +45,9 @@ public abstract class Connection
     }
 
     /**
-     * Requests to unsubscribe from the specified Nexus object.
+     * Unsubscribes from the Nexus object with the specified id.
      */
-    public void unsubscribe (NexusObject object) {
-        int id = object.getId();
+    public void unsubscribe (int id) {
         if (_objects.remove(id) == null) {
             log.warning("Requested to unsubscribe from unknown object", "id", id);
             return;
