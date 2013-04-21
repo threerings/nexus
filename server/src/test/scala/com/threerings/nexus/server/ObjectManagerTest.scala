@@ -17,7 +17,7 @@ import react.UnitSlot
 import com.threerings.nexus.server.TestUtil._
 
 /**
- * Unit tests for the {@link ObjectManager}.
+ * Unit tests for the [[ObjectManager]].
  */
 class ObjectManagerTest
 {
