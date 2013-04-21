@@ -202,6 +202,12 @@ public interface Nexus
      */
     <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action);
 
+    @Deprecated /** Deprecated use {@code request}. */
+    <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
+
+    @Deprecated /** Deprecated use {@code request}. */
+    <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
+
     /**
      * Executes a request in the context (thread) of the specified singleton entity (either object
      * or non-object entity) and returns the result. The caller will remain blocked until the
@@ -211,7 +217,7 @@ public interface Nexus
      * exception occurs while processing the request. In the latter case, the triggering exception
      * wil be available via {@link Exception#getCause}.
      */
-    <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
+    <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request);
 
     /**
      * Executes a request in the context (server+thread) of the specified keyed (object or
@@ -225,7 +231,7 @@ public interface Nexus
      * @throws NexusException if an exception occurs while processing the request. The triggering
      * exception wil be available via {@link Exception#getCause}.
      */
-    <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
+    <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
     /**
      * Executes an action in the context (thread) of the specified singleton entity (either object

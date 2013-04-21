@@ -149,16 +149,27 @@ public class NexusServer implements Nexus
         _omgr.invoke(kclass, key, action);
     }
 
-    @Override // from interface Nexus
+    @Override @Deprecated
     public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
-        return _omgr.invoke(eclass, request);
+        return request(eclass, request);
+    }
+
+    @Override @Deprecated
+    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key,
+                                         Request<? super T,R> request) {
+        return request(kclass, key, request);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key,
+    public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
+        return _omgr.request(eclass, request);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key,
                                          Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
-        return _omgr.invoke(kclass, key, request);
+        return _omgr.request(kclass, key, request);
     }
 
     @Override // from interface Nexus

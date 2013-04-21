@@ -220,17 +220,17 @@ public class ObjectManager
      * Invokes the supplied request on the specified singleton entity. The caller will block until
      * the request is processed.
      */
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
-        return invoke(requireSingleton(eclass, "No singleton registered for"), request);
+    public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
+        return request(requireSingleton(eclass, "No singleton registered for"), request);
     }
 
     /**
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised. The caller will block until the request is processed.
      */
-    public <T extends Keyed,R> R invoke (Class<T> eclass, Comparable<?> key,
+    public <T extends Keyed,R> R request (Class<T> eclass, Comparable<?> key,
                                          Request<? super T,R> request) {
-        return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
+        return request(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 
     /**
@@ -476,7 +476,7 @@ public class ObjectManager
         });
     }
 
-    protected <T,R> R invoke (Binding<?> bind, final Request<T,R> request) {
+    protected <T,R> R request (Binding<?> bind, final Request<T,R> request) {
         if (_safetyChecks) defangAction(request);
 
         // post the request execution as a future task
