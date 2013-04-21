@@ -466,6 +466,8 @@ public class ObjectManager
     }
 
     protected <T> void invoke (Binding<?> bind, final Action<T> action) {
+        if (_safetyChecks) defangAction(action);
+
         @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
         bind.context.postOp(new Runnable() {
             public void run () {
@@ -475,9 +477,10 @@ public class ObjectManager
     }
 
     protected <T,R> R invoke (Binding<?> bind, final Request<T,R> request) {
-        @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
+        if (_safetyChecks) defangAction(request);
 
         // post the request execution as a future task
+        @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
         FutureTask<R> task = new FutureTask<R>(new Callable<R>() {
             public R call () {
                 return request.invoke(entity);
@@ -493,6 +496,22 @@ public class ObjectManager
             throw new NexusException("Request failure " + request, ee.getCause());
         } catch (InterruptedException ie) {
             throw new NexusException("Interrupted while waiting for request " + request);
+        }
+    }
+
+    protected void defangAction (Object action) {
+        Class<?> aclass = action.getClass();
+        for (java.lang.reflect.Field field: aclass.getDeclaredFields()) {
+            String name = field.getName();
+            if (name.startsWith("this$") || // Java-style captured this pointers
+                name.endsWith("$outer")) {  // Scala-style captured this pointers
+                try {
+                    field.setAccessible(true);
+                    field.set(action, null);
+                } catch (IllegalAccessException iae) {
+                    throw new NexusException("Error defanging outer-this pointer " + field, iae);
+                }
+            }
         }
     }
 
@@ -614,6 +633,10 @@ public class ObjectManager
     /** A mapping from object id to subscriber set. The outer mapping will only be modified under
      * synchronization, but the inner-set allows concurrent modifications. */
     protected final Map<Integer,Set<Subscriber>> _subscribers = Maps.newHashMap();
+
+    /** Indicates whether runtime safety checks should be made. They are expensive and thus should
+     * only be enabled during development. */
+    protected final boolean _safetyChecks = Boolean.getBoolean("nexus.safety_checks");
 
     /** A comparator on subscribers which orders by hashcode. */
     protected static final Comparator<Subscriber> SUBSCRIBER_COMP = new Comparator<Subscriber>() {
