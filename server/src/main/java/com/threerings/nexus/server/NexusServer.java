@@ -6,7 +6,9 @@ package com.threerings.nexus.server;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import com.google.common.base.Preconditions;
 
@@ -16,6 +18,7 @@ import react.Slot;
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Keyed;
 import com.threerings.nexus.distrib.Nexus;
+import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.Request;
 import com.threerings.nexus.distrib.Singleton;
@@ -162,14 +165,27 @@ public class NexusServer implements Nexus
 
     @Override // from interface Nexus
     public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
-        return _omgr.request(eclass, request);
+        return get(request, requestF(eclass, request));
     }
 
     @Override // from interface Nexus
     public <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key,
                                          Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
-        return _omgr.request(kclass, key, request);
+        return get(request, requestF(kclass, key, request));
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton,R> Future<R> requestF (Class<T> eclass,
+                                                       Request<? super T,R> request) {
+        return _omgr.invoke(eclass, request);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
+                                                   Request<? super T,R> request) {
+        // TODO: determine whether the entity is local or remote
+        return _omgr.invoke(kclass, key, request);
     }
 
     @Override // from interface Nexus
@@ -229,6 +245,17 @@ public class NexusServer implements Nexus
                 };
             }
         };
+    }
+
+    protected <R> R get (Request<?,R> request, Future<R> future) {
+        try {
+            // TODO: should we configure a default timeout?
+            return future.get();
+        } catch (ExecutionException ee) {
+            throw new NexusException("Request failure " + request, ee.getCause());
+        } catch (InterruptedException ie) {
+            throw new NexusException("Interrupted while waiting for request " + request);
+        }
     }
 
     protected final NexusConfig _config;

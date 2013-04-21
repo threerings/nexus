@@ -66,9 +66,9 @@ class ObjectManagerTest
     assertTrue(invoked)
 
     // ensure that requests are dispatched on our registered entity
-    val result = omgr.request(classOf[TestSingleton], new Request[TestSingleton,Int] {
+    val result = omgr.invoke(classOf[TestSingleton], new Request[TestSingleton,Int] {
       def invoke (obj :TestSingleton) = obj.increment(0)
-    })
+    }).get
     assertEquals(1, result)
 
     // ensure that actions are not dispatched once the entity is cleared
@@ -109,9 +109,9 @@ class ObjectManagerTest
     assertTrue(invoked)
 
     // ensure that requests are dispatched on our registered entity
-    val result = omgr.request(classOf[TestKeyed], test.getKey, new Request[TestKeyed,Int] {
+    val result = omgr.invoke(classOf[TestKeyed], test.getKey, new Request[TestKeyed,Int] {
       def invoke (obj :TestKeyed) = obj.decrement(0)
-    })
+    }).get
     assertEquals(-1, result)
 
     // ensure that actions are not dispatched once the entity is cleared

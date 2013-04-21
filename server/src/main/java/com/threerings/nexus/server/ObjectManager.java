@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import com.google.common.collect.Maps;
@@ -217,20 +217,19 @@ public class ObjectManager
     }
 
     /**
-     * Invokes the supplied request on the specified singleton entity. The caller will block until
-     * the request is processed.
+     * Invokes the supplied request on the specified singleton entity.
      */
-    public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
-        return request(requireSingleton(eclass, "No singleton registered for"), request);
+    public <T extends Singleton,R> Future<R> invoke (Class<T> eclass, Request<? super T,R> request) {
+        return invoke(requireSingleton(eclass, "No singleton registered for"), request);
     }
 
     /**
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
-     * server or an exception will be raised. The caller will block until the request is processed.
+     * server or an exception will be raised.
      */
-    public <T extends Keyed,R> R request (Class<T> eclass, Comparable<?> key,
-                                         Request<? super T,R> request) {
-        return request(requireKeyed(eclass, key, "No keyed entity registered for"), request);
+    public <T extends Keyed,R> Future<R> invoke (Class<T> eclass, Comparable<?> key,
+                                                 Request<? super T,R> request) {
+        return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
     }
 
     /**
@@ -476,7 +475,7 @@ public class ObjectManager
         });
     }
 
-    protected <T,R> R request (Binding<?> bind, final Request<T,R> request) {
+    protected <T,R> Future<R> invoke (Binding<?> bind, final Request<T,R> request) {
         if (_safetyChecks) defangAction(request);
 
         // post the request execution as a future task
@@ -487,16 +486,7 @@ public class ObjectManager
             }
         });
         bind.context.postOp(task);
-
-        // block, awaiting the completion of the request, and return its response
-        try {
-            // TODO: should we use the same timeout we use for remote requests?
-            return task.get();
-        } catch (ExecutionException ee) {
-            throw new NexusException("Request failure " + request, ee.getCause());
-        } catch (InterruptedException ie) {
-            throw new NexusException("Interrupted while waiting for request " + request);
-        }
+        return task;
     }
 
     protected void defangAction (Object action) {

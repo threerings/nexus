@@ -4,6 +4,8 @@
 
 package com.threerings.nexus.distrib;
 
+import java.util.concurrent.Future;
+
 import react.RMap;
 import react.Slot;
 
@@ -213,9 +215,9 @@ public interface Nexus
      * or non-object entity) and returns the result. The caller will remain blocked until the
      * response is received from the target context.
      *
-     * @throws NexusException if no singleton instance is registered for {@code eclass}, or if an
-     * exception occurs while processing the request. In the latter case, the triggering exception
-     * wil be available via {@link Exception#getCause}.
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}.
+     * @throws NexusException if an exception occurs while processing the request. The triggering
+     * exception wil be available via {@link Exception#getCause}.
      */
     <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request);
 
@@ -227,11 +229,31 @@ public interface Nexus
      * server node if the context for the specified keyed entity is hosted outside the local server
      * node.
      *
-     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
+     * @throws EntityNotFoundException if {@code kclass} + {@code key} refer to an unknown entity.
      * @throws NexusException if an exception occurs while processing the request. The triggering
      * exception wil be available via {@link Exception#getCause}.
      */
     <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
+
+    /**
+     * Executes a request in the context (thread) of the specified singleton entity (either object
+     * or non-object entity) and returns a future that can be used to obtain the result when the
+     * caller is ready to block.
+     *
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
+     */
+    <T extends Singleton,R> Future<R> requestF (Class<T> eclass, Request<? super T,R> request);
+
+    /**
+     * Executes a request in the context (server+thread) of the specified keyed (object or
+     * non-object) entity and returns a future that can be used to obtain the result when the
+     * caller is ready to block. The supplied request may be streamed to another server node if the
+     * context for the specified keyed entity is hosted outside the local server node.
+     *
+     * @throws EntityNotFoundException if {@code kclass} + {@code key} refer to an unknown entity.
+     */
+    <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
+                                            Request<? super T,R> request);
 
     /**
      * Executes an action in the context (thread) of the specified singleton entity (either object
