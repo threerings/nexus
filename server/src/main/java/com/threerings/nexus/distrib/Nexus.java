@@ -113,6 +113,14 @@ public interface Nexus
     void registerKeyed (Keyed child, Keyed parent);
 
     /**
+     * Registers a factory which will be used to create keyed entities on demand. If an action or
+     * request is dispatched to a non-existent entity of type {@code kclass}, the entity will be
+     * created and registered with the Nexus, and then the action or request will be dispatched to
+     * it as normal.
+     */
+    <T extends Keyed> void registerKeyedFactory (Class<T> kclass, KeyedFactory<T> factory);
+
+    /**
      * Registers a global map, whose contents will be mirrored to all nodes in the Nexus. Maps are
      * expensive (computationally and with regard to network bandwidth) and should be used
      * sparingly. Global maps are for situations where some mapping must be known across all nodes

@@ -24,6 +24,7 @@ import com.threerings.nexus.distrib.DistribUtil;
 import com.threerings.nexus.distrib.EntityNotFoundException;
 import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.KeyedFactory;
 import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
@@ -117,12 +118,27 @@ public class ObjectManager
     }
 
     /**
+     * Registers a factory for keyed entities of type {@code kclass}.
+     */
+    public <T extends Keyed> void registerKeyedFactory (Class<T> kclass, KeyedFactory<T> factory) {
+        KeyedFactory<?> ofact = _kfacts.putIfAbsent(kclass, factory);
+        if (ofact != null) {
+            log.warning("Rejected request to overwrite keyed entity factory",
+                        "kclass", kclass, "ofact", ofact, "nfact", factory);
+        }
+    }
+
+    /**
      * Registers a global map and its associated context.
      */
     public <K,V> RMap<K,V> registerMap (String id) {
         GlobalMap<K,V> map = new GlobalMap<K,V>(id, this);
-        Binding<GlobalMap<?,?>> bind = new Binding<GlobalMap<?,?>>(map, new EntityContext(_exec));
-        if (_maps.putIfAbsent(id, bind) != null) {
+        // oddly, we have to tell Java that "forgetting" K and V here is safe, and we have to do
+        // some serious backbending to accomplish it to boot; damned half-assed existentials
+        Binding<?> bind = Binding.simple(map, new EntityContext(_exec));
+        @SuppressWarnings("unchecked") Binding<GlobalMap<?,?>> casted =
+            (Binding<GlobalMap<?,?>>)bind;
+        if (_maps.putIfAbsent(id, casted) != null) {
             throw new NexusException("Map already registered for id: " + id);
         }
         return map;
@@ -132,8 +148,7 @@ public class ObjectManager
      * Returns true if we host the specified keyed entity, false if not.
      */
     public boolean hostsKeyed (Class<?> eclass, Comparable<?> key) {
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(eclass);
-        return (emap == null) ? false : emap.containsKey(key);
+        return getKeyedMap(eclass).containsKey(key);
     }
 
     /**
@@ -186,7 +201,7 @@ public class ObjectManager
      */
     public void clearKeyed (Keyed entity) {
         Class<?> kclass = getKeyedClass(entity.getClass());
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = getKeyedMap(kclass);
         if (emap.remove(entity.getKey()) == null) {
             log.warning("Requested to clear unknown keyed entity",
                         "class", kclass, "key", entity.getKey());
@@ -277,12 +292,8 @@ public class ObjectManager
             throw new IllegalArgumentException("Unknown address type " + addr);
         }
 
-        if (!(bind.entity instanceof NexusObject)) {
-            throw new NexusException(bind.entity.getClass().getName() + " is not a NexusObject");
-        }
+        @SuppressWarnings("unchecked") T target = (T)bind.entity();
         // TODO: access control
-
-        @SuppressWarnings("unchecked") T target = (T)bind.entity;
         addSubscriber(target, sub);
         return target;
     }
@@ -389,7 +400,7 @@ public class ObjectManager
     }
 
     protected void register (Singleton entity, EntityContext ctx) {
-        Binding<Singleton> bind = new Binding<Singleton>(entity, ctx);
+        Binding<Singleton> bind = Binding.simple(entity, ctx);
         Class<?> sclass = getSingletonClass(entity.getClass());
         if (_singletons.putIfAbsent(sclass, bind) != null) {
             throw new NexusException(
@@ -405,23 +416,19 @@ public class ObjectManager
     protected void register (Keyed entity, EntityContext ctx) {
         // TODO: ensure that the key class is non-null and a legal streamable type
         Class<?> kclass = getKeyedClass(entity.getClass());
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
-        if (emap == null) {
-            ConcurrentMap<Comparable<?>,Binding<Keyed>> cmap =
-                _keyeds.putIfAbsent(kclass, emap = Maps.newConcurrentMap());
-            // if someone beat us to the punch, we need to use their map, not ours
-            if (cmap != null) {
-                emap = cmap;
-            }
-        }
-
-        Binding<Keyed> bind = new Binding<Keyed>(entity, ctx);
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = getKeyedMap(kclass);
+        Binding<Keyed> bind = Binding.simple(entity, ctx);
         Binding<Keyed> exist = emap.putIfAbsent(entity.getKey(), bind);
         if (exist != null) {
             throw new NexusException(
                 "Keyed entity already registered for " + kclass.getName() + ":" + entity.getKey());
         }
 
+        // finish up separately (shared bits also happen for auto-created keyed entities)
+        finishRegisterKeyed(entity, ctx);
+    }
+
+    protected void finishRegisterKeyed (Keyed entity, EntityContext ctx) {
         // if the entity is also a nexus object, assign it an id
         if (entity instanceof NexusObject) {
             register((NexusObject)entity, ctx);
@@ -433,7 +440,7 @@ public class ObjectManager
     protected void register (NexusObject object, EntityContext ctx) {
         int id = getNextObjectId();
         DistribUtil.init(object, id, this);
-        _objects.put(id, new Binding<NexusObject>(object, ctx));
+        _objects.put(id, Binding.simple(object, ctx));
     }
 
     protected Binding<Singleton> requireSingleton (Class<?> eclass, String errmsg) {
@@ -444,16 +451,27 @@ public class ObjectManager
         return bind;
     }
 
-    protected Binding<Keyed> requireKeyed (Class<?> eclass, Comparable<?> key, String errmsg) {
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(eclass);
-        if (emap == null) {
-            throw new EntityNotFoundException(errmsg, eclass, key);
-        }
+    protected Binding<Keyed> requireKeyed (Class<?> kclass, final Comparable<?> key, String errmsg) {
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = getKeyedMap(kclass);
         Binding<Keyed> bind = emap.get(key);
-        if (bind == null) {
-            throw new EntityNotFoundException(errmsg, eclass, key);
-        }
-        return bind;
+        if (bind != null) return bind;
+
+        // if we have no factory for this entity, then it doesn't exist
+        final KeyedFactory<?> fact = _kfacts.get(kclass);
+        if (fact == null) throw new EntityNotFoundException(errmsg, kclass, key);
+
+        // otherwise we'll auto-create the entity
+        final EntityContext ctx = new EntityContext(_exec);
+        bind = Binding.deferred(new Thunk<Keyed>() {
+            public Keyed execute () {
+                Keyed entity = fact.create(_nexus, key);
+                finishRegisterKeyed(entity, ctx);
+                return entity;
+            }
+        }, ctx);
+        Binding<Keyed> exist = emap.putIfAbsent(key, bind);
+        // if someone beat us to the punch, return their binding, not ours
+        return (exist == null) ? bind : exist;
     }
 
     protected Binding<NexusObject> requireObject (int id, String errmsg) {
@@ -464,24 +482,24 @@ public class ObjectManager
         return bind;
     }
 
-    protected <T> void invoke (Binding<?> bind, final Action<T> action) {
+    protected <T> void invoke (final Binding<?> bind, final Action<T> action) {
         if (_safetyChecks) defangAction(action);
 
-        @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
         bind.context.postOp(new Runnable() {
             public void run () {
+                @SuppressWarnings("unchecked") final T entity = (T)bind.entity();
                 action.invoke(entity);
             }
         });
     }
 
-    protected <T,R> Future<R> invoke (Binding<?> bind, final Request<T,R> request) {
+    protected <T,R> Future<R> invoke (final Binding<?> bind, final Request<T,R> request) {
         if (_safetyChecks) defangAction(request);
 
         // post the request execution as a future task
-        @SuppressWarnings("unchecked") final T entity = (T)bind.entity;
         FutureTask<R> task = new FutureTask<R>(new Callable<R>() {
             public R call () {
+                @SuppressWarnings("unchecked") final T entity = (T)bind.entity();
                 return request.invoke(entity);
             }
         });
@@ -518,32 +536,47 @@ public class ObjectManager
     }
 
     protected <K,V> void applyMapPut (String id, final K key, final V value, final V oldValue) {
-        Binding<GlobalMap<?,?>> bind = _maps.get(id);
+        final Binding<GlobalMap<?,?>> bind = _maps.get(id);
         if (bind == null) {
             log.warning("Got put for unknown map", "id", id, "key", key, "value", value,
                         "ovalue", oldValue);
             return;
         }
-        @SuppressWarnings("unchecked") final GlobalMap<K,V> map = (GlobalMap<K,V>)bind.entity;
         bind.context.postOp(new Runnable() {
             public void run () {
+                @SuppressWarnings("unchecked") final GlobalMap<K,V> map =
+                    (GlobalMap<K,V>)bind.entity();
                 map.applyPut(key, value, oldValue);
             }
         });
     }
 
     protected <K,V> void applyMapRemove (String id, final K key, final V oldValue) {
-        Binding<GlobalMap<?,?>> bind = _maps.get(id);
+        final Binding<GlobalMap<?,?>> bind = _maps.get(id);
         if (bind == null) {
             log.warning("Got remove for unknown map", "id", id, "key", key, "ovalue", oldValue);
             return;
         }
-        @SuppressWarnings("unchecked") final GlobalMap<K,V> map = (GlobalMap<K,V>)bind.entity;
         bind.context.postOp(new Runnable() {
             public void run () {
+                @SuppressWarnings("unchecked") final GlobalMap<K,V> map =
+                    (GlobalMap<K,V>)bind.entity();
                 map.applyRemove(key, oldValue);
             }
         });
+    }
+
+    protected ConcurrentMap<Comparable<?>,Binding<Keyed>> getKeyedMap (Class<?> kclass) {
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = _keyeds.get(kclass);
+        if (emap == null) {
+            ConcurrentMap<Comparable<?>,Binding<Keyed>> cmap =
+                _keyeds.putIfAbsent(kclass, emap = Maps.newConcurrentMap());
+            // if someone beat us to the punch, we need to use their map, not ours
+            if (cmap != null) {
+                emap = cmap;
+            }
+        }
+        return emap;
     }
 
     protected Set<Subscriber> getSubscriberSet (int targetId) {
@@ -584,13 +617,34 @@ public class ObjectManager
         return getSingletonClass(sclass.getSuperclass());
     }
 
+    /** Used to auto-create entities. */
+    protected interface Thunk<T> { T execute (); }
+
     /** Maintains bindings of entities to contexts. */
-    protected static class Binding<T> {
-        public final T entity;
+    protected static abstract class Binding<T> {
+        public static <T> Binding<T> simple (final T entity, EntityContext ctx) {
+            return new Binding<T>(ctx) {
+                public T entity () { return entity; }
+            };
+        }
+
+        public static <T> Binding<T> deferred (final Thunk<T> thunk, EntityContext ctx) {
+            return new Binding<T>(ctx) {
+                public T entity () {
+                    if (_entity == null) _entity = thunk.execute();
+                    return _entity;
+                }
+                // we don't have to worry about thread safety here because we know that entity() is
+                // only ever called on this binding's execution context
+                protected T _entity;
+            };
+        }
+
         public final EntityContext context;
-        public Binding (T entity, EntityContext context) {
-            this.entity = entity;
-            this.context = context;
+        public abstract T entity ();
+
+        private Binding (EntityContext ctx) {
+            this.context = ctx;
         }
     }
 
@@ -616,6 +670,9 @@ public class ObjectManager
     /** A mapping of all keyed entities hosted on this server. */
     protected final ConcurrentMap<Class<?>,ConcurrentMap<Comparable<?>,Binding<Keyed>>> _keyeds =
         Maps.newConcurrentMap();
+
+    /** A mapping of factories for keyed entities. */
+    protected final ConcurrentMap<Class<?>,KeyedFactory<?>> _kfacts = Maps.newConcurrentMap();
 
     /** A mapping of distributed maps known to this server. */
     protected final ConcurrentMap<String,Binding<GlobalMap<?,?>>> _maps = Maps.newConcurrentMap();

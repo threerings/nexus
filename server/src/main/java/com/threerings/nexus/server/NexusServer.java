@@ -17,6 +17,7 @@ import react.Slot;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Keyed;
+import com.threerings.nexus.distrib.KeyedFactory;
 import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
@@ -87,6 +88,11 @@ public class NexusServer implements Nexus
     @Override // from interface Nexus
     public void registerKeyed (Keyed child, Keyed parent) {
         _omgr.registerKeyed(child, parent);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed> void registerKeyedFactory (Class<T> kclass, KeyedFactory<T> factory) {
+        _omgr.registerKeyedFactory(kclass, factory);
     }
 
     @Override // from interface Nexus

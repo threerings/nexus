@@ -8,6 +8,7 @@ import scala.collection.mutable.ListBuffer
 import java.util.concurrent.Executor
 
 import com.threerings.nexus.distrib.{Action, DValue, Nexus, NexusException, Request, TestObject}
+import com.threerings.nexus.distrib.{KeyedFactory, Keyed, EntityNotFoundException}
 
 import org.junit._
 import org.junit.Assert._
@@ -122,6 +123,25 @@ class ObjectManagerTest
     assertFalse(omgr.hostsKeyed(classOf[TestKeyed], test.getKey))
   }
 
+  @Test def testAutoCreateKeyed {
+    class AutoKeyed (key :Int) extends Keyed {
+      def getKey = key
+      def addKey (value :Int) = value + key
+    }
+
+    val omgr = createObjectManager
+    omgr.registerKeyedFactory(classOf[AutoKeyed], new KeyedFactory[AutoKeyed] {
+      def create (nexus :Nexus, key :Comparable[_]) = new AutoKeyed(key.asInstanceOf[Int])
+    })
+
+    assertEquals(5, omgr.invoke(classOf[AutoKeyed], 2, new Request[AutoKeyed,Int] {
+      def invoke (ent :AutoKeyed) = ent.addKey(3)
+    }).get)
+    assertEquals(7, omgr.invoke(classOf[AutoKeyed], 3, new Request[AutoKeyed,Int] {
+      def invoke (ent :AutoKeyed) = ent.addKey(4)
+    }).get)
+  }
+
   @Test def testMissingKeyedInvoke {
     val omgr = createObjectManager
 
@@ -131,6 +151,17 @@ class ObjectManagerTest
     // now test just a key mismatch
     omgr.registerKeyed(new TestKeyed(1))
     omgr.invoke(classOf[TestKeyed], 3, MISSING_KEYED)
+
+    // test invoking a request on an unregistered entity; should throw ENFE
+    try {
+      omgr.invoke(classOf[TestKeyed], 3, new Request[TestKeyed,Int]() {
+        def invoke (ent :TestKeyed) = 42
+      })
+      fail()
+    } catch {
+      case mke :EntityNotFoundException => // success
+      case e   :Throwable => fail()
+    }
   }
 
   @Test def testKeyedSubclass {
