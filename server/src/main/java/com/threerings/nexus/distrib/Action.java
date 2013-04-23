@@ -8,8 +8,10 @@ import static com.threerings.nexus.util.Log.log;
 
 /**
  * An action invoked in the context of a Nexus entity. The sender does not block awaiting a
- * response.
+ * response. TODO: this needs to become an interface with a default method when the time comes to
+ * support Java 8 lambdas.
  */
+// TODO: @FunctionalInterface
 public abstract class Action<E>
 {
     /**
