@@ -10,7 +10,9 @@ import react.RMap;
 import react.Slot;
 
 /**
- * The main source for Nexus services.
+ * The main source for Nexus services. See
+ * <a href="https://github.com/threerings/nexus/wiki/ServerConcepts">this documentation</a> for a
+ * detailed explanation of entities and execution contexts.
  *
  * <p><b>Note:</b> {@link Keyed} and {@link Singleton} entities are registered and referenced by
  * their concrete class. However, some special handling is performed to allow for more natural
@@ -66,27 +68,27 @@ public interface Nexus
     }
 
     /**
-     * Registers an anonymous object with the Nexus.
+     * Registers an anonymous object with the Nexus in its own execution context.
      */
     void register (NexusObject object);
 
     /**
      * Registers an object as a child of the supplied singleton entity. The child and parent will
-     * share the same execution context (thread).
+     * share the same execution context.
      */
     void register (NexusObject child, Singleton parent);
 
     /**
      * Registers an object as a child of the supplied keyed entity. The child and entity will share
-     * the same execution context (thread).
+     * the same execution context.
      */
     void register (NexusObject child, Keyed parent);
 
     /**
      * Registers a singleton (object or non-object) entity with the Nexus. This entity will only be
      * accessible on the server node on which it was created. Code may be executed in this entity's
-     * context (thread) via, for example, {@link #invoke(Class,Action}. If the singleton is also a
-     * {@link NexusObject}, clients can subscribe to the object using its class.
+     * context via, for example, {@link #invoke(Class,Action}. If the singleton is also a {@link
+     * NexusObject}, clients can subscribe to the object using its class.
      *
      * @throws NexusException if an entity is already mapped for this singleton type.
      */
@@ -94,7 +96,7 @@ public interface Nexus
 
     /**
      * Registers a singleton as a child of the supplied parent singleton entity. The child and
-     * parent will share the same execution context (thread).
+     * parent will share the same execution context.
      */
     void registerSingleton (Singleton child, Singleton parent);
 
@@ -108,7 +110,7 @@ public interface Nexus
 
     /**
      * Registers a keyed entity as a child of the supplied parent keyed entity. The child and
-     * entity will share the same execution context (thread).
+     * entity will share the same execution context.
      */
     void registerKeyed (Keyed child, Keyed parent);
 
@@ -195,9 +197,9 @@ public interface Nexus
     <E, T extends Keyed> Slot<E> routed (T entity, Slot<E> slot);
 
     /**
-     * Executes an action in the context (thread) of the specified singleton entity (either object
-     * or non-object entity). This call returns immediately, and executes the action at a later
-     * time, regardless of whether the caller is already in the target context.
+     * Executes an action in the context of the specified singleton entity (either object or
+     * non-object entity). This call returns immediately, and executes the action at a later time,
+     * regardless of whether the caller is already in the target context.
      *
      * @throws NexusException if no singleton instance is registered for {@code eclass}.
      */
@@ -219,9 +221,9 @@ public interface Nexus
     <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
     /**
-     * Executes a request in the context (thread) of the specified singleton entity (either object
-     * or non-object entity) and returns the result. The caller will remain blocked until the
-     * response is received from the target context.
+     * Executes a request in the context of the specified singleton entity (either object or
+     * non-object entity) and returns the result. The caller will remain blocked until the response
+     * is received from the target context.
      *
      * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}.
      * @throws NexusException if an exception occurs while processing the request. The triggering
@@ -244,8 +246,8 @@ public interface Nexus
     <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
     /**
-     * Executes a request in the context (thread) of the specified singleton entity (either object
-     * or non-object entity) and returns a future that can be used to obtain the result when the
+     * Executes a request in the context of the specified singleton entity (either object or
+     * non-object entity) and returns a future that can be used to obtain the result when the
      * caller is ready to block.
      *
      * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
@@ -264,9 +266,8 @@ public interface Nexus
                                             Request<? super T,R> request);
 
     /**
-     * Executes an action in the context (thread) of the specified singleton entity (either object
-     * or non-object entity). The action is executed after the specified delay, unless canceled
-     * prior.
+     * Executes an action in the context of the specified singleton entity (either object or
+     * non-object entity). The action is executed after the specified delay, unless canceled prior.
      *
      * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
      */
