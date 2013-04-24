@@ -50,6 +50,7 @@ object NexusBuild extends Build {
   lazy val gwtServer = builder("gwt-server")
   lazy val jvmIO = builder("jvm-io")
   lazy val jvmServer = builder("jvm-server")
+  lazy val iosIO = builder("ios-io")
   lazy val tools = builder("tools")
 
   // def demoProject (id :String, extraSettings :Seq[Setting[_]] = Seq()) = Project(
@@ -67,5 +68,5 @@ object NexusBuild extends Build {
 
   // one giant fruit roll-up to bring them all together
   lazy val nexus = Project("nexus", file(".")) aggregate(
-    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer, tools/*, chat*/)
+    core, testSupport, server, gwtIO, gwtServer, jvmIO, jvmServer, iosIO, tools/*, chat*/)
 }
