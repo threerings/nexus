@@ -6,7 +6,7 @@ package com.threerings.nexus.server
 
 import java.util.concurrent.{ExecutorService, Executors}
 
-import com.threerings.nexus.distrib.{Action, Singleton}
+import com.threerings.nexus.distrib.{Action, Keyed, Request, Singleton}
 import com.threerings.nexus.distrib.NexusException
 
 import org.junit._
@@ -70,8 +70,32 @@ class NexusTest {
       }
     })
 
-    delay(500) // give things time to fail
+    delay(100) // give things time to fail
     assertFalse(printed) // ensure that the print call did not execute
+  }
+
+  @Test def testGather {
+    import scala.collection.JavaConversions._
+    class Player (id :Int, val name :String) extends Keyed {
+      def getKey = id
+    }
+
+    _server.registerKeyed(new Player(1, "Bob"))
+    _server.registerKeyed(new Player(2, "Jim"))
+    _server.registerKeyed(new Player(4, "Jerry"))
+    _server.registerKeyed(new Player(9, "Hank"))
+
+    val keys = Set[Comparable[_]](1, 2, 3, 4, 5, 6, 7, 8, 9)
+    val map = _server.gather(classOf[Player], keys, new Request[Player,String] {
+      def invoke (p :Player) = p.name
+    })
+    assertEquals(4, map.size)
+    assertEquals("Bob", map.get(1))
+    assertEquals("Jim", map.get(2))
+    assertEquals("Jerry", map.get(4))
+    assertEquals("Hank", map.get(9))
+
+    delay(100) // give things time to process
   }
 
   protected def delay (millis :Long) = Thread.sleep(millis)

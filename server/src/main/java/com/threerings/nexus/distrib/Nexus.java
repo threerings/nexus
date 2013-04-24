@@ -4,6 +4,8 @@
 
 package com.threerings.nexus.distrib;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import react.RMap;
@@ -232,6 +234,15 @@ public interface Nexus
     <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request);
 
     /**
+     * Executes a request in the context of the specified singleton entity (either object or
+     * non-object entity) and returns a future that can be used to obtain the result when the
+     * caller is ready to block.
+     *
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
+     */
+    <T extends Singleton,R> Future<R> requestF (Class<T> eclass, Request<? super T,R> request);
+
+    /**
      * Executes a request in the context (server+thread) of the specified keyed (object or
      * non-object) entity and returns the result. The caller will remain blocked until the response
      * is received from the target context, or the request times out (timeouts are configured on
@@ -246,15 +257,6 @@ public interface Nexus
     <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
 
     /**
-     * Executes a request in the context of the specified singleton entity (either object or
-     * non-object entity) and returns a future that can be used to obtain the result when the
-     * caller is ready to block.
-     *
-     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
-     */
-    <T extends Singleton,R> Future<R> requestF (Class<T> eclass, Request<? super T,R> request);
-
-    /**
      * Executes a request in the context (server+thread) of the specified keyed (object or
      * non-object) entity and returns a future that can be used to obtain the result when the
      * caller is ready to block. The supplied request may be streamed to another server node if the
@@ -264,6 +266,41 @@ public interface Nexus
      */
     <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
                                             Request<? super T,R> request);
+
+    // TODO: invoke an action on all keyed entites in a set of keys
+
+    /**
+     * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and
+     * gathers the results into a map, indexed by entity key. The request will be run separately in
+     * the context of each entity and the result will be added to the map. This can be more
+     * efficient than issuing requests separately for each entity, as the initiating server will
+     * group the keys based on the servers currently hosting those keys and will issue a single
+     * network request to each server rather than one for each key.
+     *
+     * <p>Any entities that are not currently hosted by any server in the network will simply be
+     * ommitted from the map. Any requests that result in failure are also omitted from the map
+     * (and the failure will be logged). If you need to know about individual failures, use {@link
+     * #gatherF} which preserves and reports failure. The final result is made available once all
+     * located entities have completed execution of the request.</p>
+     */
+    <T extends Keyed,R> Map<Comparable<?>,R> gather (
+        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
+
+    /**
+     * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and
+     * gathers the results into a map, indexed by entity key. The request will be run separately in
+     * the context of each entity and the result will be added to the map. This can be more
+     * efficient than issuing requests separately for each entity, as the initiating server will
+     * group the keys based on the servers currently hosting those keys and will issue a single
+     * network request to each server rather than one for each key.
+     *
+     * <p>Any entities that are not currently hosted by any server in the network will simply be
+     * ommitted from the map. The future for each request will become available as that request is
+     * processed, with the caveat that results for remote entities will arrive in batches as the
+     * server hosting those entities returns all results at once.</p>
+     */
+    <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
+        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
 
     /**
      * Executes an action in the context of the specified singleton entity (either object or
@@ -297,6 +334,6 @@ public interface Nexus
      */
     <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key);
 
-    // TODO: invoke an action on all singletons on all nodes
+    // TODO: invoke an action on all singletons on all nodes?
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?
 }

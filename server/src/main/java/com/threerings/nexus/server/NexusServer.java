@@ -4,13 +4,20 @@
 
 package com.threerings.nexus.server;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import react.RMap;
 import react.Slot;
@@ -23,6 +30,7 @@ import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.Request;
 import com.threerings.nexus.distrib.Singleton;
+import static com.threerings.nexus.util.Log.log;
 
 /**
  * Implements the Nexus services and coordinates communication between nodes.
@@ -175,6 +183,12 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
+    public <T extends Singleton,R> Future<R> requestF (Class<T> eclass,
+                                                       Request<? super T,R> request) {
+        return _omgr.invoke(eclass, request);
+    }
+
+    @Override // from interface Nexus
     public <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key,
                                          Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
@@ -182,16 +196,40 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Future<R> requestF (Class<T> eclass,
-                                                       Request<? super T,R> request) {
-        return _omgr.invoke(eclass, request);
-    }
-
-    @Override // from interface Nexus
     public <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
                                                    Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed,R> Map<Comparable<?>,R> gather (
+        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request) {
+
+        Map<Comparable<?>,Future<R>> resultFs = gatherF(kclass, keys, request);
+        Map<Comparable<?>,R> results = Maps.newHashMap();
+        for (Map.Entry<Comparable<?>,Future<R>> entry : resultFs.entrySet()) {
+            try {
+                results.put(entry.getKey(), get(request, entry.getValue()));
+            } catch (Exception e) {
+                log.warning("Gather failure", "kclass", kclass.getName(), "key", entry.getKey(), e);
+            }
+        }
+        return results;
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
+        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request) {
+        // TODO: partition keys based on the server that hosts the entities in question; then send
+        // out batched requests to invoke our request on the entities hosted by each server
+        Map<Comparable<?>,Future<R>> results = Maps.newHashMap();
+        for (Comparable<?> key : keys) {
+            if (_omgr.hostsKeyed(kclass, key)) {
+                results.put(key, _omgr.invoke(kclass, key, request));
+            }
+        }
+        return results;
     }
 
     @Override // from interface Nexus
@@ -253,7 +291,7 @@ public class NexusServer implements Nexus
         };
     }
 
-    protected <R> R get (Request<?,R> request, Future<R> future) {
+    protected <R> R get (Request<?,?> request, Future<R> future) {
         try {
             // TODO: should we configure a default timeout?
             return future.get();
