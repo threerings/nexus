@@ -142,15 +142,15 @@ public interface Nexus
      * to any map at any time, thus the newly started node should establish the existence of all of
      * its maps before it joins the network. A map will also exist for the lifetime of the network.
      * There is no way to remove a map. If a map is no longer useful, one can simply remove all
-     * entries from it and cease updates to reduce its overhead to essentially nil.</p>
+     * entries from it and cease updates. This will reduce its overhead to essentially nil.</p>
      *
-     * <p>Beware: updates to a global map should not be made frequently by different nodes, as no
-     * mechanism is in place to ensure that updates to a global map from two different nodes will
-     * be applied in a consistent order. Global maps are best suited for situations where one
-     * particular node "controls" a given mapping, and is the only node responsible for updating
-     * it. If two nodes update the same mapping, one node's updates may be applied last (and
-     * therefore "win") on some subset of the nodes, and another node's updates may win on the
-     * remaining nodes.</p>
+     * <p>Beware: updates to a global mapping (key/value pair) should not be made frequently by
+     * different nodes, as no mechanism is in place to ensure that updates to a global map from two
+     * different nodes will be applied in a consistent order. Global maps are best suited for
+     * situations where one particular node "controls" a given mapping, and is the only node
+     * responsible for updating it. If two nodes update the same mapping, one node's updates may be
+     * applied last (and therefore "win") on some subset of the nodes, and another node's updates
+     * may win on the remaining nodes.</p>
      *
      * @param id a unique string that identifies this map.
      * @return a reference to the newly registered map.
