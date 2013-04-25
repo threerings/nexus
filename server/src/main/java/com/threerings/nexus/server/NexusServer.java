@@ -7,15 +7,12 @@ package com.threerings.nexus.server;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -60,7 +57,7 @@ public class NexusServer implements Nexus
      * Shuts down this server and cleans up any resources it is using.
      */
     public void shutdown () {
-        _timer.cancel();
+        // nothing for now; TODO: should we shutdown the executor?
     }
 
     @Override // from interface Nexus
@@ -210,27 +207,6 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> Deferred invokeAfter (
-        final Class<T> eclass, long delay, final Action<? super T> action) {
-        return schedule(new Runnable() {
-            public void run () {
-                invoke(eclass, action);
-            }
-        }, delay);
-    }
-
-    @Override // from interface Nexus
-    public <T extends Keyed> Deferred invokeAfter (
-        final Class<T> eclass, final Comparable<?> key, long delay,
-        final Action<? super T> action) {
-        return schedule(new Runnable() {
-            public void run () {
-                invoke(eclass, key, action);
-            }
-        }, delay);
-    }
-
-    @Override // from interface Nexus
     public <T extends Singleton> void assertContext (Class<T> eclass) {
         _omgr.assertContext(eclass);
     }
@@ -238,34 +214,6 @@ public class NexusServer implements Nexus
     @Override // from interface Nexus
     public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
         _omgr.assertContext(kclass, key);
-    }
-
-    protected Deferred schedule (final Runnable action, final long delay) {
-        return new Deferred() {
-            public TimerTask task = createTask();
-            /*ctor*/ {
-                _timer.schedule(task, delay);
-            }
-            @Override public void cancel () {
-                Preconditions.checkState(task != null, "Deferred action already canceled.");
-                task.cancel();
-                task = null;
-            }
-            @Override public Nexus.Deferred repeatEvery (long period) {
-                Preconditions.checkState(task != null, "Deferred action has been canceled.");
-                task.cancel();
-                task = createTask();
-                _timer.schedule(task, delay, period);
-                return this;
-            }
-            private TimerTask createTask () {
-                return new TimerTask() {
-                    @Override public void run () {
-                        action.run();
-                    }
-                };
-            }
-        };
     }
 
     protected <R> R get (Request<?,?> request, Future<R> future) {
@@ -282,7 +230,4 @@ public class NexusServer implements Nexus
     protected final NexusConfig _config;
     protected final ObjectManager _omgr;
     protected final SessionManager _smgr;
-
-    /** The daemon timer used to schedule all intervals. */
-    protected final Timer _timer = new Timer("Nexus Deferred Action Timer");
 }

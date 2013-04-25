@@ -51,24 +51,6 @@ import react.Slot;
  */
 public interface Nexus
 {
-    /** A handle used to control deferred actions. See {@link #invokeAfter}. */
-    interface Deferred {
-        /** Cancels this deferred action. This is mainly intended for stopping repeating actions.
-         * <p> The caller should not assume that a canceled action will not subsequently be
-         * executed at least once. It is possible that the cancellation occurs simultaneously with
-         * the action being queued for execution on its entity, at which point the action cannot be
-         * stopped. Thus any deferred action should contain code that confirm that its
-         * preconditions still hold. </p>
-         * @throws IllegalStateException if this action has already been canceled. */
-        void cancel ();
-
-        /** Causes this deferred action to repeat every {@code period} millis after its first
-         * invocation, until canceled. This must be called immediately after {@link #invokeAfter}.
-         * @return a reference to this instance for convenient chaining.
-         * @throws IllegalStateException if this action has been canceled. */
-        Deferred repeatEvery (long period);
-    }
-
     /**
      * Registers an anonymous object with the Nexus in its own execution context.
      */
@@ -288,24 +270,6 @@ public interface Nexus
      */
     <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
         Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
-
-    /**
-     * Executes an action in the context of the specified singleton entity (either object or
-     * non-object entity). The action is executed after the specified delay, unless canceled prior.
-     *
-     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
-     */
-    <T extends Singleton> Deferred invokeAfter (Class<T> eclass, long delay,
-                                                Action<? super T> action);
-
-    /**
-     * Executes an action in the context (server+thread) of the specified keyed (object or
-     * non-object) entity. The action is executed after the specified delay, unless canceled prior.
-     * The action may be streamed to another server node if the context for the specified keyed
-     * entity is hosted outside the local server node.
-     */
-    <T extends Keyed> Deferred invokeAfter (Class<T> eclass, Comparable<?> key,
-                                            long delay, Action<? super T> action);
 
     /**
      * Asserts that one is currently executing in the context of the specified singleton entity.
