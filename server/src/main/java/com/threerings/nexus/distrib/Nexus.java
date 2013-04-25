@@ -288,6 +288,66 @@ public interface Nexus
     <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
         Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
 
-    // TODO: invoke an action on all singletons on all nodes?
-    // TODO: invoke a request on all singletons on all nodes, return a List/Map result?
+    /**
+     * Computes a "census" for the keyed entity identified by the specified class. This is computed
+     * entirely from server-local data and is thus relatively inexpensive.
+     *
+     * @return a map from server identifier to the number of instances of the specified keyed
+     * entity hosted on the server in question.
+     */
+    <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass);
+
+    /**
+     * Invokes an action on the instance of a singleton hosted on the specified server.
+     *
+     * @param serverId a server identifier that came from one of the methods that returns
+     * information on the currently running servers, like {@link #census}.
+     *
+     * @exception ServerNotFoundException thrown if {@code serverId} refers to a server that is not
+     * known to the network.
+     */
+    <T extends Singleton> void invokeOn (Class<T> sclass, int serverId, Action<? super T> action);
+
+    /**
+     * Invokes a request on the instance of a singleton hosted on the specified server and blocks
+     * awaiting the response.
+     *
+     * @param serverId a server identifier that came from one of the methods that returns
+     * information on the currently running servers, like {@link #census}.
+     *
+     * @exception ServerNotFoundException thrown if {@code serverId} refers to a server that is not
+     * known to the network.
+     */
+    <T extends Singleton,R> R requestFrom (
+        Class<T> sclass, int serverId, Request<? super T,R> request);
+
+    /**
+     * Invokes a request on the instance of a singleton hosted on the specified server and returns
+     * a future that can be used to block awaiting the result when desired.
+     *
+     * @param serverId a server identifier that came from one of the methods that returns
+     * information on the currently running servers, like {@link #census}.
+     *
+     * @exception ServerNotFoundException thrown if {@code serverId} refers to a server that is not
+     * known to the network.
+     */
+    <T extends Singleton,R> Future<R> requestFromF (
+        Class<T> sclass, int serverId, Request<? super T,R> request);
+
+    /**
+     * Invokes the supplied request on the specified singleton on every server in the network and
+     * blocks until all results are available.
+     *
+     * @return a map from serverId to the result returned by that server.
+     */
+    <T extends Singleton,R> Map<Integer,R> survey (Class<T> sclass, Request<? super T,R> request);
+
+    /**
+     * Invokes the supplied request on the specified singleton on every server in the network.
+     *
+     * @return a map from server id to a future that can be used to obtain the result from that
+     * server.
+     */
+    <T extends Singleton,R> Map<Integer,Future<R>> surveyF (
+        Class<T> sclass, Request<? super T,R> request);
 }

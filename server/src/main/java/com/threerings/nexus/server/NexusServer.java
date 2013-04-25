@@ -26,6 +26,7 @@ import com.threerings.nexus.distrib.Nexus;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.Request;
+import com.threerings.nexus.distrib.ServerNotFoundException;
 import com.threerings.nexus.distrib.Singleton;
 import static com.threerings.nexus.util.Log.log;
 
@@ -189,7 +190,6 @@ public class NexusServer implements Nexus
     @Override // from interface Nexus
     public <T extends Keyed,R> Map<Comparable<?>,R> gather (
         Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request) {
-
         Map<Comparable<?>,Future<R>> resultFs = gatherF(kclass, keys, request);
         Map<Comparable<?>,R> results = Maps.newHashMap();
         for (Map.Entry<Comparable<?>,Future<R>> entry : resultFs.entrySet()) {
@@ -213,6 +213,62 @@ public class NexusServer implements Nexus
                 results.put(key, _omgr.invoke(kclass, key, request));
             }
         }
+        return results;
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass) {
+        // TODO: proper distributed stuffs
+        Map<Integer,Integer> results = Maps.newHashMap();
+        results.put(0, _omgr.census(kclass));
+        return results;
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton> void invokeOn (
+        Class<T> sclass, int serverId, Action<? super T> action) {
+        // TODO: proper distributed stuffs
+        if (serverId != 0) throw new ServerNotFoundException(serverId);
+        invoke(sclass, action);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton,R> R requestFrom (
+        Class<T> sclass, int serverId, Request<? super T,R> request) {
+        // TODO: proper distributed stuffs
+        if (serverId != 0) throw new ServerNotFoundException(serverId);
+        return request(sclass, request);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton,R> Future<R> requestFromF (
+        Class<T> sclass, int serverId, Request<? super T,R> request) {
+        // TODO: proper distributed stuffs
+        if (serverId != 0) throw new ServerNotFoundException(serverId);
+        return requestF(sclass, request);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton,R> Map<Integer,R> survey (
+        Class<T> sclass, Request<? super T,R> request) {
+        Map<Integer,Future<R>> resultFs = surveyF(sclass, request);
+        Map<Integer,R> results = Maps.newHashMap();
+        for (Map.Entry<Integer,Future<R>> entry : resultFs.entrySet()) {
+            try {
+                results.put(entry.getKey(), get(request, entry.getValue()));
+            } catch (Exception e) {
+                log.warning("Survey failure", "sclass", sclass.getName(), "id", entry.getKey(), e);
+            }
+        }
+        return results;
+    }
+
+    @Override // from interface Nexus
+    public <T extends Singleton,R> Map<Integer,Future<R>> surveyF (
+        Class<T> sclass, Request<? super T,R> request) {
+        // TODO: proper distributed stuffs
+        Map<Integer,Future<R>> results = Maps.newHashMap();
+        results.put(0, requestF(sclass, request));
         return results;
     }
 

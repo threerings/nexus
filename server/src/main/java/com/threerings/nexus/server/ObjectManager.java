@@ -147,8 +147,15 @@ public class ObjectManager
     /**
      * Returns true if we host the specified keyed entity, false if not.
      */
-    public boolean hostsKeyed (Class<?> eclass, Comparable<?> key) {
-        return getKeyedMap(eclass).containsKey(key);
+    public boolean hostsKeyed (Class<?> kclass, Comparable<?> key) {
+        return getKeyedMap(kclass).containsKey(key);
+    }
+
+    /**
+     * Returns the number of instances of the specified keyed entity hosted on this server.
+     */
+    public int census (Class<?> kclass) {
+        return getKeyedMap(kclass).size();
     }
 
     /**
