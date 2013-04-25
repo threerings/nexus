@@ -216,6 +216,17 @@ public interface Nexus
      */
     <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action);
 
+    /**
+     * Executes an action in the context (server+thread) of the specified keyed entities. This call
+     * returns immediately, and executes the actions at a later time. The supplied action will be
+     * streamed to other server nodes for those keyed entities that are hosted on other servers.
+     * This can be more efficient than issuing actions separately for each entity, as the
+     * initiating server will group the keys based on the servers currently hosting those keys and
+     * will send the action once to each server rather repeatedly, for each key.
+     */
+    <T extends Keyed> void invoke (
+        Class<T> kclass, Set<Comparable<?>> keys, Action<? super T> action);
+
     @Deprecated /** Deprecated use {@code request}. */
     <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
 
@@ -266,8 +277,6 @@ public interface Nexus
      */
     <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
                                             Request<? super T,R> request);
-
-    // TODO: invoke an action on all keyed entites in a set of keys
 
     /**
      * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and

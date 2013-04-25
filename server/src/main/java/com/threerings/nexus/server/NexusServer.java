@@ -178,6 +178,14 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
+    public <T extends Keyed> void invoke (Class<T> kclass, Set<Comparable<?>> keys,
+                                          Action<? super T> action) {
+        // TODO: partition keys based on the server that hosts the entities in question; then send
+        // one message to each server with the action and the key subset to execute thereon
+        for (Comparable<?> key : keys) _omgr.invoke(kclass, key, action);
+    }
+
+    @Override // from interface Nexus
     public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
         return get(request, requestF(eclass, request));
     }
