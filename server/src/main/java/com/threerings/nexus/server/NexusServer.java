@@ -124,37 +124,6 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <E, T extends Singleton> Slot<E> routed (T entity, final Slot<E> slot) {
-        // javac isn't smart enough to know that all the T's are the same here
-        @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
-        return new Slot<E>() {
-            @Override public void onEmit (final E event) {
-                invoke(eclass, new Action<T>() {
-                    @Override public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
-            }
-        };
-    }
-
-    @Override // from interface Nexus
-    public <E, T extends Keyed> Slot<E> routed (T entity, final Slot<E> slot) {
-        // javac isn't smart enough to know that all the T's are the same here
-        @SuppressWarnings("unchecked") final Class<T> eclass = (Class<T>)entity.getClass();
-        final Comparable<?> key = entity.getKey();
-        return new Slot<E>() {
-            @Override public void onEmit (final E event) {
-                invoke(eclass, key, new Action<T>() {
-                    @Override public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
-            }
-        };
-    }
-
-    @Override // from interface Nexus
     public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
         _omgr.invoke(eclass, action);
     }

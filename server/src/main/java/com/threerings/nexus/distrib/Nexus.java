@@ -177,28 +177,6 @@ public interface Nexus
     void clearKeyed (Keyed entity);
 
     /**
-     * Returns a slot that routes an event notification into the appropriate execution context for
-     * the supplied entity. Thus, regardless of what thread emits the event from the signal, the
-     * supplied slot will be notified in the execution context of the supplied entity.
-     *
-     * <em>Note:</em> because the supplied slot has no reference to the entity in question, one
-     * will necessarily only use this mechanism within the same server. Hence the requirement for
-     * an actual reference to the entity, rather than its key.
-     */
-    <E, T extends Singleton> Slot<E> routed (T entity, Slot<E> slot);
-
-    /**
-     * Returns a slot that routes an event notification into the appropriate execution context for
-     * the supplied entity. Thus, regardless of what thread emits the event from the signal, the
-     * supplied slot will be notified in the execution context of the supplied entity.
-     *
-     * <em>Note:</em> because the supplied slot has no reference to the entity in question, one
-     * will necessarily only use this mechanism within the same server. Hence the requirement for
-     * an actual reference to the entity, rather than its key.
-     */
-    <E, T extends Keyed> Slot<E> routed (T entity, Slot<E> slot);
-
-    /**
      * Executes an action in the context of the specified singleton entity (either object or
      * non-object entity). This call returns immediately, and executes the action at a later time,
      * regardless of whether the caller is already in the target context.
