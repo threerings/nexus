@@ -163,7 +163,7 @@ public interface Nexus
      * This check is only made if assertions are enabled in the executing JVM.
      * @throws AssertionError if one is not executing in the required context.
      */
-    <T extends Singleton> void assertContext (Class<T> eclass);
+    <T extends Singleton> void assertContext (Class<T> sclass);
 
     /**
      * Asserts that one is currently executing in the context of the specified keyed entity. This
@@ -177,9 +177,9 @@ public interface Nexus
      * non-object entity). This call returns immediately, and executes the action at a later time,
      * regardless of whether the caller is already in the target context.
      *
-     * @throws NexusException if no singleton instance is registered for {@code eclass}.
+     * @throws NexusException if no singleton instance is registered for {@code sclass}.
      */
-    <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action);
+    <T extends Singleton> void invoke (Class<T> sclass, Action<? super T> action);
 
     /**
      * Executes an action in the context (server+thread) of the specified keyed (object or
@@ -191,7 +191,7 @@ public interface Nexus
     <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action);
 
     @Deprecated /** Deprecated use {@code request}. */
-    <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
+    <T extends Singleton,R> R invoke (Class<T> sclass, Request<? super T,R> request);
 
     @Deprecated /** Deprecated use {@code request}. */
     <T extends Keyed,R> R invoke (Class<T> kclass, Comparable<?> key, Request<? super T,R> request);
@@ -201,20 +201,20 @@ public interface Nexus
      * non-object entity) and returns the result. The caller will remain blocked until the response
      * is received from the target context.
      *
-     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}.
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code sclass}.
      * @throws NexusException if an exception occurs while processing the request. The triggering
      * exception wil be available via {@link Exception#getCause}.
      */
-    <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request);
+    <T extends Singleton,R> R request (Class<T> sclass, Request<? super T,R> request);
 
     /**
      * Executes a request in the context of the specified singleton entity (either object or
      * non-object entity) and returns a future that can be used to obtain the result when the
      * caller is ready to block.
      *
-     * @throws EntityNotFoundException if no singleton instance is registered for {@code eclass}
+     * @throws EntityNotFoundException if no singleton instance is registered for {@code sclass}
      */
-    <T extends Singleton,R> Future<R> requestF (Class<T> eclass, Request<? super T,R> request);
+    <T extends Singleton,R> Future<R> requestF (Class<T> sclass, Request<? super T,R> request);
 
     /**
      * Executes a request in the context (server+thread) of the specified keyed (object or

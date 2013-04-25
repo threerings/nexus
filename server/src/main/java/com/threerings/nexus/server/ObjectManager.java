@@ -221,8 +221,8 @@ public class ObjectManager
     /**
      * See {@link Nexus#assertContext(Class)}.
      */
-    public <T extends Singleton> void assertContext (Class<T> eclass) {
-        assert(requireSingleton(eclass, "No singleton registered for").context ==
+    public <T extends Singleton> void assertContext (Class<T> sclass) {
+        assert(requireSingleton(sclass, "No singleton registered for").context ==
                EntityContext.current.get());
     }
 
@@ -237,37 +237,37 @@ public class ObjectManager
     /**
      * Invokes the supplied action on the specified singleton entity.
      */
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
-        invoke(requireSingleton(eclass, "No singleton registered for"), action);
+    public <T extends Singleton> void invoke (Class<T> sclass, Action<? super T> action) {
+        invoke(requireSingleton(sclass, "No singleton registered for"), action);
     }
 
     /**
      * Invokes the supplied action on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised.
      */
-    public <T extends Keyed> void invoke (Class<T> eclass, Comparable<?> key,
+    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key,
                                           Action<? super T> action) {
         try {
-            invoke(requireKeyed(eclass, key, "No keyed entity registered for"), action);
+            invoke(requireKeyed(kclass, key, "No keyed entity registered for"), action);
         } catch (EntityNotFoundException enfe) {
-            action.onDropped(_nexus, eclass, key);
+            action.onDropped(_nexus, kclass, key);
         }
     }
 
     /**
      * Invokes the supplied request on the specified singleton entity.
      */
-    public <T extends Singleton,R> Future<R> invoke (Class<T> eclass, Request<? super T,R> request) {
-        return invoke(requireSingleton(eclass, "No singleton registered for"), request);
+    public <T extends Singleton,R> Future<R> invoke (Class<T> sclass, Request<? super T,R> request) {
+        return invoke(requireSingleton(sclass, "No singleton registered for"), request);
     }
 
     /**
      * Invokes the supplied request on the specified keyed entity. The entity must be local to this
      * server or an exception will be raised.
      */
-    public <T extends Keyed,R> Future<R> invoke (Class<T> eclass, Comparable<?> key,
+    public <T extends Keyed,R> Future<R> invoke (Class<T> kclass, Comparable<?> key,
                                                  Request<? super T,R> request) {
-        return invoke(requireKeyed(eclass, key, "No keyed entity registered for"), request);
+        return invoke(requireKeyed(kclass, key, "No keyed entity registered for"), request);
     }
 
     /**
@@ -450,10 +450,10 @@ public class ObjectManager
         _objects.put(id, Binding.simple(object, ctx));
     }
 
-    protected Binding<Singleton> requireSingleton (Class<?> eclass, String errmsg) {
-        Binding<Singleton> bind = _singletons.get(eclass);
+    protected Binding<Singleton> requireSingleton (Class<?> sclass, String errmsg) {
+        Binding<Singleton> bind = _singletons.get(sclass);
         if (bind == null) {
-            throw new NexusException(errmsg + " " + eclass.getName());
+            throw new NexusException(errmsg + " " + sclass.getName());
         }
         return bind;
     }

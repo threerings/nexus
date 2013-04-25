@@ -122,8 +122,8 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void assertContext (Class<T> eclass) {
-        _omgr.assertContext(eclass);
+    public <T extends Singleton> void assertContext (Class<T> sclass) {
+        _omgr.assertContext(sclass);
     }
 
     @Override // from interface Nexus
@@ -132,8 +132,8 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
-        _omgr.invoke(eclass, action);
+    public <T extends Singleton> void invoke (Class<T> sclass, Action<? super T> action) {
+        _omgr.invoke(sclass, action);
     }
 
     @Override // from interface Nexus
@@ -144,8 +144,8 @@ public class NexusServer implements Nexus
     }
 
     @Override @Deprecated
-    public <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request) {
-        return request(eclass, request);
+    public <T extends Singleton,R> R invoke (Class<T> sclass, Request<? super T,R> request) {
+        return request(sclass, request);
     }
 
     @Override @Deprecated
@@ -163,14 +163,14 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> R request (Class<T> eclass, Request<? super T,R> request) {
-        return get(request, requestF(eclass, request));
+    public <T extends Singleton,R> R request (Class<T> sclass, Request<? super T,R> request) {
+        return get(request, requestF(sclass, request));
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Future<R> requestF (Class<T> eclass,
+    public <T extends Singleton,R> Future<R> requestF (Class<T> sclass,
                                                        Request<? super T,R> request) {
-        return _omgr.invoke(eclass, request);
+        return _omgr.invoke(sclass, request);
     }
 
     @Override // from interface Nexus
