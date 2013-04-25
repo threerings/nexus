@@ -24,9 +24,11 @@ class DeferredActionTest
     _exec = Executors.newFixedThreadPool(3)
     _server = new NexusServer(createTestConfig, _exec)
     _server.registerSingleton(new TestSingleton)
+    _timer = new NexusTimer(_server)
   }
 
   @After def shutdownServer {
+    _timer.shutdown()
     _server.shutdown()
     _exec.shutdown()
     TestUtil.awaitTermination(_exec)
@@ -53,7 +55,7 @@ class DeferredActionTest
   @Test def testDeferredAction {
     val start = System.currentTimeMillis
     var invokedAt = 0L
-    _server.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
+    _timer.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
       def invoke (obj :TestSingleton) {
         invokedAt = System.currentTimeMillis
       }
@@ -70,7 +72,7 @@ class DeferredActionTest
 
   @Test def testCanceledAction {
     var invokedAt = 0L
-    val defer = _server.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
+    val defer = _timer.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
       def invoke (obj :TestSingleton) {
         invokedAt = System.currentTimeMillis
       }
@@ -85,7 +87,7 @@ class DeferredActionTest
 
   @Test def testRepeatedAction {
     var invoked = 0
-    val defer = _server.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
+    val defer = _timer.invokeAfter(classOf[TestSingleton], 20, new Action[TestSingleton] {
       def invoke (obj :TestSingleton) {
         invoked += 1
       }
@@ -105,4 +107,5 @@ class DeferredActionTest
 
   protected var _exec :ExecutorService = _
   protected var _server :NexusServer = _
+  protected var _timer :NexusTimer = _
 }
