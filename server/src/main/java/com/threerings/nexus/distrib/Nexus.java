@@ -159,6 +159,20 @@ public interface Nexus
     void clearKeyed (Keyed entity);
 
     /**
+     * Asserts that one is currently executing in the context of the specified singleton entity.
+     * This check is only made if assertions are enabled in the executing JVM.
+     * @throws AssertionError if one is not executing in the required context.
+     */
+    <T extends Singleton> void assertContext (Class<T> eclass);
+
+    /**
+     * Asserts that one is currently executing in the context of the specified keyed entity. This
+     * check is only made if assertions are enabled in the executing JVM.
+     * @throws AssertionError if one is not executing in the required context.
+     */
+    <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key);
+
+    /**
      * Executes an action in the context of the specified singleton entity (either object or
      * non-object entity). This call returns immediately, and executes the action at a later time,
      * regardless of whether the caller is already in the target context.
@@ -175,17 +189,6 @@ public interface Nexus
      * outside the local server node.
      */
     <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key, Action<? super T> action);
-
-    /**
-     * Executes an action in the context (server+thread) of the specified keyed entities. This call
-     * returns immediately, and executes the actions at a later time. The supplied action will be
-     * streamed to other server nodes for those keyed entities that are hosted on other servers.
-     * This can be more efficient than issuing actions separately for each entity, as the
-     * initiating server will group the keys based on the servers currently hosting those keys and
-     * will send the action once to each server rather repeatedly, for each key.
-     */
-    <T extends Keyed> void invoke (
-        Class<T> kclass, Set<Comparable<?>> keys, Action<? super T> action);
 
     @Deprecated /** Deprecated use {@code request}. */
     <T extends Singleton,R> R invoke (Class<T> eclass, Request<? super T,R> request);
@@ -238,6 +241,20 @@ public interface Nexus
     <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
                                             Request<? super T,R> request);
 
+    //
+    // these methods are primarily for use in a multi-server Nexus system
+
+    /**
+     * Executes an action in the context (server+thread) of the specified keyed entities. This call
+     * returns immediately, and executes the actions at a later time. The supplied action will be
+     * streamed to other server nodes for those keyed entities that are hosted on other servers.
+     * This can be more efficient than issuing actions separately for each entity, as the
+     * initiating server will group the keys based on the servers currently hosting those keys and
+     * will send the action once to each server rather repeatedly, for each key.
+     */
+    <T extends Keyed> void invoke (
+        Class<T> kclass, Set<Comparable<?>> keys, Action<? super T> action);
+
     /**
      * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and
      * gathers the results into a map, indexed by entity key. The request will be run separately in
@@ -270,20 +287,6 @@ public interface Nexus
      */
     <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
         Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
-
-    /**
-     * Asserts that one is currently executing in the context of the specified singleton entity.
-     * This check is only made if assertions are enabled in the executing JVM.
-     * @throws AssertionError if one is not executing in the required context.
-     */
-    <T extends Singleton> void assertContext (Class<T> eclass);
-
-    /**
-     * Asserts that one is currently executing in the context of the specified keyed entity. This
-     * check is only made if assertions are enabled in the executing JVM.
-     * @throws AssertionError if one is not executing in the required context.
-     */
-    <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key);
 
     // TODO: invoke an action on all singletons on all nodes?
     // TODO: invoke a request on all singletons on all nodes, return a List/Map result?

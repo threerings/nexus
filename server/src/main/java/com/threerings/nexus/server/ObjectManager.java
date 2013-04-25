@@ -212,6 +212,22 @@ public class ObjectManager
     }
 
     /**
+     * See {@link Nexus#assertContext(Class)}.
+     */
+    public <T extends Singleton> void assertContext (Class<T> eclass) {
+        assert(requireSingleton(eclass, "No singleton registered for").context ==
+               EntityContext.current.get());
+    }
+
+    /**
+     * See {@link Nexus#assertContext(Class,Comparable)}.
+     */
+    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
+        assert(requireKeyed(kclass, key, "No keyed entity registered for").context ==
+               EntityContext.current.get());
+    }
+
+    /**
      * Invokes the supplied action on the specified singleton entity.
      */
     public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
@@ -252,22 +268,6 @@ public class ObjectManager
      */
     public void invoke (int id, Action<NexusObject> action) {
         invoke(requireObject(id, "No object registered with id "), action);
-    }
-
-    /**
-     * See {@link Nexus#assertContext(Class)}.
-     */
-    public <T extends Singleton> void assertContext (Class<T> eclass) {
-        assert(requireSingleton(eclass, "No singleton registered for").context ==
-               EntityContext.current.get());
-    }
-
-    /**
-     * See {@link Nexus#assertContext(Class,Comparable)}.
-     */
-    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
-        assert(requireKeyed(kclass, key, "No keyed entity registered for").context ==
-               EntityContext.current.get());
     }
 
     /**

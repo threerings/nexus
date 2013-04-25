@@ -121,6 +121,16 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
+    public <T extends Singleton> void assertContext (Class<T> eclass) {
+        _omgr.assertContext(eclass);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
+        _omgr.assertContext(kclass, key);
+    }
+
+    @Override // from interface Nexus
     public <T extends Singleton> void invoke (Class<T> eclass, Action<? super T> action) {
         _omgr.invoke(eclass, action);
     }
@@ -204,16 +214,6 @@ public class NexusServer implements Nexus
             }
         }
         return results;
-    }
-
-    @Override // from interface Nexus
-    public <T extends Singleton> void assertContext (Class<T> eclass) {
-        _omgr.assertContext(eclass);
-    }
-
-    @Override // from interface Nexus
-    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
-        _omgr.assertContext(kclass, key);
     }
 
     protected <R> R get (Request<?,?> request, Future<R> future) {
