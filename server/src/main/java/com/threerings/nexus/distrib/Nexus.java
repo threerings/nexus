@@ -71,7 +71,7 @@ public interface Nexus
     /**
      * Registers a singleton (object or non-object) entity with the Nexus. This entity will only be
      * accessible on the server node on which it was created. Code may be executed in this entity's
-     * context via, for example, {@link #invoke(Class,Action}. If the singleton is also a {@link
+     * context via, for example, {@link #invoke(Class,Action)}. If the singleton is also a {@link
      * NexusObject}, clients can subscribe to the object using its class.
      *
      * @throws NexusException if an entity is already mapped for this singleton type.
@@ -87,7 +87,7 @@ public interface Nexus
     /**
      * Registers a keyed (object or non-object) entity with the Nexus. This entity will be
      * accessible to all server nodes in the Nexus. Code may be executed in this entity's context
-     * (server+thread) via, for example, {@link #invoke{Class,Comparable,Action}}. If the keyed is
+     * (server+thread) via, for example, {@link #invoke(Class,Comparable,Action)}. If the keyed is
      * also a {@link NexusObject}, clients can subscribe to the object using its class and key.
      */
     void registerKeyed (Keyed entity);
@@ -143,18 +143,19 @@ public interface Nexus
     <K,V> RMap<K,V> registerMap (String id);
 
     /**
-     * Clears a registration created via {@link #register} or either {@link #registerChild}
-     * variant.
+     * Clears a registration created via any {@code register} variant (but not
+     * {@code registerKeyed} or {@code registerSingleton}).
      */
     void clear (NexusObject object);
 
     /**
-     * Clears registration created via {@link #registerSingleton}.
+     * Clears registration created via either {@code #registerSingleton} variant.
      */
     void clearSingleton (Singleton entity);
 
     /**
-     * Clears a registration created via {@link #registerKeyed}.
+     * Clears a registration created via either {@code #registerKeyed} variant, or
+     * {@link #registerKeyedFactory}.
      */
     void clearKeyed (Keyed entity);
 

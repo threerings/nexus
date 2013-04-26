@@ -7,7 +7,7 @@ package com.threerings.nexus.distrib;
 /**
  * An exception thrown when a request is made to operate on a keyed entity, and that entity could
  * not be found anywhere in the network. This is only reported for {@link Request} operations,
- * {@link Action} operations handle missing entities via {@link Nexus#invokeOr}.
+ * {@link Action} operations handle missing entities via {@link Action#onDropped}.
  */
 public class EntityNotFoundException extends NexusException
 {
