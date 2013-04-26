@@ -248,6 +248,12 @@ public class NexusServer implements Nexus
         return requestF(sclass, request);
     }
 
+    @Override
+    public <T extends Singleton> void broadcast (Class<T> sclass, Action<? super T> action) {
+        // TODO: proper distributed stuffs
+        invoke(sclass, action);
+    }
+
     @Override // from interface Nexus
     public <T extends Singleton,R> Map<Integer,R> survey (
         Class<T> sclass, Request<? super T,R> request) {

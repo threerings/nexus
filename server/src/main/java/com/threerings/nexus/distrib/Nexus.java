@@ -335,8 +335,15 @@ public interface Nexus
         Class<T> sclass, int serverId, Request<? super T,R> request);
 
     /**
+     * Invokes an action on the specified singleton on every server in the network.
+     */
+    <T extends Singleton> void broadcast (Class<T> sclass, Action<? super T> action);
+
+    /**
      * Invokes the supplied request on the specified singleton on every server in the network and
-     * blocks until all results are available.
+     * blocks until all results are available. Any requests that result in failure are omitted from
+     * the map (and the failure will be logged). If you need to know about individual failures, use
+     * {@link #surveyF} which preserves and reports failure.
      *
      * @return a map from serverId to the result returned by that server.
      */
