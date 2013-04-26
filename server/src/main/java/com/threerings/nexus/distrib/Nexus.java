@@ -246,6 +246,40 @@ public interface Nexus
     // these methods are primarily for use in a multi-server Nexus system
 
     /**
+     * Generates an id for a keyed entity with the specified class that is guaranteed to be unique
+     * across the whole network. This entity id is ephemeral, and must not be stored in persistent
+     * storage. It is only valid for a keyed entity hosted on this server, and only for the
+     * lifetime of this server. This operation uses only data local to this server and is also
+     * thread-safe.
+     *
+     * <p>Note: the uniqueness of this id is based on the assignment to each server in a Nexus
+     * network of a transient integer identifier which identifies that server for the duration of
+     * its membership in the network. If a server shuts down and leaves the network, a new server
+     * may join the network and reuse the server identifier previously used by the old server. As
+     * these generated identifiers are based on the server identifier, it is necessary that the
+     * entities using these identifiers "go away" when the server goes away. If the entities are
+     * hosted on that server and the ids are not written to persistent storage, that happens
+     * naturally.</p>
+     *
+     * <p>Note: the use of these ids implies acceptance of a couple of arbitrary limits. One is
+     * that you will not have more than one thousand active server nodes in your Nexus network. The
+     * other is that you will not have more than two million entities (of type {@code kclass})
+     * actively operating on a single server in your network. These limits seem like a good
+     * engineering tradeoff given the state of technology circa the two thousand teens. If they
+     * become limiting in the future, we'll raise them.</p>
+     */
+    <T extends Keyed> int nextId (Class<T> kclass);
+
+    /**
+     * Computes a "census" for the keyed entity identified by the specified class. This is computed
+     * entirely from server-local data and is thus relatively inexpensive.
+     *
+     * @return a map from server identifier to the number of instances of the specified keyed
+     * entity hosted on the server in question.
+     */
+    <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass);
+
+    /**
      * Executes an action in the context (server+thread) of the specified keyed entities. This call
      * returns immediately, and executes the actions at a later time. The supplied action will be
      * streamed to other server nodes for those keyed entities that are hosted on other servers.
@@ -288,15 +322,6 @@ public interface Nexus
      */
     <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
         Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
-
-    /**
-     * Computes a "census" for the keyed entity identified by the specified class. This is computed
-     * entirely from server-local data and is thus relatively inexpensive.
-     *
-     * @return a map from server identifier to the number of instances of the specified keyed
-     * entity hosted on the server in question.
-     */
-    <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass);
 
     /**
      * Invokes an action on the instance of a singleton hosted on the specified server.

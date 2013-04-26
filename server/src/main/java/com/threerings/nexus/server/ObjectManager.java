@@ -152,6 +152,24 @@ public class ObjectManager
     }
 
     /**
+     * Returns an unused identifier for the specified keyed entity class.
+     */
+    public int nextId (int serverId, int maxServers, Class<?> kclass) {
+        IdGen gen = _kidgens.get(kclass);
+        if (gen == null) {
+            // do the "add to concurrent map" shuffle
+            IdGen collide = _kidgens.putIfAbsent(kclass, gen = new IdGen());
+            if (collide != null) gen = collide;
+        }
+
+        ConcurrentMap<Comparable<?>,Binding<Keyed>> kmap = getKeyedMap(kclass);
+        int candidate;
+        do candidate = gen.nextId(serverId, maxServers);
+        while (kmap.containsKey(candidate));
+        return candidate;
+    }
+
+    /**
      * Returns the number of instances of the specified keyed entity hosted on this server.
      */
     public int census (Class<?> kclass) {
@@ -600,9 +618,8 @@ public class ObjectManager
     protected final synchronized int getNextObjectId () {
         // look for the next unused oid; if we had two billion objects, this would loop infinitely,
         // but the world will come to an end long before we have two billion objects
-        do {
-            _nextId = (_nextId == Integer.MAX_VALUE) ? 1 : (_nextId + 1);
-        } while (_objects.containsKey(_nextId));
+        do _nextId = (_nextId == Integer.MAX_VALUE) ? 1 : (_nextId + 1);
+        while (_objects.containsKey(_nextId));
         return _nextId;
     }
 
@@ -655,6 +672,18 @@ public class ObjectManager
         }
     }
 
+    protected static class IdGen {
+        public synchronized int nextId (int offset, int skip) {
+            _nextId += skip;
+            int id = _nextId + offset;
+            if (id > 0) return id;
+            // if we overflowed, wrap back around to zero
+            _nextId = 0;
+            return _nextId + offset;
+        }
+        protected int _nextId;
+    }
+
     /** Contains our server configuration. */
     protected NexusConfig _config;
 
@@ -680,6 +709,9 @@ public class ObjectManager
 
     /** A mapping of factories for keyed entities. */
     protected final ConcurrentMap<Class<?>,KeyedFactory<?>> _kfacts = Maps.newConcurrentMap();
+
+    /** A mapping of id generators for keyed entities. */
+    protected final ConcurrentMap<Class<?>,IdGen> _kidgens = Maps.newConcurrentMap();
 
     /** A mapping of distributed maps known to this server. */
     protected final ConcurrentMap<String,Binding<GlobalMap<?,?>>> _maps = Maps.newConcurrentMap();

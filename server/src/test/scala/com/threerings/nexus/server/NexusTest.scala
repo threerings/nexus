@@ -74,6 +74,32 @@ class NexusTest {
     assertFalse(printed) // ensure that the print call did not execute
   }
 
+  @Test def testIdAssignment {
+    class KeyedEnt (id :Int) extends Keyed {
+      def getKey = id
+    }
+    var seen1 = Set[Int]()
+    val t1 = new Thread() {
+      override def run {
+        for (i <- 0 until 1000) seen1 += _server.nextId(classOf[KeyedEnt])
+      }
+    };
+    var seen2 = Set[Int]()
+    val t2 = new Thread() {
+      override def run {
+        for (i <- 0 until 1000) seen2 += _server.nextId(classOf[KeyedEnt])
+      }
+    };
+    t1.start(); t2.start()
+    t1.join() ; t2.join()
+
+    // make sure each thread got keys unique to itself
+    assertEquals(1000, seen1.size)
+    assertEquals(1000, seen2.size)
+    // and make sure the returned keys do not overlap
+    assertEquals(2000, (seen1 ++ seen2).size)
+  }
+
   @Test def testGather {
     import scala.collection.JavaConversions._
     class Player (id :Int, val name :String) extends Keyed {

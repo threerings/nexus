@@ -155,14 +155,6 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Set<Comparable<?>> keys,
-                                          Action<? super T> action) {
-        // TODO: partition keys based on the server that hosts the entities in question; then send
-        // one message to each server with the action and the key subset to execute thereon
-        for (Comparable<?> key : keys) _omgr.invoke(kclass, key, action);
-    }
-
-    @Override // from interface Nexus
     public <T extends Singleton,R> R request (Class<T> sclass, Request<? super T,R> request) {
         return get(request, requestF(sclass, request));
     }
@@ -185,6 +177,28 @@ public class NexusServer implements Nexus
                                                    Request<? super T,R> request) {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
+    }
+
+    @Override
+    public <T extends Keyed> int nextId (Class<T> kclass) {
+        // TODO: get our real server id from the peer manager
+        return _omgr.nextId(0, MAX_SERVERS, kclass);
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass) {
+        // TODO: proper distributed stuffs
+        Map<Integer,Integer> results = Maps.newHashMap();
+        results.put(0, _omgr.census(kclass));
+        return results;
+    }
+
+    @Override // from interface Nexus
+    public <T extends Keyed> void invoke (Class<T> kclass, Set<Comparable<?>> keys,
+                                          Action<? super T> action) {
+        // TODO: partition keys based on the server that hosts the entities in question; then send
+        // one message to each server with the action and the key subset to execute thereon
+        for (Comparable<?> key : keys) _omgr.invoke(kclass, key, action);
     }
 
     @Override // from interface Nexus
@@ -213,14 +227,6 @@ public class NexusServer implements Nexus
                 results.put(key, _omgr.invoke(kclass, key, request));
             }
         }
-        return results;
-    }
-
-    @Override // from interface Nexus
-    public <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass) {
-        // TODO: proper distributed stuffs
-        Map<Integer,Integer> results = Maps.newHashMap();
-        results.put(0, _omgr.census(kclass));
         return results;
     }
 
@@ -292,4 +298,6 @@ public class NexusServer implements Nexus
     protected final NexusConfig _config;
     protected final ObjectManager _omgr;
     protected final SessionManager _smgr;
+
+    protected static final int MAX_SERVERS = 1000; // see nextId()
 }
