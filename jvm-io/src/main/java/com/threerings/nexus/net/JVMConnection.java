@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.SocketChannel;
 
 import java.util.concurrent.BlockingQueue;
@@ -165,6 +166,8 @@ public class JVMConnection extends Connection
                     // TODO: if decoding fails, proceed to the next frame and keep going?
                 }
 
+            } catch (AsynchronousCloseException ace) {
+                connectionClosed();
             } catch (EOFException eofe) {
                 connectionClosed();
 
