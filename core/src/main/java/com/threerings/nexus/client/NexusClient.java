@@ -32,27 +32,22 @@ public abstract class NexusClient
     }
 
     /**
-     * Creates a callback that will subscribe to an object of the specified address and pass the
-     * successfully subscribed object through to the supplied callback. All failures will be
-     * propagated through to the supplied callback as well. This simplifies the handling of a
-     * common pattern, which is to make a service request, receive an object address in response
-     * and immediately subscribe to the object in question. One can write code like so:
-     * <pre>{@code
-     * // assume RoomService.joinRoom (String roomId, Callback<Address<RoomObject>> callback);
-     * obj.joinRoom(roomId, client.subscriber(new Callback<RoomObject>() {
-     *     public void onSuccess (RoomObject obj) { ... }
-     *     public void onFailure (Throwable cause) { ... }
-     * }));
-     * }</pre>
+     * Creates a subscriber, see {@link Subscriber} for details.
      */
-    public <T extends NexusObject> Callback<Address<T>> subscriber (final Callback<T> callback) {
-        return new Callback<Address<T>>() {
-            public void onSuccess (Address<T> address) {
-                subscribe(address, callback);
+    public <T extends NexusObject> Subscriber<T> subscriber (final Callback<T> callback) {
+        return new Subscriber<T>() {
+            @Override public void onSuccess (Address<T> address) {
+                if (!_aborted) _sub = subscribe(address, callback);
             }
-            public void onFailure (Throwable cause) {
+            @Override public void onFailure (Throwable cause) {
                 callback.onFailure(cause);
             }
+            @Override public void unsubscribe () {
+                if (_sub == null) _aborted = true;
+                else _sub.unsubscribe();
+            }
+            protected boolean _aborted;
+            protected Subscription _sub;
         };
     }
 
