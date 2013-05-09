@@ -4,14 +4,11 @@
 
 package com.threerings.nexus.server;
 
-import java.io.IOException;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.websocket.WebSocket;
-import org.eclipse.jetty.websocket.WebSocketServlet;
+import org.eclipse.jetty.websocket.api.UpgradeRequest;
+import org.eclipse.jetty.websocket.api.UpgradeResponse;
+import org.eclipse.jetty.websocket.servlet.WebSocketCreator;
+import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
+import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 
 import com.threerings.nexus.io.Serializer;
 
@@ -26,15 +23,13 @@ public class GWTIOJettyServlet extends WebSocketServlet
     }
 
     @Override
-    public WebSocket doWebSocketConnect (HttpServletRequest req, String protocol) {
-        return new GWTIOWebSocket(_smgr, _szer, req.getRemoteAddr());
-    }
-
-    @Override
-    protected void doGet (HttpServletRequest req, HttpServletResponse rsp)
-        throws ServletException, IOException {
-        // TODO: we should never get here, send back a server error
-        getServletContext().getNamedDispatcher("default").forward(req, rsp);
+    public void configure (WebSocketServletFactory factory) {
+        factory.getPolicy().setIdleTimeout(10000);
+        factory.setCreator(new WebSocketCreator() {
+            @Override public Object createWebSocket (UpgradeRequest req, UpgradeResponse resp) {
+                return new GWTIOWebSocket(_smgr, _szer);
+            }
+        });
     }
 
     protected SessionManager _smgr;

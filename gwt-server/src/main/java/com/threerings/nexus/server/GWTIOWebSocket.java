@@ -6,8 +6,6 @@ package com.threerings.nexus.server;
 
 import java.io.IOException;
 
-import org.eclipse.jetty.websocket.WebSocket;
-
 import com.threerings.nexus.io.GWTServerIO;
 import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.net.Downstream;
@@ -15,42 +13,57 @@ import com.threerings.nexus.net.Upstream;
 
 import static com.threerings.nexus.util.Log.log;
 
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.WebSocketListener;
+
 /**
  * Handles a web socket client.
  */
-public class GWTIOWebSocket implements WebSocket, WebSocket.OnTextMessage, SessionManager.Output
+public class GWTIOWebSocket implements WebSocketListener, SessionManager.Output
 {
-    public GWTIOWebSocket (SessionManager smgr, Serializer szer, String ipaddress) {
+    public GWTIOWebSocket (SessionManager smgr, Serializer szer) {
         _smgr = smgr;
         _szer = szer;
-        _ipaddress = ipaddress;
     }
 
-    // from interface WebSocket
-    public void onOpen (WebSocket.Connection conn) {
-        _conn = conn;
-        _input = _smgr.createSession(_ipaddress, this);
+    // from interface WebSocketListener
+    @Override public void onWebSocketConnect (Session session) {
+        _sess = session;
+        _conn = session.getRemote();
+        _ipaddr = session.getRemoteAddress().toString();
+        _input = _smgr.createSession(_ipaddr, this);
     }
 
-    // from interface WebSocket.OnTextMessage
-    public void onMessage (String data) {
+    // from interface WebSocketListener
+    @Override public void onWebSocketClose (int statusCode, String reason) {
+        // TODO: interpret statusCode?
+        _input.onDisconnect();
+    }
+
+    // from interface WebSocketListener
+    @Override public void onWebSocketError (Throwable cause) {
+        _input.onReceiveError(cause);
+    }
+
+    // from interface WebSocketListener
+    @Override public void onWebSocketText (String data) {
         try {
             _input.onMessage(GWTServerIO.newInput(_szer, data).<Upstream>readValue());
         } catch (Throwable t) {
-            log.warning("WebSocket decode failure", "addr", _ipaddress, "data", data, t);
+            log.warning("WebSocket decode failure", "addr", _ipaddr, "data", data, t);
         }
     }
 
-    // from interface WebSocket
-    public void onClose (int closeCode, String message) {
-        // TODO: interpret closeCode?
-        _input.onDisconnect();
+    // from interface WebSocketListener
+    @Override public void onWebSocketBinary (byte[] payload, int offset, int len) {
+        log.warning("Got binary message", "addr", _ipaddr, "bytes", len);
     }
 
     // from interface SessionManager.Input
     public void send (Downstream msg) {
-        if (!_conn.isOpen()) {
-            log.warning("Dropping outbound message to closed WebSocket", "addr", _ipaddress);
+        if (!_sess.isOpen()) {
+            log.warning("Dropping outbound message to closed WebSocket", "addr", _ipaddr);
             return;
         }
 
@@ -62,24 +75,29 @@ public class GWTIOWebSocket implements WebSocket, WebSocket.OnTextMessage, Sessi
         }
 
         try {
-            _conn.sendMessage(data);
+            _conn.sendString(data);
         } catch (IOException ioe) {
-            log.warning("WebSocket send failure", "addr", _ipaddress, "data", data, ioe);
+            log.warning("WebSocket send failure", "addr", _ipaddr, "data", data, ioe);
             _input.onSendError(ioe);
-            _conn.disconnect();
+            disconnect();
         }
     }
 
     // from interface SessionManager.Input
     public void disconnect () {
-        _conn.disconnect();
+        try {
+            _sess.disconnect();
+        } catch (IOException ioe) {
+            log.warning("WebSocket disconnect failed", "addr", _ipaddr, ioe);
+        }
     }
 
     protected final SessionManager _smgr;
     protected final Serializer _szer;
-    protected final String _ipaddress;
 
+    protected String _ipaddr;
+    protected Session _sess;
+    protected RemoteEndpoint _conn;
     protected SessionManager.Input _input;
-    protected WebSocket.Connection _conn;
     protected GWTServerIO.PayloadBuffer _buffer = new GWTServerIO.PayloadBuffer();
 }

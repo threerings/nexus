@@ -11,12 +11,9 @@
   <packaging>jar</packaging>
   <name>Nexus GWT Server</name>
 
-  <repositories>
-    <repository>
-      <id>jetty-maven</id>
-      <url>http://oss.sonatype.org/content/groups/jetty/</url>
-    </repository>
-  </repositories>
+  <properties>
+    <jetty.version>9.0.3.v20130506</jetty.version>
+  </properties>
 
   <dependencies>
     <!-- exported (transitive) dependencies -->
@@ -30,20 +27,23 @@
       <artifactId>nexus-gwt-io</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-    <!-- dependencies that need to be provided by the client app -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>7.5.4.v20111024</version>
-      <scope>provided</scope>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-websocket</artifactId>
-      <version>7.5.4.v20111024</version>
-      <scope>provided</scope>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-servlet</artifactId>
+      <version>${jetty.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>websocket-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+
+    <!-- dependencies that need to be provided by the client app -->
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-user</artifactId>
