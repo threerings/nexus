@@ -11,8 +11,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import react.SignalView;
+import react.RPromise;
 import react.Signal;
+import react.SignalView;
+import react.Slot;
+import react.Try;
 
 import com.google.common.collect.Maps;
 
@@ -23,7 +26,6 @@ import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.net.Downstream;
 import com.threerings.nexus.net.Upstream;
-import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -176,29 +178,16 @@ public class Session
         }
 
         public void onServiceCall (final Upstream.ServiceCall msg) {
-            // if we have a call id, stick a callback in the final slot which communicates the
-            // result back to the calling client
-            Object[] args = msg.args.toArray();
-            if (msg.callId > 0) {
-                assert(args[args.length-1] == null);
-                args[args.length-1] = new Callback<Object>() {
-                    public void onSuccess (Object result) {
-                        // add ourselves as a subscriber to any objects in the response
-                        if (result instanceof NexusService.ObjectResponse) {
-                            for (NexusObject obj : ((NexusService.ObjectResponse)result).
-                                     getObjects()) {
-                                _omgr.addSubscriber(obj, _subscriber);
-                                _subscriptions.add(obj.getId());
-                            }
-                        }
-                        sendMessage(new Downstream.ServiceResponse(msg.callId, result));
-                    }
-                    public void onFailure (Throwable cause) {
-                        sendMessage(new Downstream.ServiceFailure(msg.callId, cause.getMessage()));
-                    }
-                };
-            }
-            _omgr.dispatchCall(msg.objectId, msg.attrIndex, msg.methodId, args, Session.this);
+            Slot<Try<Object>> slot = (msg.callId <= 0) ? null : new Slot<Try<Object>>() {
+                public void onEmit (Try<Object> res) {
+                    if (res.isSuccess()) sendMessage(
+                        new Downstream.ServiceResponse(msg.callId, res.get()));
+                    else sendMessage(
+                        new Downstream.ServiceFailure(msg.callId, res.getFailure().getMessage()));
+                }
+            };
+            _omgr.dispatchCall(msg.objectId, msg.attrIndex, msg.methodId, msg.args.toArray(),
+                               Session.this, slot);
         }
     };
 

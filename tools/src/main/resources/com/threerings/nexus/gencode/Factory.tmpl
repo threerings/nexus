@@ -46,17 +46,19 @@ public class Factory_{{serviceName}} implements DService.Factory<{{serviceName}}
                         return {{serviceName}}.class;
                     }
 
-                    @Override public void dispatchCall (short methodId, Object[] args) {
+                    @Override public RFuture<?> dispatchCall (short methodId, Object[] args) {
+                        RFuture<?> result = null;
                         switch (methodId) {
 {{#methods}}
                         case {{-index}}:
-                            service.{{name}}({{#args}}{{^-first}},{{/-first}}
+                            {{#hasResult}}result = {{/hasResult}}service.{{name}}({{#args}}{{^-first}},{{/-first}}
                                 this.<{{boxedType}}>cast(args[{{index}}]){{/args}});
                             break;
 {{/methods}}
                         default:
-                            super.dispatchCall(methodId, args);
+                            result = super.dispatchCall(methodId, args);
                         }
+                        return result;
                     }
                 };
             }
@@ -75,8 +77,13 @@ public class Factory_{{serviceName}} implements DService.Factory<{{serviceName}}
             return {{serviceName}}.class;
         }
 {{#methods}}
-        @Override public void {{name}} ({{#args}}{{type}} {{name}}{{^-last}}, {{/-last}}{{/args}}) {
-            postCall((short){{-index}}{{#args}}, {{name}}{{/args}});
+        @Override public {{result}} {{name}} ({{#args}}{{type}} {{name}}{{^-last}}, {{/-last}}{{/args}}) {
+{{#hasResult}}
+            return this.<{{rtype}}>postCall((short){{-index}}{{#args}}, {{name}}{{/args}});
+{{/hasResult}}
+{{^hasResult}}
+            postVoidCall((short){{-index}}{{#args}}, {{name}}{{/args}});
+{{/hasResult}}
         }
 {{/methods}}
     }

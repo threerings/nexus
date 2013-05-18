@@ -7,6 +7,9 @@ package com.threerings.nexus.distrib;
 import java.util.ArrayList;
 import java.util.List;
 
+import react.RFuture;
+import react.RPromise;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,9 +31,11 @@ public class TestSink implements EventSink
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args)
+    public <R> void postCall (NexusObject source, short attrIndex, short methodId, Object[] args,
+                              RPromise<R> onResult)
     {
-        DistribUtil.dispatchCall(source, attrIndex, methodId, args);
+        DistribUtil.dispatchCall(source, attrIndex, methodId, args,
+                                 onResult == null ? null : onResult.completer());
     }
 
     /**

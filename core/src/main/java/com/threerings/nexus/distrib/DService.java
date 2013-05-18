@@ -4,6 +4,9 @@
 
 package com.threerings.nexus.distrib;
 
+import react.RFuture;
+import react.RPromise;
+
 import com.threerings.nexus.io.Streamable;
 
 /**
@@ -21,7 +24,7 @@ public abstract class DService<T extends NexusService> implements DAttribute
     /** An implementation detail used by service dispatchers. */
     public static abstract class Dispatcher<T extends NexusService> extends DService<T> {
         /** Dispatches a service call that came in over the network. */
-        public void dispatchCall (short methodId, Object[] args) {
+        public RFuture<?> dispatchCall (short methodId, Object[] args) {
             throw new IllegalArgumentException("Unknown service method [id=" + methodId +
                                                ", obj=" + _owner.getClass().getName() +
                                                ", attrIdx=" + _index + "]");
@@ -57,11 +60,16 @@ public abstract class DService<T extends NexusService> implements DAttribute
         _index = owner.registerAttr(this);
     }
 
-    /**
-     * Used by marshallers to dispatch calls over the network.
-     */
-    protected void postCall (short methodId, Object... args) {
-        _owner.postCall(_index, methodId, args);
+    /** Used by marshallers to dispatch calls over the network. */
+    protected <R> RFuture<R> postCall (short methodId, Object... args) {
+        RPromise<R> result = RPromise.create();
+        _owner.postCall(_index, methodId, args, result);
+        return result;
+    }
+
+    /** Used by marshallers to dispatch calls over the network. */
+    protected void postVoidCall (short methodId, Object... args) {
+        _owner.postCall(_index, methodId, args, null);
     }
 
     /** The object that owns this attribute. */

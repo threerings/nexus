@@ -8,10 +8,11 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import react.RFuture;
+
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.Factory_TestService;
 import com.threerings.nexus.distrib.TestService;
-import com.threerings.nexus.util.Callback;
 
 import org.junit.Assert;
 
@@ -40,8 +41,8 @@ public class TestUtil
 
     public static DService.Factory<TestService> createTestServiceAttr () {
         return Factory_TestService.createDispatcher(new TestService () {
-            public void addOne (int value, Callback<Integer> callback) {
-                callback.onSuccess(value+1);
+            public RFuture<Integer> addOne (int value) {
+                return RFuture.success(value+1);
             }
             public void launchMissiles () {
                 System.err.println("Bang!");

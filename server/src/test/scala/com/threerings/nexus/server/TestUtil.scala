@@ -8,7 +8,6 @@ import java.util.Properties
 import java.util.concurrent.{ExecutorService, TimeUnit}
 
 import com.threerings.nexus.distrib.{DService, Factory_TestService, Keyed, Singleton, TestService}
-import com.threerings.nexus.util.Callback
 
 import org.junit.Assert
 
@@ -50,9 +49,7 @@ object TestUtil
 
   def createTestServiceAttr :DService.Factory[TestService] = {
     Factory_TestService.createDispatcher(new TestService () {
-      def addOne (value :Int, callback :Callback[java.lang.Integer]) {
-        callback.onSuccess(value+1)
-      }
+      def addOne (value :Int) = react.RFuture.success(value+1)
       def launchMissiles () {
         println("Bang!")
       }

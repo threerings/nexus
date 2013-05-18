@@ -6,10 +6,11 @@ package com.threerings.nexus.client;
 
 import com.google.gwt.core.client.GWT;
 
+import react.RPromise;
+
 import com.threerings.nexus.io.Serializer;
 import com.threerings.nexus.net.Connection;
 import com.threerings.nexus.net.GWTConnection;
-import com.threerings.nexus.util.Callback;
 import com.threerings.nexus.util.Log;
 
 /**
@@ -48,7 +49,7 @@ public class GWTClient extends NexusClient
         _szer = szer;
     }
 
-    @Override protected void connect (String host, Callback<Connection> callback) {
+    @Override protected void connect (String host, RPromise<Connection> callback) {
         new GWTConnection(host, _port, _path, _szer, callback);
     }
 

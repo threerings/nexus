@@ -10,13 +10,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import react.Slot;
+
 import com.threerings.nexus.client.JVMClient;
 import com.threerings.nexus.client.NexusClient;
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.DValue;
 import com.threerings.nexus.distrib.TestObject;
-import com.threerings.nexus.util.Callback;
 
 import org.junit.*;
 import static org.junit.Assert.*;
@@ -103,12 +104,13 @@ public class ClientServerTest
         runTest(new TestAction() {
             @Override public void onSubscribe (TestObject test) {
                 // call our test service
-                test.testsvc.get().addOne(41, new Callback<Integer>() {
-                    public void onSuccess (Integer value) {
+                test.testsvc.get().addOne(41).onSuccess(new Slot<Integer>() {
+                    public void onEmit (Integer value) {
                         assertEquals(42, value.intValue());
                         testComplete();
                     }
-                    public void onFailure (Throwable cause) {
+                }).onFailure(new Slot<Throwable>() {
+                    public void onEmit (Throwable cause) {
                         fail("Callback failed: " + cause.getMessage());
                     }
                 });
@@ -139,14 +141,16 @@ public class ClientServerTest
         action.onInit();
 
         // subscribe to the test object
-        client.subscribe(Address.create("localhost", TestObject.class), new Callback<TestObject>() {
-            public void onSuccess (TestObject test) {
-                action.onSubscribe(test);
-            }
-            public void onFailure (Throwable cause) {
-                fail("Failed to subscribe to test object " + cause);
-            }
-        });
+        client.<TestObject>subscriber().subscribe(Address.create("localhost", TestObject.class)).
+            onSuccess(new Slot<TestObject>() {
+                public void onEmit (TestObject test) {
+                    action.onSubscribe(test);
+                }
+            }).onFailure(new Slot<Throwable>() {
+                public void onEmit (Throwable cause) {
+                    fail("Failed to subscribe to test object " + cause);
+                }
+            });
 
         // wait for the test to complete
         boolean completed = action.await();

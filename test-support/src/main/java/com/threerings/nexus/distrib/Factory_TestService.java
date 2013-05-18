@@ -4,7 +4,7 @@
 
 package com.threerings.nexus.distrib;
 
-import com.threerings.nexus.util.Callback;
+import react.RFuture;
 
 /**
  * Creates {@link TestService} marshaller instances.
@@ -30,19 +30,21 @@ public class Factory_TestService implements DService.Factory<TestService>
                         return TestService.class;
                     }
 
-                    @Override public void dispatchCall (short methodId, Object[] args) {
+                    @Override public RFuture<?> dispatchCall (short methodId, Object[] args) {
+                        RFuture<?> result = null;
                         switch (methodId) {
                         case 1:
-                            service.addOne(
-                                this.<Integer>cast(args[0]),
-                                this.<Callback<Integer>>cast(args[1]));
+                            result = service.addOne(
+                                this.<Integer>cast(args[0]));
                             break;
                         case 2:
                             service.launchMissiles();
                             break;
                         default:
-                            super.dispatchCall(methodId, args);
+                            result = super.dispatchCall(methodId, args);
+                            break;
                         }
+                        return result;
                     }
                 };
             }
@@ -60,8 +62,8 @@ public class Factory_TestService implements DService.Factory<TestService>
         @Override public Class<TestService> getServiceClass () {
             return TestService.class;
         }
-        @Override public void addOne (int value, Callback<Integer> callback) {
-            postCall((short)1, value, callback);
+        @Override public RFuture<Integer> addOne (int value) {
+            return this.<Integer>postCall((short)1, value);
         }
         @Override public void launchMissiles () {
             postCall((short)2);

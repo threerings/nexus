@@ -16,12 +16,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import react.RPromise;
+
 import com.threerings.nexus.io.ByteBufferInputStream;
 import com.threerings.nexus.io.FrameReader;
 import com.threerings.nexus.io.FramingOutputStream;
 import com.threerings.nexus.io.JVMIO;
 import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -36,7 +37,7 @@ public class JVMConnection extends Connection
      *
      * @param callback will be notified on connection completion, or failure.
      */
-    public JVMConnection (String host, int port, Executor exec, Callback<Connection> callback) {
+    public JVMConnection (String host, int port, Executor exec, RPromise<Connection> callback) {
         super(host);
         _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
@@ -102,7 +103,7 @@ public class JVMConnection extends Connection
     }
 
     protected class Reader extends Thread {
-        public Reader (String host, int port, Callback<Connection> callback) {
+        public Reader (String host, int port, RPromise<Connection> callback) {
             _host = host;
             _port = port;
             _callback = callback;
@@ -134,7 +135,7 @@ public class JVMConnection extends Connection
                 log.info("Established server connection", "addr", addr);
                 _exec.execute(new Runnable() {
                     public void run () {
-                        _callback.onSuccess(JVMConnection.this);
+                        _callback.succeed(JVMConnection.this);
                     }
                 });
 
@@ -144,7 +145,7 @@ public class JVMConnection extends Connection
                 }
                 _exec.execute(new Runnable() {
                     public void run () {
-                        _callback.onFailure(ioe);
+                        _callback.fail(ioe);
                     }
                 });
                 return;
@@ -179,7 +180,7 @@ public class JVMConnection extends Connection
 
         protected String _host;
         protected int _port;
-        protected Callback<Connection> _callback;
+        protected RPromise<Connection> _callback;
 
         protected volatile boolean _running = true;
 

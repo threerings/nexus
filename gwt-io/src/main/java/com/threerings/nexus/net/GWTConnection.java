@@ -6,10 +6,11 @@ package com.threerings.nexus.net;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
+import react.RPromise;
+
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.GWTIO;
 import com.threerings.nexus.io.Serializer;
-import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -23,7 +24,7 @@ public class GWTConnection extends Connection
      * @param callback will be notified on connection completion, or failure.
      */
     public GWTConnection (String host, int port, String path, Serializer szer,
-                          Callback<Connection> callback) {
+                          RPromise<Connection> callback) {
         super(host);
         _szer = szer;
         _callback = callback;
@@ -50,7 +51,7 @@ public class GWTConnection extends Connection
 
     protected void onOpen (JavaScriptObject ws) {
         _ws = ws;
-        _callback.onSuccess(this);
+        _callback.succeed(this);
         _callback = null; // note that we successfully connected
     }
 
@@ -61,7 +62,7 @@ public class GWTConnection extends Connection
     protected void onError (String reason) {
         if (_callback != null) {
             // if we were trying to connect, report to our listener that connection failed
-            _callback.onFailure(new NexusException(reason));
+            _callback.fail(new NexusException(reason));
         } else {
             // otherwise we were in the middle of a running session
             onClose(new NexusException(reason));
@@ -70,7 +71,7 @@ public class GWTConnection extends Connection
 
     protected void onClose () {
         if (_callback != null) {
-            _callback.onFailure(new NexusException("Server unavailable"));
+            _callback.fail(new NexusException("Server unavailable"));
         } else {
             onClose(null);
         }
@@ -112,6 +113,6 @@ public class GWTConnection extends Connection
     }-*/;
 
     protected final Serializer _szer;
-    protected Callback<Connection> _callback;
+    protected RPromise<Connection> _callback;
     protected JavaScriptObject _ws;
 }

@@ -9,6 +9,7 @@ import scala.collection.mutable.ListBuffer
 
 import java.util.{List => JList}
 import javax.lang.model.element.{ExecutableElement, TypeElement, VariableElement}
+import javax.lang.model.`type`.{DeclaredType, TypeKind}
 
 /**
  * Contains metadata for a single `NexusService` interface.
@@ -21,8 +22,7 @@ class ServiceMetadata (val elem :TypeElement) extends Metadata {
   def serviceName = elem.getSimpleName.toString
 
   /** Returns the imports needed by this class metadata. */
-  def imports :Set[String] = Utils.collectImports(elem.asType) ++
-    methods.flatMap(_.elem.getParameters.flatMap(p => Utils.collectImports(p.asType)))
+  def imports :Set[String] = Utils.collectImports(elem.asType) ++ methods.flatMap(_.imports)
 
   /** Returns all of the methods defined for this service. */
   def methods :JList[Method] = methodsBuf
@@ -46,19 +46,23 @@ object ServiceMetadata {
 
   case class Method (elem :ExecutableElement) {
     private val _params = elem.getParameters.zipWithIndex.map(Arg.tupled)
+    private val _rtype = elem.getReturnType
 
-    /*sanity checks (runs in ctor)*/ {
-      val cbs = _params filter(a => a.`type` == "Callback" || (a.`type` startsWith "Callback"))
-      // ensure that we have exactly zero or one callback arguments
-      if (cbs.size > 1) throw new Generator.InvalidCodeException(
-        this + " has more than one Callback argument")
-      // ensure that we don't have a callback in the wrong position
-      if (cbs.size == 1 && _params.last != cbs(0)) throw new Generator.InvalidCodeException(
-        this + " Callback argument in non-final position")
+    /* sanity checks (runs in ctor) */ {
+      // make sure return type is void or RFuture<T>
     }
 
-    val name = elem.getSimpleName.toString
+    def name = elem.getSimpleName.toString
     val args :JList[Arg] = _params
+
+    val hasResult = _rtype.getKind == TypeKind.DECLARED
+    def result = Utils.toString(_rtype, true)
+    def rtype = Utils.toString(_rtype.asInstanceOf[DeclaredType].getTypeArguments.get(0), true)
+
+    /** Returns the imports needed by this method's parameters and return type. */
+    def imports :Set[String] = (elem.getParameters.map(_.asType) :+ _rtype).flatMap(
+      Utils.collectImports).toSet
+
     override def toString () = String.format("%s(%s)", name, _params.mkString(", "))
   }
 }

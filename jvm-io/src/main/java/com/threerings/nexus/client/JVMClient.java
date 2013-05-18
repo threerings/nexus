@@ -7,9 +7,10 @@ package com.threerings.nexus.client;
 import java.awt.EventQueue;
 import java.util.concurrent.Executor;
 
+import react.RPromise;
+
 import com.threerings.nexus.net.Connection;
 import com.threerings.nexus.net.JVMConnection;
-import com.threerings.nexus.util.Callback;
 
 /**
  * Provides a Nexus client based on JVM-based I/O.
@@ -42,7 +43,7 @@ public class JVMClient extends NexusClient
         _port = port;
     }
 
-    @Override protected void connect (String host, Callback<Connection> callback) {
+    @Override protected void connect (String host, RPromise<Connection> callback) {
         new JVMConnection(host, _port, _exec, callback);
     }
 

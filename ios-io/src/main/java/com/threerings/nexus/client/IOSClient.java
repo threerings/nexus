@@ -12,9 +12,10 @@ import cli.MonoTouch.Foundation.NSAction;
 import cli.MonoTouch.Foundation.NSObject;
 import cli.System.Console;
 
+import react.RPromise;
+
 import com.threerings.nexus.net.Connection;
 import com.threerings.nexus.net.IOSConnection;
-import com.threerings.nexus.util.Callback;
 import com.threerings.nexus.util.Log;
 
 /**
@@ -54,7 +55,7 @@ public class IOSClient extends NexusClient
         Log.log = IOS_LOGGER;
     }
 
-    @Override protected void connect (String host, Callback<Connection> callback) {
+    @Override protected void connect (String host, RPromise<Connection> callback) {
         new IOSConnection(host, _port, _exec, callback);
     }
 

@@ -22,54 +22,25 @@ class FactoryGenTest {
   @Test def testService {
     val source = FactoryTestCompiler.genSource("TestService.java", """
       package foo.bar;
-      import com.threerings.nexus.util.Callback;
       public interface TestService extends com.threerings.nexus.distrib.NexusService {
-        void addOne (int value, Callback<Integer> callback);
+        react.RFuture<Integer> addOne (int value);
         void launchMissiles ();
       }
     """)
     // System.err.println(source)
   }
 
-  @Test def testMultipleCallbacks {
-    println("Expect error re: multiple callback args:")
-    val source = FactoryTestCompiler.genSource("TestService.java", """
-      package foo.bar;
-      import com.threerings.nexus.util.Callback;
-      public interface TestService extends com.threerings.nexus.distrib.NexusService {
-        void bogus (int value, Callback<Integer> cb1, Callback<Integer> cb2);
-      }
-    """)
-    // TODO: capture diagnostics during compile, ensure error is generated
-    assertTrue(source == "")
-  }
-
-  @Test def testNonLastArgCallback {
-    println("Expect error re: callback in non-final position:")
-    val source = FactoryTestCompiler.genSource("TestService.java", """
-      package foo.bar;
-      import com.threerings.nexus.util.Callback;
-      public interface TestService extends com.threerings.nexus.distrib.NexusService {
-        void bogus (int value, Callback<Integer> cb1, int bob);
-      }
-    """)
-    // TODO: capture diagnostics during compile, ensure error is generated
-    assertTrue(source == "")
-  }
-
   @Test def testMeta {
     val meta = FactoryTestCompiler.genMeta("TestService.java", """
-      import com.threerings.nexus.util.Callback;
       public interface TestService extends com.threerings.nexus.distrib.NexusService {
-        void addOne (int value, Callback<Integer> callback);
+        react.RFuture<Integer> addOne (int value);
         void launchMissiles ();
       }
     """)
     assertEquals(meta.serviceName, "TestService")
     assertEquals(2, meta.methods.size)
-    checkMethod(meta.methods.get(0), "addOne", 2)
+    checkMethod(meta.methods.get(0), "addOne", 1)
     checkArg(meta.methods.get(0).args.get(0), "int", "Integer")
-    checkArg(meta.methods.get(0).args.get(1), "Callback<Integer>", "Callback<Integer>")
     checkMethod(meta.methods.get(1), "launchMissiles", 0)
   }
 
@@ -111,14 +82,14 @@ object FactoryTestCompiler extends TestCompiler {
     protected var _meta :ServiceMetadata = _
   }
 
-  override protected def stockObjects = List(nexusServiceObj, callbackObj)
+  override protected def stockObjects = List(nexusServiceObj, rFutureObj)
 
   private def nexusServiceObj = mkTestObject("NexusService.java", """
     package com.threerings.nexus.distrib;
     public interface NexusService {}
   """)
-  private def callbackObj = mkTestObject("Callback.java", """
-    package com.threerings.nexus.util;
-    public interface Callback<T> {}
+  private def rFutureObj = mkTestObject("RFuture.java", """
+    package react;
+    public interface RFuture<T> {}
   """)
 }

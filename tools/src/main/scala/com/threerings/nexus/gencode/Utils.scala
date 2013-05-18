@@ -13,6 +13,8 @@ import javax.lang.model.`type`.{ArrayType, DeclaredType, NoType, PrimitiveType, 
 import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
 
+import react.RFuture
+
 import com.threerings.nexus.io.{Streamable, Streamer}
 import com.threerings.nexus.distrib.{DService, NexusObject, NexusService}
 
@@ -312,6 +314,10 @@ object Utils
       buf.append(t.getKind.toString.toLowerCase)
     }
 
+    override def visitNoType (t :NoType, buf :StringBuilder) {
+      buf.append("void")
+    }
+
     private var _seenVars = Set[TypeVariable]()
   }
 
@@ -385,4 +391,5 @@ object Utils
   private[gencode] final val StreamableName = classOf[Streamable].getName
   private[gencode] final val StreamerName = classOf[Streamer[_]].getName
   private[gencode] final val EnumName = classOf[Enum[_]].getName
+  private[gencode] final val RFutureName = classOf[RFuture[_]].getName
 }

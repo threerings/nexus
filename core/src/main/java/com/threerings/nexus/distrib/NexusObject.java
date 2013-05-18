@@ -7,6 +7,7 @@ package com.threerings.nexus.distrib;
 import java.util.ArrayList;
 import java.util.List;
 
+import react.RPromise;
 import react.Signal;
 
 import com.threerings.nexus.io.Streamable;
@@ -17,7 +18,7 @@ import static com.threerings.nexus.util.Log.log;
  * The basis for all distributed information sharing in Nexus.
  */
 public abstract class NexusObject
-    implements Streamable, NexusService.ObjectResponse
+    implements Streamable
 {
     /**
      * A signal that is emitted if the subscription to this object is lost due to the object being
@@ -64,11 +65,6 @@ public abstract class NexusObject
     public void writeContents (Streamable.Output out) {
         out.writeInt(_id);
         for (DAttribute attr : _attrs) attr.writeContents(out);
-    }
-
-    @Override // from NexusService.ObjectResponse
-    public NexusObject[] getObjects () {
-        return new NexusObject[] { this };
     }
 
     /**
@@ -125,8 +121,8 @@ public abstract class NexusObject
     /**
      * Requests that a service call be posted to this object.
      */
-    protected void postCall (short attrIndex, short methodId, Object[] args) {
-        _sink.postCall(this, attrIndex, methodId, args);
+    protected <R> void postCall (short attrIndex, short methodId, Object[] args, RPromise<R> cb) {
+        _sink.postCall(this, attrIndex, methodId, args, cb);
     }
 
     /** Used by {@link #getAddress} for type jockeying. */

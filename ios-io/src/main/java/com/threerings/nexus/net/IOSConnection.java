@@ -15,12 +15,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import react.RPromise;
+
 import com.threerings.nexus.io.ByteBufferInputStream;
 import com.threerings.nexus.io.FrameReader;
 import com.threerings.nexus.io.FramingOutputStream;
 import com.threerings.nexus.io.IOSIO;
 import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.util.Callback;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -35,7 +36,7 @@ public class IOSConnection extends Connection
      *
      * @param callback will be notified on connection completion, or failure.
      */
-    public IOSConnection (String host, int port, Executor exec, Callback<Connection> callback) {
+    public IOSConnection (String host, int port, Executor exec, RPromise<Connection> callback) {
         super(host);
         _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
@@ -101,7 +102,7 @@ public class IOSConnection extends Connection
     }
 
     protected class Reader extends Thread {
-        public Reader (String host, int port, Callback<Connection> callback) {
+        public Reader (String host, int port, RPromise<Connection> callback) {
             _host = host;
             _port = port;
             _callback = callback;
@@ -128,13 +129,13 @@ public class IOSConnection extends Connection
 
                 // let our callback know that we're ready to go
                 log.info("Established server connection", "host", _host, "port", _port);
-                _callback.onSuccess(IOSConnection.this);
+                _callback.succeed(IOSConnection.this);
 
             } catch (IOException ioe) {
                 if (_channel != null) {
                     closeChannel(_channel);
                 }
-                _callback.onFailure(ioe);
+                _callback.fail(ioe);
                 return;
             }
 
@@ -165,7 +166,7 @@ public class IOSConnection extends Connection
 
         protected String _host;
         protected int _port;
-        protected Callback<Connection> _callback;
+        protected RPromise<Connection> _callback;
 
         protected volatile boolean _running = true;
 

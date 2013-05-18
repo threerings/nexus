@@ -5,6 +5,7 @@
 package com.threerings.nexus.server;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -17,6 +18,9 @@ import java.util.concurrent.FutureTask;
 import com.google.common.collect.Maps;
 
 import react.RMap;
+import react.RPromise;
+import react.Slot;
+import react.Try;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Address;
@@ -384,13 +388,15 @@ public class ObjectManager
      * Dispatches the supplied service call on the appropriate object, on the appropriate thread.
      * @param source the session from which the call originated, or null.
      */
-    public void dispatchCall (int objId, final short attrIdx, final short methId,
-                              final Object[] args, final Session source) {
+    public <R> void dispatchCall (int objId, final short attrIdx, final short methId,
+                                  final Object[] args, final Session source,
+                                  final Slot<Try<R>> callback) {
         invoke(objId, new Action<NexusObject>() {
             @Override public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
                 try {
-                    DistribUtil.dispatchCall(object, attrIdx, methId, args);
+                    DistribUtil.dispatchCall(object, attrIdx, methId, args, callback);
+
                 } finally {
                     SessionLocal.clearCurrent();
                 }
@@ -408,9 +414,10 @@ public class ObjectManager
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIdx, short methId, Object[] args) {
+    public <R> void postCall (NexusObject source, short attrIdx, short methId, Object[] args,
+                              RPromise<R> result) {
         // calls that originate on the server are dispatched directly
-        dispatchCall(source.getId(), attrIdx, methId, args, null);
+        dispatchCall(source.getId(), attrIdx, methId, args, null, result.completer());
     }
 
     // from interface EventSink

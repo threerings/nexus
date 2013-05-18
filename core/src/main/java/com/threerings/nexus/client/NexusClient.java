@@ -7,13 +7,15 @@ package com.threerings.nexus.client;
 import java.util.HashMap;
 import java.util.Map;
 
+import react.Function;
+import react.RFuture;
+import react.RPromise;
 import react.Slot;
 
 import com.threerings.nexus.distrib.Address;
+import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.net.Connection;
-import com.threerings.nexus.util.Callback;
-import com.threerings.nexus.util.CallbackList;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -23,35 +25,13 @@ import static com.threerings.nexus.util.Log.log;
 public abstract class NexusClient
 {
     /**
-     * Requests to subscribe to the object identified by the supplied address.
-     *
-     * @return a subscription handle that can be used to terminate the subscription.
-     */
-    public <T extends NexusObject> Subscription subscribe (Address<T> addr, Callback<T> callback) {
-        return new SubImpl<T>(addr, callback); // ctor starts things off
-    }
-
-    /**
      * Creates a subscriber, see {@link Subscriber} for details.
      */
-    public <T extends NexusObject> Subscriber<T> subscriber (final Callback<T> callback) {
-        return new Subscriber<T>() {
-            @Override public void onSuccess (Address<T> address) {
-                if (!_aborted) _sub = subscribe(address, callback);
-            }
-            @Override public void onFailure (Throwable cause) {
-                callback.onFailure(cause);
-            }
-            @Override public void unsubscribe () {
-                if (_sub == null) _aborted = true;
-                else _sub.unsubscribe();
-            }
-            protected boolean _aborted;
-            protected Subscription _sub;
-        };
+    public <T extends NexusObject> Subscriber<T> subscriber () {
+        return new SubImpl<T>();
     }
 
-    protected abstract void connect (String host, Callback<Connection> callback);
+    protected abstract void connect (String host, RPromise<Connection> promise);
 
     // TODO: should we disconnect immediately when clearing last subscription from a given
     // connection, or should we periodically poll our open connections and disconnect any with no
@@ -63,76 +43,53 @@ public abstract class NexusClient
     }
 
     /**
-     * Establishes a connection with the supplied host (if one does not already exist), and invokes
-     * the supplied action with said connection. Ensures thread-safety in the process.
+     * Establishes a connection with the supplied host (if one does not already exist), and makes
+     * it available to the caller via a future. Ensures thread-safety in the process.
      */
-    protected synchronized void withConnection (final String host,
-                                                Callback<? super Connection> action) {
-        Connection conn = _connections.get(host);
-        if (conn != null) {
-            action.onSuccess(conn);
-            return;
+    protected synchronized RFuture<Connection> connection (final String host) {
+        RPromise<Connection> conn = _conns.get(host);
+        if (conn == null) {
+            _conns.put(host, conn = RPromise.create());
+            final Slot<Throwable> remover = new Slot<Throwable>() {
+                public void onEmit (Throwable error) {
+                    _conns.remove(host);
+                    if (error == null) log.info("Connection to " + host + " closed.");
+                    else log.info("Connection to " + host + " failed.", "error", error);
+                }
+            };
+            conn.onFailure(remover).onSuccess(new Slot<Connection>() {
+                // listen for connection close and remove our connection then
+                public void onEmit (Connection conn) { conn.onClose.connect(remover); }
+            });
+            log.info("Connecting to " + host);
+            connect(host, conn);
         }
-
-        CallbackList<Connection> plist = _penders.get(host);
-        if (plist != null) {
-            plist.add(action);
-            return;
-        }
-
-        log.info("Connecting to " + host);
-        _penders.put(host, plist = CallbackList.create(action));
-        connect(host, new Callback<Connection>() {
-            public void onSuccess (Connection conn) {
-                onConnectSuccess(conn);
-            }
-            public void onFailure (Throwable cause) {
-                onConnectFailure(host, cause);
-            }
-        });
+        return conn;
     }
 
-    protected synchronized void onConnectSuccess (final Connection conn) {
-        CallbackList<Connection> plist = _penders.remove(conn.getHost());
-        if (plist == null) {
-            log.warning("Have no penders for established connection?!", "host", conn.getHost());
-            conn.close(); // shutdown and drop connection
-        } else {
-            _connections.put(conn.getHost(), conn);
-            // we want to be notified when this connection closes
-            conn.onClose.connect(new Slot<Throwable>() {
-                @Override public void onEmit (Throwable error) {
-                    onConnectionClose(conn, error);
+    protected class SubImpl<T extends NexusObject> implements Subscriber<T> {
+        @Override public RFuture<T> subscribe (final Address<T> addr) {
+            if (_id >= 0) throw new IllegalStateException("Subscriber already used");
+            _id = 0;
+            return connection(addr.host).flatMap(new Function<Connection,RFuture<T>>() {
+                public RFuture<T> apply (Connection conn) {
+                    if (!_alive) return canceled();
+                    return (_conn = conn).subscribe(addr).flatMap(new Function<T,RFuture<T>>() {
+                        public RFuture<T> apply (T obj) {
+                            _id = obj.getId();
+                            // things are normal; complete with this result and we're done
+                            if (_alive) return RFuture.success(obj);
+                            // otherwise we unsubscribed before the object arrived, handle that
+                            unsubscribe();
+                            return canceled();
+                        }
+                    });
                 }
             });
-            plist.onSuccess(conn);
         }
-    }
 
-    protected synchronized void onConnectFailure (String host, Throwable cause) {
-        CallbackList<Connection> plist = _penders.remove(host);
-        if (plist == null) {
-            log.warning("Have no penders for failed connection?!", "host", host);
-        } else {
-            plist.onFailure(cause);
-        }
-    }
-
-    protected synchronized void onConnectionClose (Connection conn, Throwable error) {
-        // TODO: do we care about orderly versus exceptional closure?
-        _connections.remove(conn.getHost());
-    }
-
-    protected class SubImpl<T extends NexusObject> implements Subscription {
-        public final Address<T> addr;
-
-        public SubImpl (Address<T> addr, Callback<T> callback) {
-            this.addr = addr;
-            _callback = callback;
-            withConnection(addr.host, new Callback<Connection>() {
-                public void onSuccess (Connection conn) { gotConnection(conn); }
-                public void onFailure (Throwable cause) { notifyFailure(cause); }
-            });
+        @Override public RFuture<T> apply (Address<T> addr) {
+            return _alive ? subscribe(addr) : canceled();
         }
 
         @Override public void unsubscribe () {
@@ -140,61 +97,23 @@ public abstract class NexusClient
             if (_id == -1) return;
             // if we have not yet received our object, we have to wait for the object to arrive
             // before we can turn around and unsubscribe from it
-            else if (_id == 0) {
-                _wantUnsubscribe = true;
-                _callback = null; // don't report future success or failure
-            }
+            else if (_id == 0) _alive = false;
             // otherwise we can send the unsubscribe request
-            else doUnsubscribe();
-        }
-
-        protected void gotConnection (Connection conn) {
-            conn.subscribe(addr, new Callback<T>() {
-                public void onSuccess (T object) {
-                    _id = object.getId();
-                    // if we unsubscribed before the object arrived, process that now
-                    if (_wantUnsubscribe) doUnsubscribe();
-                    // we should never lack a callback here, so freak out if we do
-                    else if (_callback == null) log.warning(
-                        "Got object but have no callback!?", "addr", addr, "id", _id);
-                    // things are normal; notify our listener and be done
-                    else {
-                        _callback.onSuccess(object);
-                        _callback = null;
-                    }
-                }
-                public void onFailure (Throwable cause) { notifyFailure(cause); }
-            });
-        }
-
-        protected void doUnsubscribe () {
-            final int id = _id;
-            _id = -1;
-            withConnection(addr.host, new Callback<Connection>() {
-                public void onSuccess (Connection conn) { conn.unsubscribe(id); }
-                public void onFailure (Throwable cause) {
-                    log.warning("Failed to obtain connection for unsubscribe", "addr", addr,
-                                "id", id, "error", cause);
-                }
-            });
-        }
-
-        protected void notifyFailure (Throwable cause) {
-            if (_callback != null) {
-                _callback.onFailure(cause);
-                _callback = null;
+            else {
+                _conn.unsubscribe(_id);
+                _id = -1;
             }
         }
 
-        protected int _id;
-        protected Callback<T> _callback;
-        protected boolean _wantUnsubscribe;
+        protected RFuture<T> canceled () {
+            return RFuture.failure(new NexusException("Subscription canceled"));
+        }
+
+        protected Connection _conn;
+        protected boolean _alive = true;
+        protected int _id = -2;
     }
 
-    /** A mapping from hostname to connection instance for all active connections. */
-    protected Map<String, Connection> _connections = new HashMap<String, Connection>();
-
-    /** A mapping from hostname to listener list, for all pending connections. */
-    protected Map<String, CallbackList<Connection>> _penders =
-        new HashMap<String, CallbackList<Connection>>();
+    /** A mapping from hostname to connection instance for all pending and active connections. */
+    protected Map<String, RPromise<Connection>> _conns = new HashMap<String, RPromise<Connection>>();
 }

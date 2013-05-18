@@ -4,7 +4,9 @@
 
 package com.threerings.nexus.distrib;
 
-import com.threerings.nexus.util.Callback;
+import react.RFuture;
+import react.Slot;
+import react.Try;
 
 import static com.threerings.nexus.util.Log.log;
 
@@ -22,25 +24,22 @@ public class DistribUtil
         object.clear();
     }
 
-    public static void dispatchCall (NexusObject object, int attrIdx, short methId, Object[] args) {
-        Object cb = (args.length == 0) ? null : args[args.length-1];
+    public static <R> void dispatchCall (NexusObject object, int attrIdx, short methId,
+                                         Object[] args, Slot<? super Try<R>> slot) {
         DService.Dispatcher<?> disp = null;
         try {
-            object.<DService.Dispatcher<?>>getAttribute(attrIdx).dispatchCall(methId, args);
+            @SuppressWarnings("unchecked") RFuture<R> result = (RFuture<R>)
+                object.<DService.Dispatcher<?>>getAttribute(attrIdx).dispatchCall(methId, args);
+            if (result != null) result.onComplete(slot);
 
         } catch (NexusException ne) {
-            if (cb instanceof Callback<?>) {
-                ((Callback<?>)cb).onFailure(ne);
-            } else {
-                log.warning("Service call failed", "obj", object, "attr", disp,
-                            "methId", methId, ne);
-            }
+            if (slot != null) slot.onEmit(Try.<R>failure(ne));
+            else log.warning("Service call failed", "obj", object, "attr", disp,
+                             "methId", methId, ne);
 
         } catch (Throwable t) {
             log.warning("Service call failed", "obj", object, "attr", disp, "methId", methId, t);
-            if (cb instanceof Callback<?>) {
-                ((Callback<?>)cb).onFailure(new NexusException("Internal error.")); // TODO: i18n
-            }
+            if (slot != null) slot.onEmit(Try.<R>failure(new NexusException("Internal error")));
         }
     }
 

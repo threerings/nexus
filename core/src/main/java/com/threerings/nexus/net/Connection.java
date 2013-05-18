@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import react.RFuture;
+import react.RPromise;
 import react.Signal;
 
 import com.threerings.nexus.distrib.Address;
@@ -19,7 +21,6 @@ import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.NexusService;
-import com.threerings.nexus.util.Callback;
 import com.threerings.nexus.util.Util;
 
 import static com.threerings.nexus.util.Log.log;
@@ -38,10 +39,13 @@ public abstract class Connection
      * Subscribes to the Nexus object with the specified address. Success (i.e. the object) or
      * failure will be communicated to {@code cb}.
      */
-    public <T extends NexusObject> void subscribe (Address<T> addr, Callback<T> cb) {
-        if (!_penders.addPender(addr, cb)) {
+    public <T extends NexusObject> RFuture<T> subscribe (Address<T> addr) {
+        @SuppressWarnings("unchecked") RPromise<T> promise = (RPromise<T>)_penders.get(addr);
+        if (promise == null) {
+            _penders.put(addr, promise = RPromise.create());
             send(new Upstream.Subscribe(addr));
         }
+        return promise;
     }
 
     /**
@@ -75,22 +79,18 @@ public abstract class Connection
     }
 
     // from interface EventSink
-    public void postCall (NexusObject source, short attrIndex, short methodId, Object[] args) {
-        // determine whether we have a callback (which the service generator code will enforce is
-        // always the final argument of the method)
-        int callId, lastIdx = args.length-1;
-        if (lastIdx > -1 && args[lastIdx] instanceof Callback<?>) {
+    public <R> void postCall (NexusObject source, short attrIndex, short methodId, Object[] args,
+                              RPromise<R> result) {
+        // if we have a result, assign an id to this call, and save the result for later
+        int callId;
+        if (result == null) callId = 0;
+        else {
             callId = 1;
             for (Integer key : _calls.keySet()) {
                 callId = Math.max(callId, key+1);
             }
-            _calls.put(callId, (Callback<?>)args[lastIdx]);
-            args[lastIdx] = null; // we don't send the Callback over the wire
-        } else {
-            callId = 0; // no callback, no call id
+            _calls.put(callId, result);
         }
-
-        // finally send the service call
         send(new Upstream.ServiceCall(callId, source.getId(), attrIndex,
                                       methodId, Arrays.asList(args)));
     }
@@ -102,9 +102,10 @@ public abstract class Connection
         // the above must precede this call, as obtaining the object's address requires that the
         // event sink be configured
         Address<?> addr = msg.object.getAddress();
-        List<Callback<?>> penders = _penders.getPenders(addr);
-        if (penders == null) {
-            log.warning("Missing pender list", "addr", addr);
+        @SuppressWarnings("unchecked") RPromise<NexusObject> promise =
+            (RPromise<NexusObject>)_penders.remove(addr);
+        if (promise == null) {
+            log.warning("No one pending on object?", "addr", addr);
             send(new Upstream.Unsubscribe(msg.object.getId())); // clear our subscription
             return;
         }
@@ -113,22 +114,14 @@ public abstract class Connection
         _objects.put(msg.object.getId(), msg.object);
 
         // notify the pending listeners that the object has arrived
-        for (Callback<?> pender : penders) {
-            @SuppressWarnings("unchecked") Callback<NexusObject> cb =
-                (Callback<NexusObject>)pender;
-            Util.notifySuccess(cb, msg.object);
-        }
+        promise.succeed(msg.object);
     }
 
     // from interface Downstream.Handler
     public void onSubscribeFailure (Downstream.SubscribeFailure msg) {
-        List<Callback<?>> penders = _penders.getPenders(msg.addr);
-        if (penders == null) {
-            log.warning("Missing pender list", "addr", msg.addr);
-        } else {
-            Exception cause = new Exception(msg.cause);
-            for (Callback<?> pender : penders) Util.notifyFailure(pender, cause);
-        }
+        RPromise<?> promise = _penders.remove(msg.addr);
+        if (promise != null) promise.fail(new NexusException(msg.cause));
+        else log.warning("No one pending on failed subscribe?", "addr", msg.addr, "err", msg.cause);
     }
 
     // from interface Downstream.Handler
@@ -143,30 +136,22 @@ public abstract class Connection
 
     // from interface Downstream.Handler
     public void onServiceResponse (Downstream.ServiceResponse msg) {
-        Callback<?> callback = _calls.remove(msg.callId);
-        if (callback == null) {
-            log.warning("Received service response for unknown call", "msg", msg);
-            return;
+        RPromise<?> promise = _calls.remove(msg.callId);
+        if (promise == null) log.warning("Received service response for unknown call", "msg", msg);
+        else {
+            @SuppressWarnings("unchecked") RPromise<Object> pr = (RPromise<Object>)promise;
+            pr.succeed(msg.result);
         }
-        // if the result contains NexusObjects, they must be initialized
-        if (msg.result instanceof NexusService.ObjectResponse) {
-            for (NexusObject obj : ((NexusService.ObjectResponse)msg.result).getObjects()) {
-                DistribUtil.init(obj, obj.getId(), this);
-                _objects.put(obj.getId(), obj); // store the object in our local table
-            }
-        }
-        @SuppressWarnings("unchecked") Callback<Object> ccb = (Callback<Object>)callback;
-        Util.notifySuccess(ccb, msg.result);
     }
 
     // from interface Downstream.Handler
     public void onServiceFailure (Downstream.ServiceFailure msg) {
-        Callback<?> callback = _calls.remove(msg.callId);
-        if (callback == null) {
+        RPromise<?> promise = _calls.remove(msg.callId);
+        if (promise == null) {
             log.warning("Received service failure for unknown call", "msg", msg);
             return;
         }
-        Util.notifyFailure(callback, new NexusException(msg.cause));
+        promise.fail(new NexusException(msg.cause));
     }
 
     // from interface Downstream.Handler
@@ -176,7 +161,7 @@ public abstract class Connection
             log.warning("Unknown object cleared", "id", msg.id);
             return;
         }
-        Util.emit(target.onLost, null);
+        target.onLost.emit(null);
     }
 
     protected Connection (String host) {
@@ -212,18 +197,18 @@ public abstract class Connection
      */
     protected void onClose (final Throwable error) {
         // we want to pass a non-null exception to penders, failed calls and lost objects
-        final Throwable perror = (error != null) ? error : new Exception("Connection closed");
+        final Throwable perror = (error != null) ? error : new NexusException("Connection closed");
 
         // do the bulk of our close processing on the dispatch thread
         dispatch(new Runnable() {
             public void run () {
                 // notify any penders that we're not going to hear back
-                _penders.onClose(perror, Connection.this);
+                for (RPromise<?> promise : _penders.values()) promise.fail(perror);
 
                 // notify any in-flight service calls that they failed
                 if (!_calls.isEmpty()) {
                     log.info("Clearing " + _calls.size() + " calls.");
-                    for (Callback<?> cb : _calls.values()) Util.notifyFailure(cb, perror);
+                    for (RPromise<?> pr : _calls.values()) pr.fail(perror);
                     _calls.clear();
                 }
 
@@ -240,44 +225,14 @@ public abstract class Connection
         });
     }
 
-    /** This map may be accessed by multiple threads, be sure its methods are synchronized. */
-    protected static class PenderMap {
-        public synchronized boolean addPender (Address<?> addr, Callback<?> cb) {
-            boolean wasPending = true;
-            List<Callback<?>> penders = _penders.get(addr);
-            if (penders == null) {
-                _penders.put(addr, penders = new ArrayList<Callback<?>>());
-                wasPending = false;
-            }
-            penders.add(cb);
-            return wasPending;
-        }
-
-        public synchronized List<Callback<?>> getPenders (Address<?> addr) {
-            return _penders.remove(addr);
-        }
-
-        public synchronized void onClose (final Throwable error, Connection conn) {
-            if (_penders.isEmpty()) return;
-            log.info("Clearing " + _penders.size() + " penders.");
-            for (final List<Callback<?>> penders : _penders.values()) {
-                for (Callback<?> pender : penders) Util.notifyFailure(pender, error);
-            }
-            _penders.clear();
-        }
-
-        protected Map<Address<?>, List<Callback<?>>> _penders =
-            new HashMap<Address<?>, List<Callback<?>>>();
-    }
-
     /** The name of the host with which we're communicating. */
     protected final String _host;
 
     /** Tracks pending subscribers. */
-    protected final PenderMap _penders = new PenderMap();
+    protected final Map<Address<?>, RPromise<?>> _penders = new HashMap<Address<?>, RPromise<?>>();
 
     /** Tracks pending service calls. */
-    protected final Map<Integer, Callback<?>> _calls = new HashMap<Integer, Callback<?>>();
+    protected final Map<Integer, RPromise<?>> _calls = new HashMap<Integer, RPromise<?>>();
 
     /** Tracks currently subscribed objects. */
     protected final Map<Integer, NexusObject> _objects = new HashMap<Integer, NexusObject>();
