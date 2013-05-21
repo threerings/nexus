@@ -5,6 +5,7 @@
 package com.threerings.nexus.distrib;
 
 import com.threerings.nexus.io.Streamable;
+import com.threerings.nexus.util.Log;
 
 /**
  * An exception used to report failure of Nexus services. Can be streamed, though in said cases,
@@ -17,10 +18,8 @@ public class NexusException extends RuntimeException
     /**
      * Throws a NexusException with the supplied error message if {@code condition} is not true.
      */
-    public static void require (boolean condition, String errmsg) {
-        if (!condition) {
-            throw new NexusException(errmsg);
-        }
+    public static void require (boolean condition, String errmsg, Object... args) {
+        if (!condition) throw new NexusException(Log.format(errmsg, args));
     }
 
     public NexusException (String message) {

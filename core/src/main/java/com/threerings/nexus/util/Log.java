@@ -26,17 +26,7 @@ public class Log
 
         protected void format (Object level, String message, Object... args) {
             StringBuilder sb = new StringBuilder();
-            sb.append(message);
-            if (args.length > 1) {
-                sb.append(" [");
-                for (int ii = 0, ll = args.length/2; ii < ll; ii++) {
-                    if (ii > 0) {
-                        sb.append(", ");
-                    }
-                    sb.append(args[2*ii]).append("=").append(args[2*ii+1]);
-                }
-                sb.append("]");
-            }
+            Log.format(sb, message, args);
             Object last = (args.length % 2 == 1) ? args[args.length-1] : null;
             Throwable cause = (last instanceof Throwable) ? (Throwable)last : null;
             log(level, sb.toString(), cause);
@@ -76,6 +66,25 @@ public class Log
 
     /** Dispatch log messages through this instance. */
     public static Logger log = new JavaLogger("nexus");
+
+    /** Formats the supplied message for logging. */
+    public static String format (String message, Object... args) {
+        return format(new StringBuilder(), message, args).toString();
+    }
+
+    /** Formats the supplied message (into {@code into}) for logging. */
+    public static StringBuilder format (StringBuilder into, String message, Object... args) {
+        into.append(message);
+        if (args.length > 1) {
+            into.append(" [");
+            for (int ii = 0, ll = args.length/2; ii < ll; ii++) {
+                if (ii > 0) into.append(", ");
+                into.append(args[2*ii]).append("=").append(args[2*ii+1]);
+            }
+            into.append("]");
+        }
+        return into;
+    }
 
     private Log () {} // no constructsky
 }
