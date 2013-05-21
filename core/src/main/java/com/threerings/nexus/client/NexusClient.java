@@ -31,6 +31,17 @@ public abstract class NexusClient
         return new SubImpl<T>();
     }
 
+    /**
+     * Creates and returns a new subscriber. If the supplied {@code subscriber} is non-null, it
+     * will be unsubscribed. This is essentially a helper method to simplify a common pattern where
+     * an existing subscription, if it exists, needs to be unsubscribed, and a new subscription
+     * created, all in one fell swoop.
+     */
+    public <T extends NexusObject> Subscriber<T> subscriber (Subscriber<?> subscriber) {
+        if (subscriber != null) subscriber.unsubscribe();
+        return this.<T>subscriber();
+    }
+
     protected abstract void connect (String host, RPromise<Connection> promise);
 
     // TODO: should we disconnect immediately when clearing last subscription from a given
