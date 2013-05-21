@@ -17,7 +17,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         /** The key identifying our target object. */
         public final Comparable<?> key;
 
-        public OfKeyed (String host, Class<T> clazz, Comparable<?> key) {
+        public OfKeyed (String host, Class<? extends T> clazz, Comparable<?> key) {
             super(host, clazz);
             this.key = key;
         }
@@ -39,7 +39,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
 
     /** An address of a singleton object. */
     public static class OfSingleton<T extends NexusObject & Singleton> extends OfTyped<T> {
-        public OfSingleton (String host, Class<T> clazz) {
+        public OfSingleton (String host, Class<? extends T> clazz) {
             super(host, clazz);
         }
     }
@@ -82,7 +82,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
      * Creates an address for a keyed instance on the specified host.
      */
     public static <T extends NexusObject & Keyed> Address<T> create (
-        String host, Class<T> clazz, Comparable<?> key) {
+        String host, Class<? extends T> clazz, Comparable<?> key) {
         return new OfKeyed<T>(host, clazz, key);
     }
 
@@ -90,7 +90,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
      * Creates an address for a singleton instance on the specified host.
      */
     public static <T extends NexusObject & Singleton> Address<T> create (
-        String host, Class<T> clazz) {
+        String host, Class<? extends T> clazz) {
         return new OfSingleton<T>(host, clazz);
     }
 
@@ -128,9 +128,9 @@ public abstract class Address<T extends NexusObject> implements Streamable
     /** An address of an object with a type. */
     protected static class OfTyped<T extends NexusObject> extends Address<T> {
         /** The type of this object. */
-        public final Class<T> clazz;
+        public final Class<? extends T> clazz;
 
-        public OfTyped (String host, Class<T> clazz) {
+        public OfTyped (String host, Class<? extends T> clazz) {
             super(host);
             this.clazz = clazz;
         }

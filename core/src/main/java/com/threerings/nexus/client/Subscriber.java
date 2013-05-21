@@ -45,10 +45,10 @@ import com.threerings.nexus.distrib.NexusObject;
  * waits for the subscription to complete and then terminates it, but you don't have to wait around
  * yourself, nor does such an action result in a leaked subscription.</p>
  */
-public interface Subscriber<T extends NexusObject> extends Function<Address<T>,RFuture<T>>
+public interface Subscriber<T extends NexusObject> extends Function<Address<? extends T>,RFuture<T>>
 {
     /** Initiates a subscription to the object with the specified address. */
-    RFuture<T> subscribe (Address<T> addr);
+    RFuture<T> subscribe (Address<? extends T> addr);
 
     /** Terminates this object subscription. The object in question will no longer receive events
      * relating to distributed state change after the unsubscription is processed.

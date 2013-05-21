@@ -68,7 +68,7 @@ public abstract class NexusClient
     }
 
     protected class SubImpl<T extends NexusObject> implements Subscriber<T> {
-        @Override public RFuture<T> subscribe (final Address<T> addr) {
+        @Override public RFuture<T> subscribe (final Address<? extends T> addr) {
             if (_id >= 0) throw new IllegalStateException("Subscriber already used");
             _id = 0;
             return connection(addr.host).flatMap(new Function<Connection,RFuture<T>>() {
@@ -88,7 +88,7 @@ public abstract class NexusClient
             });
         }
 
-        @Override public RFuture<T> apply (Address<T> addr) {
+        @Override public RFuture<T> apply (Address<? extends T> addr) {
             return _alive ? subscribe(addr) : canceled();
         }
 
