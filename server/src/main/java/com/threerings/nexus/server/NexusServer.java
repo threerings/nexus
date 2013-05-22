@@ -289,7 +289,9 @@ public class NexusServer implements Nexus
             // TODO: should we configure a default timeout?
             return future.get();
         } catch (ExecutionException ee) {
-            throw new NexusException("Request failure " + request, ee.getCause());
+            Throwable cause = ee.getCause();
+            if (cause instanceof RuntimeException) throw (RuntimeException)cause;
+            else throw new NexusException("Request failure " + request, cause);
         } catch (InterruptedException ie) {
             throw new NexusException("Interrupted while waiting for request " + request);
         }

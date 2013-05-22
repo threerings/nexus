@@ -124,6 +124,21 @@ class NexusTest {
     delay(100) // give things time to process
   }
 
+  @Test def testExceptionUnwrap {
+    class Failer extends Singleton {
+      def fail () :String = throw new NexusException("Fail!")
+    }
+
+    _server.registerSingleton(new Failer)
+    try {
+      _server.request(classOf[Failer], new Request[Failer,String] {
+        def invoke (f :Failer) = f.fail()
+      })
+    } catch {
+      case ne :NexusException => assertEquals("Fail!", ne.getMessage)
+    }
+  }
+
   protected def delay (millis :Long) = Thread.sleep(millis)
 
   protected var _exec :ExecutorService = _
