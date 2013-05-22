@@ -4,8 +4,8 @@
 
 package com.threerings.nexus.server
 
+import java.util.concurrent.{ExecutionException, Executor}
 import scala.collection.mutable.ListBuffer
-import java.util.concurrent.Executor
 
 import com.threerings.nexus.distrib.{Action, DValue, Nexus, NexusException, Request, TestObject}
 import com.threerings.nexus.distrib.{KeyedFactory, Keyed, EntityNotFoundException}
@@ -140,6 +140,31 @@ class ObjectManagerTest
     assertEquals(7, omgr.invoke(classOf[AutoKeyed], 3, new Request[AutoKeyed,Int] {
       def invoke (ent :AutoKeyed) = ent.addKey(4)
     }).get)
+  }
+
+  @Test def testAutoCreateKeyedCtorFail {
+    class FailingKeyed (key :Int) extends Keyed {
+      throw new NexusException("Oh noes!")
+      def getKey = key
+      def addKey (value :Int) = value + key
+    }
+
+    val omgr = createObjectManager
+    omgr.registerKeyedFactory(classOf[FailingKeyed], new KeyedFactory[FailingKeyed] {
+      def create (nexus :Nexus, key :Comparable[_]) = new FailingKeyed(key.asInstanceOf[Int])
+    })
+
+    var excepted = false
+    try {
+      assertEquals(5, omgr.invoke(classOf[FailingKeyed], 2, new Request[FailingKeyed,Int] {
+        def invoke (ent :FailingKeyed) = ent.addKey(3)
+      }).get)
+    } catch {
+      case ee :ExecutionException => ee.getCause match {
+        case ne :NexusException => excepted = true
+      }
+    }
+    assertTrue(excepted)
   }
 
   @Test def testMissingKeyedInvoke {
