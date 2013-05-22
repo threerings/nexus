@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,6 +41,17 @@ public abstract class NexusClient
     public <T extends NexusObject> Subscriber<T> subscriber (Subscriber<?> subscriber) {
         if (subscriber != null) subscriber.unsubscribe();
         return this.<T>subscriber();
+    }
+
+    /**
+     * Closes all active connections.
+     */
+    public void closeAll () {
+        for (RPromise<Connection> conn : new ArrayList<RPromise<Connection>>(_conns.values())) {
+            conn.onSuccess(new Slot<Connection>() {
+                public void onEmit (Connection conn) { conn.close(); }
+            });
+        }
     }
 
     protected abstract void connect (String host, RPromise<Connection> promise);
