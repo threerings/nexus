@@ -4,6 +4,7 @@
 
 package com.threerings.nexus.server;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -153,6 +154,13 @@ public class ObjectManager
      */
     public boolean hostsKeyed (Class<?> kclass, Comparable<?> key) {
         return getKeyedMap(kclass).containsKey(key);
+    }
+
+    /**
+     * Returns the set of keys for all instances of {@code kclass} hosted by this manager.
+     */
+    public Set<Comparable<?>> hostedKeys (Class<?> kclass) {
+        return Collections.unmodifiableSet(getKeyedMap(kclass).keySet());
     }
 
     /**

@@ -122,6 +122,11 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
+    public <T extends Keyed> Set<Comparable<?>> hostedKeys (Class<T> kclass) {
+        return _omgr.hostedKeys(kclass);
+    }
+
+    @Override // from interface Nexus
     public <T extends Singleton> void assertContext (Class<T> sclass) {
         _omgr.assertContext(sclass);
     }

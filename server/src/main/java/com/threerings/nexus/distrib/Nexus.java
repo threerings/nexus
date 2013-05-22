@@ -160,6 +160,12 @@ public interface Nexus
     void clearKeyed (Keyed entity);
 
     /**
+     * Returns the keys of all instances of the supplied entity that are hosted on <em>this</em>
+     * server. The returned set is immutable.
+     */
+    <T extends Keyed> Set<Comparable<?>> hostedKeys (Class<T> kclass);
+
+    /**
      * Asserts that one is currently executing in the context of the specified singleton entity.
      * This check is only made if assertions are enabled in the executing JVM.
      * @throws AssertionError if one is not executing in the required context.
