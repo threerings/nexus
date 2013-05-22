@@ -194,7 +194,7 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Set<Comparable<?>> keys,
+    public <T extends Keyed> void invoke (Class<T> kclass, Set<? extends Comparable<?>> keys,
                                           Action<? super T> action) {
         // TODO: partition keys based on the server that hosts the entities in question; then send
         // one message to each server with the action and the key subset to execute thereon
@@ -203,7 +203,7 @@ public class NexusServer implements Nexus
 
     @Override // from interface Nexus
     public <T extends Keyed,R> Map<Comparable<?>,R> gather (
-        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request) {
+        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request) {
         Map<Comparable<?>,Future<R>> resultFs = gatherF(kclass, keys, request);
         Map<Comparable<?>,R> results = Maps.newHashMap();
         for (Map.Entry<Comparable<?>,Future<R>> entry : resultFs.entrySet()) {
@@ -218,7 +218,7 @@ public class NexusServer implements Nexus
 
     @Override // from interface Nexus
     public <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
-        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request) {
+        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request) {
         // TODO: partition keys based on the server that hosts the entities in question; then send
         // out batched requests to invoke our request on the entities hosted by each server
         Map<Comparable<?>,Future<R>> results = Maps.newHashMap();

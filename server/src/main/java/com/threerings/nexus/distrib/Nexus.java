@@ -288,7 +288,7 @@ public interface Nexus
      * will send the action once to each server rather repeatedly, for each key.
      */
     <T extends Keyed> void invoke (
-        Class<T> kclass, Set<Comparable<?>> keys, Action<? super T> action);
+        Class<T> kclass, Set<? extends Comparable<?>> keys, Action<? super T> action);
 
     /**
      * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and
@@ -305,7 +305,7 @@ public interface Nexus
      * located entities have completed execution of the request.</p>
      */
     <T extends Keyed,R> Map<Comparable<?>,R> gather (
-        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
+        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request);
 
     /**
      * Executes a request on a all entities of type {@code kclass} with keys in {@code keys} and
@@ -321,7 +321,7 @@ public interface Nexus
      * server hosting those entities returns all results at once.</p>
      */
     <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
-        Class<T> kclass, Set<Comparable<?>> keys, Request<? super T,R> request);
+        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request);
 
     /**
      * Invokes an action on the instance of a singleton hosted on the specified server.
