@@ -134,12 +134,17 @@ class ObjectManagerTest
       def create (nexus :Nexus, key :Comparable[_]) = new AutoKeyed(key.asInstanceOf[Int])
     })
 
+    assertFalse(omgr.hostsKeyed(classOf[AutoKeyed], 2))
     assertEquals(5, omgr.invoke(classOf[AutoKeyed], 2, new Request[AutoKeyed,Int] {
       def invoke (ent :AutoKeyed) = ent.addKey(3)
     }).get)
+    assertTrue(omgr.hostsKeyed(classOf[AutoKeyed], 2))
+
+    assertFalse(omgr.hostsKeyed(classOf[AutoKeyed], 3))
     assertEquals(7, omgr.invoke(classOf[AutoKeyed], 3, new Request[AutoKeyed,Int] {
       def invoke (ent :AutoKeyed) = ent.addKey(4)
     }).get)
+    assertTrue(omgr.hostsKeyed(classOf[AutoKeyed], 3))
   }
 
   @Test def testAutoCreateKeyedCtorFail {
@@ -165,6 +170,9 @@ class ObjectManagerTest
       }
     }
     assertTrue(excepted)
+
+    // check that we're not leaking bindings when ctors fail
+    assertFalse(omgr.hostsKeyed(classOf[FailingKeyed], 2))
   }
 
   @Test def testMissingKeyedInvoke {

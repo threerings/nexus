@@ -484,7 +484,7 @@ public class ObjectManager
     }
 
     protected Binding<Keyed> requireKeyed (Class<?> kclass, final Comparable<?> key, String errmsg) {
-        ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = getKeyedMap(kclass);
+        final ConcurrentMap<Comparable<?>,Binding<Keyed>> emap = getKeyedMap(kclass);
         Binding<Keyed> bind = emap.get(key);
         if (bind != null) return bind;
 
@@ -496,9 +496,18 @@ public class ObjectManager
         final EntityContext ctx = new EntityContext(_exec);
         bind = Binding.deferred(new Thunk<Keyed>() {
             public Keyed execute () {
-                Keyed entity = fact.create(_nexus, key);
-                finishRegisterKeyed(entity, ctx);
-                return entity;
+                try {
+                    Keyed entity = fact.create(_nexus, key);
+                    finishRegisterKeyed(entity, ctx);
+                    return entity;
+                    // if entity auto-creation fails, we need to clear our binding
+                } catch (RuntimeException re) {
+                    emap.remove(key);
+                    throw re;
+                } catch (Error err) {
+                    emap.remove(key);
+                    throw err;
+                }
             }
         }, ctx);
         Binding<Keyed> exist = emap.putIfAbsent(key, bind);
