@@ -10,14 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -189,9 +184,7 @@ public class JVMIO
                 }
 
                 if (clazz.isEnum()) {
-                    @SuppressWarnings("unchecked") Streamer<?> s =
-                        new Streamers.Streamer_Enum(clazz);
-                    _streamers.put(code, s);
+                    _streamers.put(code, Streamers.forEnum(clazz));
                 } else {
                     _streamers.put(code, findStreamer(cname));
                 }
@@ -335,7 +328,7 @@ public class JVMIO
                     code = writeUnknownClass(vclass);
                     _classes.put(vclass, code);
                     @SuppressWarnings("unchecked") Streamer<T> s =
-                        (Streamer<T>)new Streamers.Streamer_Enum(value.getClass());
+                        (Streamer<T>)Streamers.forEnum(value.getClass());
                     _streamers.put(code, s);
                     return s;
                 }

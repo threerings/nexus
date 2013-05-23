@@ -24,6 +24,11 @@ public class Streamers
         return new Streamer_Enum<T>(eclass);
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static Streamer<?> forEnum (Class<?> eclass) {
+        return new Streamers.Streamer_Enum(eclass);
+    }
+
     /** A streamer for null instances. */
     public static class Streamer_Null implements Streamer<Void> {
         public Class<?> getObjectClass () {

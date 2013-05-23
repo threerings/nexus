@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 
 import react.RMap;
-import react.Slot;
 
 /**
  * The main source for Nexus services. See

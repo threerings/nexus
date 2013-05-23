@@ -13,7 +13,6 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import com.threerings.nexus.distrib.Action;
-import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.Singleton;
 
 public class NexusJavaTest

@@ -36,8 +36,8 @@ public abstract class DService<T extends NexusService> implements DAttribute
 
         /** Used to concisely, and without warning, cast arguments of generic type. */
         @SuppressWarnings("unchecked")
-        protected final <T> T cast (Object obj) {
-            return (T)obj;
+        protected final <C> C cast (Object obj) {
+            return (C)obj;
         }
     }
 

@@ -7,10 +7,7 @@ package com.threerings.nexus.io;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import com.threerings.nexus.distrib.DValue;
 
 import org.junit.*;
 import static org.junit.Assert.*;

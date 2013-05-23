@@ -5,7 +5,6 @@
 package com.threerings.nexus.server;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -17,8 +16,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import com.threerings.nexus.client.GWTClient;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.Serializer;
-
-import static com.threerings.nexus.util.Log.log;
 
 /**
  * Handles starting a Jetty server and configuring it to listen for GWTIO WebSocket requests on a

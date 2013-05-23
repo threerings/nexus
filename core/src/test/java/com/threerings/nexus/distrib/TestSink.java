@@ -7,7 +7,6 @@ package com.threerings.nexus.distrib;
 import java.util.ArrayList;
 import java.util.List;
 
-import react.RFuture;
 import react.RPromise;
 
 import static org.junit.Assert.*;

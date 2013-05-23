@@ -4,20 +4,15 @@
 
 package com.threerings.nexus.server;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import react.RMap;
-import react.Slot;
 
 import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.Keyed;

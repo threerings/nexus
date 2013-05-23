@@ -5,7 +5,6 @@
 package com.threerings.nexus.distrib;
 
 import com.threerings.nexus.io.Streamable;
-import static com.threerings.nexus.util.Log.log;
 
 /**
  * A signal attribute which retains no data, but serves as a means by which to emit and listen for

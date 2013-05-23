@@ -4,8 +4,6 @@
 
 package com.threerings.nexus.io;
 
-import com.threerings.nexus.distrib.NexusService;
-
 /**
  * Provides {@link Streamable#Input} and {@link Streamable#Output} using precomputed class
  * mappings, and writes data to and from UTF8 strings. Note that this protocol is assymetric and

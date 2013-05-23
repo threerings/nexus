@@ -4,10 +4,8 @@
 
 package com.threerings.nexus.net;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import react.RFuture;
@@ -20,7 +18,6 @@ import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
-import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.util.Util;
 
 import static com.threerings.nexus.util.Log.log;

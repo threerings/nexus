@@ -5,7 +5,6 @@
 package com.threerings.nexus.io;
 
 import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.distrib.NexusService;
 
 import com.google.gwt.user.server.Base64Utils;
 

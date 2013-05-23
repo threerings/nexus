@@ -6,12 +6,8 @@ package com.threerings.nexus.io;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.distrib.NexusService;
 
 /**

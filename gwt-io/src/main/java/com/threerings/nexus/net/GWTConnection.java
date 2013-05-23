@@ -12,8 +12,6 @@ import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.GWTIO;
 import com.threerings.nexus.io.Serializer;
 
-import static com.threerings.nexus.util.Log.log;
-
 /**
  * Implements a Nexus connection using WebSockets.
  */

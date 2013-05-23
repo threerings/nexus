@@ -6,8 +6,6 @@ package com.threerings.nexus.distrib;
 
 import com.threerings.nexus.io.Streamable;
 
-import static com.threerings.nexus.util.Log.log;
-
 /**
  * A value attribute for a Nexus object. Contains a single value, which may be updated.
  */

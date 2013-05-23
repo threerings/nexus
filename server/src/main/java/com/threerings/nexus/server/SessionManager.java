@@ -4,9 +4,6 @@
 
 package com.threerings.nexus.server;
 
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;

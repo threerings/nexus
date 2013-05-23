@@ -7,7 +7,6 @@ package com.threerings.nexus.io;
 import com.google.gwt.lang.LongLib;
 
 import com.threerings.nexus.distrib.DService;
-import com.threerings.nexus.distrib.NexusService;
 
 /**
  * Handles the encoding of streamable data into a string payload (for delivery to the server).

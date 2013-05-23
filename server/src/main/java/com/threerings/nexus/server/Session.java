@@ -4,14 +4,10 @@
 
 package com.threerings.nexus.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import react.RPromise;
 import react.Signal;
 import react.SignalView;
 import react.Slot;
@@ -19,15 +15,10 @@ import react.Try;
 
 import com.google.common.collect.Maps;
 
-import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.NexusEvent;
-import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
-import com.threerings.nexus.distrib.NexusService;
 import com.threerings.nexus.net.Downstream;
 import com.threerings.nexus.net.Upstream;
-
-import static com.threerings.nexus.util.Log.log;
 
 /**
  * Represents an active client session.

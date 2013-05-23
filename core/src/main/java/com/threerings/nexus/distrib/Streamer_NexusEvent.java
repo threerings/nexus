@@ -5,7 +5,6 @@
 package com.threerings.nexus.distrib;
 
 import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.io.Streamer;
 
 /**
  * Handles the streaming of {@link NexusEvent} and/or nested classes.
