@@ -4,7 +4,6 @@
 
 package com.threerings.nexus.io;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.gwt.junit.client.GWTTestCase;
@@ -65,10 +64,10 @@ public class GwtTestIO extends GWTTestCase
 
     protected final IOTester.Checker CHECKER = new IOTester.Checker() {
         public void assertEquals (Object expected, Object got) {
-            Assert.assertEquals(expected, got);
+            GwtTestIO.assertEquals(expected, got);
         }
         public void assertEquals (double expected, double got, double epsilon) {
-            Assert.assertEquals(expected, got, epsilon);
+            GwtTestIO.assertEquals(expected, got, epsilon);
         }
     };
 }
