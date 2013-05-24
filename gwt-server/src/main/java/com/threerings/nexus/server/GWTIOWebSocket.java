@@ -30,6 +30,7 @@ public class GWTIOWebSocket implements WebSocketListener, SessionManager.Output
     // from interface WebSocketListener
     @Override public void onWebSocketConnect (Session session) {
         _sess = session;
+        _sess.setIdleTimeout(5*60*1000L); // TODO: make configurable
         _conn = session.getRemote();
         _ipaddr = session.getRemoteAddress().toString();
         _input = _smgr.createSession(_ipaddr, this);
