@@ -151,20 +151,6 @@ public class JVMIO
                 return ts;
             }
 
-            protected final short readClassCode () {
-                short code = readShort();
-                if (code < 0) {
-                    code = (short)-code;
-                    String cname = readString();
-                    try {
-                        _classes.put(code, Class.forName(cname));
-                    } catch (Throwable t) {
-                        throw new StreamException("Read unknown class (" + cname + ")", t);
-                    }
-                }
-                return code;
-            }
-
             protected final short readResolveClassCode () {
                 short code = readShort();
                 if (code < 0) {

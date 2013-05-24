@@ -201,9 +201,8 @@ public class JVMConnectionManager
      * terminated state.
      */
     protected boolean readLoop () {
-        int eventCount; // TODO: what do we need this for?
         try {
-            eventCount = _selector.select();
+            /*eventCount =*/ _selector.select();
         } catch (IOException ioe) {
             log.warning("Failure selecting", ioe);
             return true; // TODO: terminate reader thread on too many successive errors

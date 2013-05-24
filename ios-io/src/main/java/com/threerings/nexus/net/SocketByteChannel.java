@@ -7,7 +7,6 @@ package com.threerings.nexus.net;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
-import java.nio.channels.ReadableByteChannel;
 
 import cli.System.Net.Dns;
 import cli.System.Net.IPAddress;

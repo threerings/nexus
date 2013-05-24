@@ -6,8 +6,6 @@ package com.threerings.nexus.net;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ByteChannel;
 

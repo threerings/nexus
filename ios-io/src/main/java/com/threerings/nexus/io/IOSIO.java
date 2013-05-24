@@ -10,14 +10,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -156,20 +151,6 @@ public class IOSIO
                 return ts;
             }
 
-            protected final short readClassCode () {
-                short code = readShort();
-                if (code < 0) {
-                    code = (short)-code;
-                    String cname = readString();
-                    try {
-                        _classes.put(code, Class.forName(cname));
-                    } catch (Throwable t) {
-                        throw new StreamException("Read unknown class (" + cname + ")", t);
-                    }
-                }
-                return code;
-            }
-
             protected final short readResolveClassCode () {
                 short code = readShort();
                 if (code < 0) {
@@ -189,9 +170,7 @@ public class IOSIO
                 }
 
                 if (clazz.isEnum()) {
-                    @SuppressWarnings("unchecked") Streamer<?> s =
-                        new Streamers.Streamer_Enum(clazz);
-                    _streamers.put(code, s);
+                    _streamers.put(code, Streamers.forEnum(clazz));
                 } else {
                     _streamers.put(code, findStreamer(cname));
                 }
@@ -335,7 +314,7 @@ public class IOSIO
                     code = writeUnknownClass(vclass);
                     _classes.put(vclass, code);
                     @SuppressWarnings("unchecked") Streamer<T> s =
-                        (Streamer<T>)new Streamers.Streamer_Enum(value.getClass());
+                        (Streamer<T>)Streamers.forEnum(value.getClass());
                     _streamers.put(code, s);
                     return s;
                 }

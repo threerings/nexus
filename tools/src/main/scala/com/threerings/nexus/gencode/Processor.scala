@@ -34,7 +34,7 @@ class Processor extends AbstractProcessor {
       try {
         Generator.setSourceHeader(Source.fromFile(header).mkString)
       } catch {
-        case e => _msgr.printMessage(
+        case e :Throwable => _msgr.printMessage(
           Diagnostic.Kind.WARNING, "Unable to read source header at '" + header + "': " + e)
       }
     }
