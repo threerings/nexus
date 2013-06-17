@@ -5,6 +5,7 @@
 package com.threerings.nexus.server;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -82,7 +83,7 @@ public class SessionManager
      * Shuts down this session manager and disconnects all sessions.
      */
     public void shutdown () {
-        for (Session sess : _byIP.values()) sess.disconnect();
+        for (Session sess : Lists.newArrayList(_byIP.values())) sess.disconnect();
         _byIP.clear();
     }
 
