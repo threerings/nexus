@@ -20,11 +20,7 @@ public class Entities
                                                            final Slot<E> slot) {
         return new Slot<E>() {
             @Override public void onEmit (final E event) {
-                nexus.invoke(eclass, new Action<T>() {
-                    @Override public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
+                nexus.invoke(eclass, new SlotAction<T,E>(slot, event));
             }
         };
     }
@@ -53,12 +49,20 @@ public class Entities
                                                        final Comparable<?> key, final Slot<E> slot) {
         return new Slot<E>() {
             @Override public void onEmit (final E event) {
-                nexus.invoke(eclass, key, new Action<T>() {
-                    @Override public void invoke (T entity) {
-                        slot.onEmit(event);
-                    }
-                });
+                nexus.invoke(eclass, key, new SlotAction<T,E>(slot, event));
             }
         };
+    }
+
+    protected static class SlotAction<T,E> extends Action<T> {
+        public SlotAction (Slot<E> target, E event) {
+            _target = target;
+            _event = event;
+        }
+        @Override public void invoke (T entity) {
+            _target.onEmit(_event);
+        }
+        protected final Slot<E> _target;
+        protected final E _event;
     }
 }

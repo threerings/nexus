@@ -5,9 +5,10 @@
 package com.threerings.nexus.server
 
 import java.util.concurrent.{ExecutorService, Executors}
+import scala.collection.mutable.ArrayBuffer
 
-import com.threerings.nexus.distrib.{Action, Keyed, Request, Singleton}
-import com.threerings.nexus.distrib.NexusException
+import com.threerings.nexus.distrib._
+import react._
 
 import org.junit._
 import org.junit.Assert._
@@ -72,6 +73,26 @@ class NexusTest {
 
     delay(100) // give things time to fail
     assertFalse(printed) // ensure that the print call did not execute
+  }
+
+  @Test def testRoutedWithRuntimeChecks {
+    class EntityA (nexus :Nexus, sig :SignalView[String]) extends Singleton {
+      val strs = ArrayBuffer[String]()
+      sig.connect(Entities.routed(nexus, classOf[EntityA], new Slot[String] {
+        def onEmit (str :String) = strs += str
+      }))
+    }
+
+    val signal = Signal.create[String]()
+    val ea = new EntityA(_server, signal)
+    _server.registerSingleton(ea)
+
+    // these should no longer NPE when outer this pointers are nulled out
+    signal.emit("one")
+    signal.emit("two")
+
+    delay(100) // give things time to process
+    assertEquals(Seq("one", "two"), ea.strs)
   }
 
   @Test def testIdAssignment {
