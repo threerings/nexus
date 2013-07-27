@@ -25,6 +25,7 @@ class FactoryGenTest {
       public interface TestService extends com.threerings.nexus.distrib.NexusService {
         react.RFuture<Integer> addOne (int value);
         void launchMissiles ();
+        void sendData (byte[] data);
       }
     """)
     // System.err.println(source)

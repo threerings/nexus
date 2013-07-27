@@ -298,6 +298,11 @@ object Utils
       }
     }
 
+    override def visitArray (t :ArrayType, buf :StringBuilder) {
+      visit(t.getComponentType, buf)
+      buf.append("[]")
+    }
+
     override def visitWildcard (t :WildcardType, buf :StringBuilder) {
       buf.append("?")
       if (t.getSuperBound != null) {
