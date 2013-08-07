@@ -15,6 +15,7 @@ import react.Try;
 
 import com.google.common.collect.Maps;
 
+import com.threerings.nexus.distrib.Action;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.net.Downstream;
@@ -150,7 +151,11 @@ public class Session
                 // TODO: per-session class loaders or other fancy business
                 NexusObject object = _omgr.addSubscriber(msg.addr, _subscriber);
                 _subscriptions.add(object.getId());
-                sendMessage(new Downstream.Subscribe(object));
+                _omgr.invoke(object.getId(), new Action<NexusObject>() {
+                    @Override public void invoke (NexusObject nexusObj) {
+                        sendMessage(new Downstream.Subscribe(nexusObj));
+                    }
+                });
             } catch (Throwable t) {
                 sendMessage(new Downstream.SubscribeFailure(msg.addr, t.getMessage()));
             } finally {
