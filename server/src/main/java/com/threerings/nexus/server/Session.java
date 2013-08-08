@@ -21,6 +21,8 @@ import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.net.Downstream;
 import com.threerings.nexus.net.Upstream;
 
+import static com.threerings.nexus.util.Log.log;
+
 /**
  * Represents an active client session.
  */
@@ -51,6 +53,15 @@ public class Session
         }
 
         protected void onDisconnect (Throwable cause) {
+            synchronized(this) {
+                if (_disconnecting) {
+                    log.warning("Attempted to disconnect while already disconnecting.", cause);
+                    return;
+                }
+
+                _disconnecting = true;
+            }
+
             // let interested parties know that we are audi 5000
             try {
                 SessionLocal.setCurrent(Session.this);
@@ -68,6 +79,8 @@ public class Session
             // let the session manager know that we disconnected
             _smgr.sessionDisconnected(Session.this);
         }
+
+        protected boolean _disconnecting;
     };
 
     /**
