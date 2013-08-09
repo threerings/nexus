@@ -54,7 +54,7 @@ public class Entities
         };
     }
 
-    protected static class SlotAction<T,E> extends Action<T> {
+    protected static class SlotAction<T,E> extends Action.Local<T> {
         public SlotAction (Slot<E> target, E event) {
             _target = target;
             _event = event;

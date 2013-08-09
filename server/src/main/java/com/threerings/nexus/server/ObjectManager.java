@@ -531,7 +531,7 @@ public class ObjectManager
     }
 
     protected <T> void invoke (final Binding<?> bind, final Action<T> action) {
-        if (_safetyChecks) defangAction(action);
+        if (_safetyChecks && !(action instanceof Action.Local<?>)) defangAction(action);
 
         bind.context.postOp(new Runnable() {
             public void run () {
@@ -542,7 +542,7 @@ public class ObjectManager
     }
 
     protected <T,R> Future<R> invoke (final Binding<?> bind, final Request<T,R> request) {
-        if (_safetyChecks) defangAction(request);
+        if (_safetyChecks && !(request instanceof Request.Local<?,?>)) defangAction(request);
 
         // post the request execution as a future task
         FutureTask<R> task = new FutureTask<R>(new Callable<R>() {

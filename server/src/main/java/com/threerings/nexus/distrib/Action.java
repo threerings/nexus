@@ -14,6 +14,14 @@ import static com.threerings.nexus.util.Log.log;
 // TODO: @FunctionalInterface
 public abstract class Action<E>
 {
+    /** A variant of {@link Action} that can be used when you know that the action will not cross
+     * server boundaries. This allows things to be referenced from the enclosing scope <em>when
+     * that is known to be thread safe</em>. Remember that actions likely execute in a different
+     * thread context than the one from which they were initiated, so one must be careful not to
+     * use things from an enclosing scope that will cause race conditions. */
+    public static abstract class Local<E> extends Action<E> {
+    }
+
     /**
      * Called with the requested entity on the thread appropriate for said entity.
      */

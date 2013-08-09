@@ -159,15 +159,14 @@ public class Session
 
     protected final Upstream.Handler _handler = new Upstream.Handler() {
         public void onSubscribe (Upstream.Subscribe msg) {
-            final Session self = Session.this;
-            SessionLocal.setCurrent(self);
+            SessionLocal.setCurrent(Session.this);
             try {
                 // TODO: per-session class loaders or other fancy business
                 NexusObject object = _omgr.addSubscriber(msg.addr, _subscriber);
                 _subscriptions.add(object.getId());
-                _omgr.invoke(object.getId(), new Action<NexusObject>() {
+                _omgr.invoke(object.getId(), new Action.Local<NexusObject>() {
                     @Override public void invoke (NexusObject nexusObj) {
-                        self.sendMessage(new Downstream.Subscribe(nexusObj));
+                        sendMessage(new Downstream.Subscribe(nexusObj));
                     }
                 });
             } catch (Throwable t) {
