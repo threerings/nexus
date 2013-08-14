@@ -23,8 +23,7 @@ import com.threerings.nexus.io.FrameReader;
 import com.threerings.nexus.io.FramingOutputStream;
 import com.threerings.nexus.io.JVMIO;
 import com.threerings.nexus.io.Streamable;
-
-import static com.threerings.nexus.util.Log.log;
+import com.threerings.nexus.util.Log;
 
 /**
  * Implements a Nexus connection using JVM I/O.
@@ -37,8 +36,9 @@ public class JVMConnection extends Connection
      *
      * @param callback will be notified on connection completion, or failure.
      */
-    public JVMConnection (String host, int port, Executor exec, RPromise<Connection> callback) {
-        super(host);
+    public JVMConnection (Log.Logger log, String host, int port, Executor exec,
+                          RPromise<Connection> callback) {
+        super(log, host);
         _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
         _reader = new Reader(host, port, callback);
@@ -94,11 +94,11 @@ public class JVMConnection extends Connection
         onClose(cause);
     }
 
-    protected static void closeChannel (SocketChannel channel) {
+    protected void closeChannel (SocketChannel channel) {
         try {
             channel.close();
         } catch (IOException ioe) {
-            log.warning("Error closing socket", ioe);
+            _log.warning("Error closing socket", ioe);
         }
     }
 
@@ -132,7 +132,7 @@ public class JVMConnection extends Connection
                 connectionEstablished(_channel);
 
                 // let our callback know that we're ready to go
-                log.info("Established server connection", "addr", addr);
+                _log.info("Established server connection", "addr", addr, "port", _port);
                 _exec.execute(new Runnable() {
                     public void run () {
                         _callback.succeed(JVMConnection.this);
@@ -173,7 +173,7 @@ public class JVMConnection extends Connection
                 connectionClosed();
 
             } catch (Throwable t) {
-                log.warning("Error reading network data", t);
+                _log.warning("Error reading network data", t);
                 connectionFailed(t);
             }
         }
@@ -201,7 +201,7 @@ public class JVMConnection extends Connection
                 try {
                     msg = _outq.take();
                 } catch (InterruptedException ie) {
-                    log.warning("Writer thread interrupted?");
+                    _log.warning("Writer thread interrupted?");
                     continue;
                 }
                 if (msg == TERMINATE) {
@@ -219,12 +219,12 @@ public class JVMConnection extends Connection
                     ByteBuffer buffer = _fout.frameAndReturnBuffer();
                     int wrote = _channel.write(buffer);
                     if (wrote != buffer.limit()) {
-                        log.warning("Failed to write complete message!", "msg", msg,
-                                    "size", buffer.limit(), "wrote", wrote);
+                        _log.warning("Failed to write complete message!", "msg", msg,
+                                     "size", buffer.limit(), "wrote", wrote);
                     }
 
                 } catch (Throwable t) {
-                    log.warning("Error writing network data", "msg", msg, t);
+                    _log.warning("Error writing network data", "msg", msg, t);
                     connectionFailed(t);
                     break;
                 }
@@ -240,16 +240,16 @@ public class JVMConnection extends Connection
     }
 
     /** The executor used to dispatch events. */
-    protected Executor _exec;
+    protected final Executor _exec;
 
     /** A thread that handles reading incoming network data. */
-    protected Reader _reader;
+    protected final Reader _reader;
 
     /** A thread that handles writing outgoing network data. */
     protected Writer _writer;
 
     /** The message queue that holds our outgoing messages. */
-    protected BlockingQueue<Upstream> _outq = new LinkedBlockingQueue<Upstream>();
+    protected final BlockingQueue<Upstream> _outq = new LinkedBlockingQueue<Upstream>();
 
     /** A marker instance used to terminate the writer thread. */
     protected static final Upstream TERMINATE = new Upstream() {

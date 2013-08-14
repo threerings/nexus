@@ -11,6 +11,7 @@ import react.RPromise;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.io.GWTIO;
 import com.threerings.nexus.io.Serializer;
+import com.threerings.nexus.util.Log;
 
 /**
  * Implements a Nexus connection using WebSockets.
@@ -23,7 +24,7 @@ public class GWTConnection extends Connection
      */
     public GWTConnection (String host, int port, String path, Serializer szer,
                           RPromise<Connection> callback) {
-        super(host);
+        super(Log.log, host);
         _szer = szer;
         _callback = callback;
         wsConnect("ws://" + host + ":" + port + path);

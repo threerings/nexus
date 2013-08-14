@@ -49,6 +49,10 @@ public class GWTClient extends NexusClient
         _szer = szer;
     }
 
+    @Override protected int port () {
+        return _port;
+    }
+
     @Override protected void connect (String host, RPromise<Connection> callback) {
         new GWTConnection(host, _port, _path, _szer, callback);
     }
@@ -58,6 +62,9 @@ public class GWTClient extends NexusClient
     protected final Serializer _szer;
 
     protected static final Log.Logger GWT_LOGGER = new Log.Logger() {
+        @Override public void temp (String message, Object... args) {
+            format(null, message, args);
+        }
         @Override public void info (String message, Object... args) {
             if (!_warnOnly) {
                 format(null, message, args);
@@ -73,8 +80,8 @@ public class GWTClient extends NexusClient
                 GWT.log(message, cause);
             }
         }
-        @Override public void setWarnOnly () {
-            _warnOnly = true;
+        @Override public void setWarnOnly (boolean warnOnly) {
+            _warnOnly = warnOnly;
         }
         protected boolean _warnOnly;
     };

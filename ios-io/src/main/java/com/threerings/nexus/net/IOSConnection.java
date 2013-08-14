@@ -20,8 +20,7 @@ import com.threerings.nexus.io.FrameReader;
 import com.threerings.nexus.io.FramingOutputStream;
 import com.threerings.nexus.io.IOSIO;
 import com.threerings.nexus.io.Streamable;
-
-import static com.threerings.nexus.util.Log.log;
+import com.threerings.nexus.util.Log;
 
 /**
  * Implements a Nexus connection using IOS I/O.
@@ -35,7 +34,7 @@ public class IOSConnection extends Connection
      * @param callback will be notified on connection completion, or failure.
      */
     public IOSConnection (String host, int port, Executor exec, RPromise<Connection> callback) {
-        super(host);
+        super(Log.log, host);
         _exec = exec;
         // start the reader, which will connect and, if successful, create and start the writer
         _reader = new Reader(host, port, callback);
@@ -77,7 +76,7 @@ public class IOSConnection extends Connection
      * Called by the reader when our socket is fully closed.
      */
     protected void connectionClosed () {
-        log.info("Connection closed. TODO!");
+        _log.info("Connection closed. TODO!");
         // TODO: report to our client (or observer) that we were shutdown
     }
 
@@ -91,11 +90,11 @@ public class IOSConnection extends Connection
         // TODO: report to our client (or observer) that we failed
     }
 
-    protected static void closeChannel (ByteChannel channel) {
+    protected void closeChannel (ByteChannel channel) {
         try {
             channel.close();
         } catch (IOException ioe) {
-            log.warning("Error closing socket", ioe);
+            _log.warning("Error closing socket", ioe);
         }
     }
 
@@ -126,7 +125,7 @@ public class IOSConnection extends Connection
                 connectionEstablished(_channel);
 
                 // let our callback know that we're ready to go
-                log.info("Established server connection", "host", _host, "port", _port);
+                _log.info("Established server connection", "host", _host, "port", _port);
                 _callback.succeed(IOSConnection.this);
 
             } catch (IOException ioe) {
@@ -157,7 +156,7 @@ public class IOSConnection extends Connection
                 connectionClosed();
 
             } catch (Throwable t) {
-                log.warning("Error reading network data", t);
+                _log.warning("Error reading network data", t);
                 connectionFailed(t);
             }
         }
@@ -185,7 +184,7 @@ public class IOSConnection extends Connection
                 try {
                     msg = _outq.take();
                 } catch (InterruptedException ie) {
-                    log.warning("Writer thread interrupted?");
+                    _log.warning("Writer thread interrupted?");
                     continue;
                 }
                 if (msg == TERMINATE) {
@@ -203,12 +202,12 @@ public class IOSConnection extends Connection
                     ByteBuffer buffer = _fout.frameAndReturnBuffer();
                     int wrote = _channel.write(buffer);
                     if (wrote != buffer.limit()) {
-                        log.warning("Failed to write complete message!", "msg", msg,
-                                    "size", buffer.limit(), "wrote", wrote);
+                        _log.warning("Failed to write complete message!", "msg", msg,
+                                     "size", buffer.limit(), "wrote", wrote);
                     }
 
                 } catch (Throwable t) {
-                    log.warning("Error writing network data", "msg", msg, t);
+                    _log.warning("Error writing network data", "msg", msg, t);
                     connectionFailed(t);
                     break;
                 }

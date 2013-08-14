@@ -55,6 +55,10 @@ public class IOSClient extends NexusClient
         Log.log = IOS_LOGGER;
     }
 
+    @Override protected int port () {
+        return _port;
+    }
+
     @Override protected void connect (String host, RPromise<Connection> callback) {
         new IOSConnection(host, _port, _exec, callback);
     }
@@ -63,6 +67,13 @@ public class IOSClient extends NexusClient
     protected int _port;
 
     protected static final Log.Logger IOS_LOGGER = new Log.Logger() {
+        @Override public void setWarnOnly (boolean warnOnly) {
+            _warnOnly = warnOnly;
+        }
+
+        @Override public void temp (String message, Object... args) {
+            format("TEMP: ", message, args);
+        }
         @Override public void info (String message, Object... args) {
             if (!_warnOnly) {
                 format("", message, args);
@@ -71,7 +82,8 @@ public class IOSClient extends NexusClient
         @Override public void warning (String message, Object... args) {
             format("WARN: ", message, args);
         }
-        @Override public void log (Object level, String message, Throwable cause) {
+
+        @Override protected void log (Object level, String message, Throwable cause) {
             Console.WriteLine(level + message);
             if (cause != null) {
                 StringWriter out = new StringWriter();
@@ -79,9 +91,7 @@ public class IOSClient extends NexusClient
                 Console.Write(out.toString());
             }
         }
-        @Override public void setWarnOnly () {
-            _warnOnly = true;
-        }
+
         protected boolean _warnOnly;
     };
 }
