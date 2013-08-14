@@ -46,6 +46,8 @@ public class ObjectManager
 {
     /** An interface implemented by sessions, which must forward object events to clients. */
     public interface Subscriber {
+        /** Called (on `object`'s thread context) once the subscription has been added. */
+        void onSubscribed (NexusObject object);
         /** Notifies the subscriber of an event which must be forwarded. */
         void forwardEvent (NexusEvent event);
         /** Notifies the subscriber that the specified object was cleared/removed. */
@@ -313,7 +315,7 @@ public class ObjectManager
      * @throws NexusException if the requested object does not exist, or if the instance registered
      * at the address is not a NexusObject, or if the request fails due to access control.
      */
-    public <T extends NexusObject> T addSubscriber (Address<T> addr, Subscriber sub) {
+    public <T extends NexusObject> void addSubscriber (Address<T> addr, final Subscriber sub) {
         Binding<?> bind;
         if (addr instanceof Address.OfKeyed) {
             Address.OfKeyed<?> kaddr = (Address.OfKeyed<?>)addr;
@@ -329,9 +331,15 @@ public class ObjectManager
         }
 
         @SuppressWarnings("unchecked") T target = (T)bind.entity();
-        // TODO: access control
-        addSubscriber(target, sub);
-        return target;
+        // TODO: access control (the calling session is bound during this call, so we need to
+        // access control here or find some other way of passing the session along if we intend to
+        // move over to the object's thread)
+        invoke(target.getId(), new Action.Local<NexusObject>() {
+            @Override public void invoke (NexusObject object) {
+                addSubscriber(object, sub);
+                sub.onSubscribed(object);
+            }
+        });
     }
 
     /**
@@ -367,7 +375,7 @@ public class ObjectManager
         synchronized (_subscribers) {
             subs = _subscribers.get(event.targetId);
         }
-        invoke(event.targetId, new Action<NexusObject>() {
+        invoke(event.targetId, new Action.Local<NexusObject>() {
             @Override public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
                 try {
@@ -378,7 +386,8 @@ public class ObjectManager
                     SessionLocal.clearCurrent();
                 }
 
-                // forward the event to any subscribers
+                // forward the event to any subscribers (TODO: do we need to do this on the
+                // object's thread? why not do it on the thread of whomever called dispatchEvent?)
                 if (subs != null) {
                     for (Subscriber sub : subs) {
                         sub.forwardEvent(event);
@@ -398,12 +407,11 @@ public class ObjectManager
     public <R> void dispatchCall (int objId, final short attrIdx, final short methId,
                                   final Object[] args, final Session source,
                                   final Slot<Try<R>> callback) {
-        invoke(objId, new Action<NexusObject>() {
+        invoke(objId, new Action.Local<NexusObject>() {
             @Override public void invoke (NexusObject object) {
                 SessionLocal.setCurrent(source);
                 try {
                     DistribUtil.dispatchCall(object, attrIdx, methId, args, callback);
-
                 } finally {
                     SessionLocal.clearCurrent();
                 }
