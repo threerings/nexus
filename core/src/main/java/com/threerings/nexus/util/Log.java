@@ -11,6 +11,10 @@ public class Log
 {
     /** A level of indirection that allows us to plug in Java or GWT-based logging. */
     public static abstract class Logger {
+        /** Logs a temp/debug message, with the supplied arguments and optional Throwable cause in
+         * final position. If you see a temp log in committed code, you can delete it. */
+        public abstract void temp (String message, Object... args);
+
         /** Logs an info level message, with the supplied arguments and optional Throwable cause in
          * final position. For example:
          * {@code log.info("Thing happened", "info", data, "also", moredata);} */
@@ -22,7 +26,10 @@ public class Log
         public abstract void warning (String message, Object... args);
 
         /** Disables info logging, shows only warnings and above. */
-        public abstract void setWarnOnly ();
+        public abstract void setWarnOnly (boolean warnOnly);
+
+        /** @deprecated Use {@link #setWarnOnly(boolean)}. */
+        @Deprecated public void setWarnOnly () { setWarnOnly(true); }
 
         protected void format (Object level, String message, Object... args) {
             StringBuilder sb = new StringBuilder();
@@ -41,6 +48,10 @@ public class Log
             _impl = java.util.logging.Logger.getLogger(name);
         }
 
+        @Override public void temp (String message, Object... args) {
+            format(java.util.logging.Level.INFO, message, args);
+        }
+
         @Override public void info (String message, Object... args) {
             if (_impl.isLoggable(java.util.logging.Level.INFO)) {
                 format(java.util.logging.Level.INFO, message, args);
@@ -53,8 +64,9 @@ public class Log
             }
         }
 
-        @Override public void setWarnOnly () {
-            _impl.setLevel(java.util.logging.Level.WARNING);
+        @Override public void setWarnOnly (boolean warnOnly) {
+            _impl.setLevel(warnOnly ? java.util.logging.Level.WARNING :
+                           java.util.logging.Level.INFO);
         }
 
         @Override protected void log (Object level, String message, Throwable cause) {
@@ -66,6 +78,29 @@ public class Log
 
     /** Dispatch log messages through this instance. */
     public static Logger log = new JavaLogger("nexus");
+
+    // /** Logs to stdout, useful for testing. */
+    // public static Logger log = new Logger {
+    //     @Override public void temp (String message, Object... args) {
+    //         format("*", message, args);
+    //     }
+    //     @Override public void info (String message, Object... args) {
+    //         if (!_warnOnly) {
+    //             format(".", message, args);
+    //         }
+    //     }
+    //     @Override public void warning (String message, Object... args) {
+    //         format("!", message, args);
+    //     }
+    //     @Override public void setWarnOnly (boolean warnOnly) {
+    //         _warnOnly = warnOnly;
+    //     }
+    //     @Override protected synchronized void log (Object level, String message, Throwable exn) {
+    //         System.out.println(level + " " + message);
+    //         if (cause != null) exn.printStackTrace(System.out);
+    //     }
+    //     protected boolean _warnOnly;
+    // }
 
     /** Formats the supplied message for logging. */
     public static String format (String message, Object... args) {
