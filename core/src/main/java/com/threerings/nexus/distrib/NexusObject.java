@@ -67,6 +67,11 @@ public abstract class NexusObject
         for (DAttribute attr : _attrs) attr.writeContents(out);
     }
 
+    @Override
+    public String toString () {
+        return getClass().getName() + "@" + _id;
+    }
+
     /**
      * Initializes this object with its id and event sink. This takes place when the object is
      * registered with dispatcher on its originating server, and when it is read off the network on
