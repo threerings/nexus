@@ -17,8 +17,7 @@ import com.threerings.nexus.distrib.Address;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
 import com.threerings.nexus.net.Connection;
-
-import static com.threerings.nexus.util.Log.log;
+import com.threerings.nexus.util.Log;
 
 /**
  * Manages connections to Nexus servers. Provides access to distributed objects and services.
@@ -65,26 +64,35 @@ public abstract class NexusClient
         // TODO
     }
 
+    /** Returns the port on which we connect to servers. */
+    protected abstract int port ();
+
+    /** Returns the logger used by this client and its associated moving parts. */
+    protected Log.Logger log () {
+        return Log.log;
+    }
+
     /**
      * Establishes a connection with the supplied host (if one does not already exist), and makes
      * it available to the caller via a future. Ensures thread-safety in the process.
      */
     protected synchronized RFuture<Connection> connection (final String host) {
         RPromise<Connection> conn = _conns.get(host);
+        final String addr = host + ":" + port();
         if (conn == null) {
             _conns.put(host, conn = RPromise.create());
             final Slot<Throwable> remover = new Slot<Throwable>() {
                 public void onEmit (Throwable error) {
                     _conns.remove(host);
-                    if (error == null) log.info("Connection to " + host + " closed.");
-                    else log.info("Connection to " + host + " failed.", "error", error);
+                    if (error == null) log().info("Connection to " + addr + " closed.");
+                    else log().info("Connection to " + addr + " failed.", "error", error);
                 }
             };
             conn.onFailure(remover).onSuccess(new Slot<Connection>() {
                 // listen for connection close and remove our connection then
                 public void onEmit (Connection conn) { conn.onClose.connect(remover); }
             });
-            log.info("Connecting to " + host);
+            log().info("Connecting to " + addr);
             connect(host, conn);
         }
         return conn;

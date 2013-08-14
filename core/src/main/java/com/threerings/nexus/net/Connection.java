@@ -18,9 +18,8 @@ import com.threerings.nexus.distrib.EventSink;
 import com.threerings.nexus.distrib.NexusEvent;
 import com.threerings.nexus.distrib.NexusException;
 import com.threerings.nexus.distrib.NexusObject;
+import com.threerings.nexus.util.Log;
 import com.threerings.nexus.util.Util;
-
-import static com.threerings.nexus.util.Log.log;
 
 /**
  * Manages a connection to a particular server.
@@ -50,7 +49,7 @@ public abstract class Connection
      */
     public void unsubscribe (int id) {
         if (_objects.remove(id) == null) {
-            log.warning("Requested to unsubscribe from unknown object", "id", id);
+            _log.warning("Requested to unsubscribe from unknown object", "id", id);
             return;
         }
 
@@ -102,7 +101,7 @@ public abstract class Connection
         @SuppressWarnings("unchecked") RPromise<NexusObject> promise =
             (RPromise<NexusObject>)_penders.remove(addr);
         if (promise == null) {
-            log.warning("No one pending on object?", "addr", addr);
+            _log.warning("No one pending on object?", "addr", addr);
             send(new Upstream.Unsubscribe(msg.object.getId())); // clear our subscription
             return;
         }
@@ -118,23 +117,27 @@ public abstract class Connection
     public void onSubscribeFailure (Downstream.SubscribeFailure msg) {
         RPromise<?> promise = _penders.remove(msg.addr);
         if (promise != null) promise.fail(new NexusException(msg.cause));
-        else log.warning("No one pending on failed subscribe?", "addr", msg.addr, "err", msg.cause);
+        else _log.warning("No one pending on failed subscribe?", "addr", msg.addr, "err", msg.cause);
     }
 
     // from interface Downstream.Handler
     public void onDispatchEvent (final Downstream.DispatchEvent msg) {
         final NexusObject target = _objects.get(msg.event.targetId);
         if (target == null) {
-            log.warning("Missing target of event", "event", msg.event);
+            _log.warning("Missing target of event", "event", msg.event);
             return;
         }
-        msg.event.applyTo(target);
+        try {
+            msg.event.applyTo(target);
+        } catch (Throwable err) {
+            _log.warning("Event dispatch failure", "target", target, "msg", msg, err);
+        }
     }
 
     // from interface Downstream.Handler
     public void onServiceResponse (Downstream.ServiceResponse msg) {
         RPromise<?> promise = _calls.remove(msg.callId);
-        if (promise == null) log.warning("Received service response for unknown call", "msg", msg);
+        if (promise == null) _log.warning("Received service response for unknown call", "msg", msg);
         else {
             @SuppressWarnings("unchecked") RPromise<Object> pr = (RPromise<Object>)promise;
             pr.succeed(msg.result);
@@ -145,7 +148,7 @@ public abstract class Connection
     public void onServiceFailure (Downstream.ServiceFailure msg) {
         RPromise<?> promise = _calls.remove(msg.callId);
         if (promise == null) {
-            log.warning("Received service failure for unknown call", "msg", msg);
+            _log.warning("Received service failure for unknown call", "msg", msg);
             return;
         }
         promise.fail(new NexusException(msg.cause));
@@ -155,13 +158,14 @@ public abstract class Connection
     public void onObjectCleared (Downstream.ObjectCleared msg) {
         final NexusObject target = _objects.remove(msg.id);
         if (target == null) {
-            log.warning("Unknown object cleared", "id", msg.id);
+            _log.warning("Unknown object cleared", "id", msg.id);
             return;
         }
         target.onLost.emit(null);
     }
 
-    protected Connection (String host) {
+    protected Connection (Log.Logger log, String host) {
+        _log = log;
         _host = host;
     }
 
@@ -204,14 +208,14 @@ public abstract class Connection
 
                 // notify any in-flight service calls that they failed
                 if (!_calls.isEmpty()) {
-                    log.info("Clearing " + _calls.size() + " calls.");
+                    _log.info("Clearing " + _calls.size() + " calls.");
                     for (RPromise<?> pr : _calls.values()) pr.fail(perror);
                     _calls.clear();
                 }
 
                 // notify any dangling objects that they were lost
                 if (!_objects.isEmpty()) {
-                    log.info("Clearing " + _objects.size() + " objects.");
+                    _log.info("Clearing " + _objects.size() + " objects.");
                     for (NexusObject obj : _objects.values()) Util.emit(obj.onLost, perror);
                     _objects.clear();
                 }
@@ -221,6 +225,9 @@ public abstract class Connection
             }
         });
     }
+
+    /** The logger to which we send log messages. */
+    protected final Log.Logger _log;
 
     /** The name of the host with which we're communicating. */
     protected final String _host;
