@@ -386,8 +386,11 @@ public class ObjectManager
                     SessionLocal.clearCurrent();
                 }
 
-                // forward the event to any subscribers (TODO: do we need to do this on the
-                // object's thread? why not do it on the thread of whomever called dispatchEvent?)
+                // forward the event to any subscribers (we do this on the object's thread to
+                // interact nicely with the subscription process, which also takes place on the
+                // object's thread; by ensuring that both things are done on the object's thread,
+                // we avoid opening a window in which events could be sent to a client that was in
+                // the process of subscribing to an object but had not yet received its response)
                 if (subs != null) {
                     for (Subscriber sub : subs) {
                         sub.forwardEvent(event);
