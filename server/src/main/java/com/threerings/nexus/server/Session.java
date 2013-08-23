@@ -175,7 +175,9 @@ public class Session
 
         public void onUnsubscribe (Upstream.Unsubscribe msg) {
             _subscriptions.remove(msg.id);
-            _omgr.clearSubscriber(msg.id, _subscriber);
+            if (_omgr.clearSubscriber(msg.id, _subscriber)) {
+                sendMessage(new Downstream.ObjectCleared(msg.id));
+            }
         }
 
         public void onPostEvent (Upstream.PostEvent msg) {

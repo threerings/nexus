@@ -354,16 +354,15 @@ public class ObjectManager
     /**
      * Requests that the supplied subscriber be removed from the object with the specified id.
      */
-    public void clearSubscriber (int id, Subscriber sub) {
+    public boolean clearSubscriber (int id, Subscriber sub) {
         Set<Subscriber> subs;
         synchronized (_subscribers) {
             subs = _subscribers.get(id);
         }
-        if (subs != null) {
-            if (!subs.remove(sub)) {
-                log.warning("Requested to remove unknown subscriber", "id", id, "sub", sub);
-            }
-        } // otherwise, the object was probably already destroyed
+        if (subs == null) return false; // the object was probably already destroyed
+        if (subs.remove(sub)) return true;
+        log.warning("Requested to remove unknown subscriber", "id", id, "sub", sub);
+        return false;
     }
 
     /**

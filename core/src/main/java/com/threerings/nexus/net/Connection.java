@@ -6,7 +6,9 @@ package com.threerings.nexus.net;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import react.RFuture;
 import react.RPromise;
@@ -52,10 +54,11 @@ public abstract class Connection
             _log.warning("Requested to unsubscribe from unknown object", "id", id);
             return;
         }
-
-        // TODO: make a note that we just unsubscribed, and so not to warn about events that arrive
-        // for this object in the near future (the server doesn't yet know that we've unsubscribed)
         send(new Upstream.Unsubscribe(id));
+        // note that this unsubscription is pending; the server will send an object cleared
+        // notification once the unsubscribe is processed, at which point we'll start issuing
+        // warnings again if we get events for this object id (since we shouldn't at that point)
+        _dying.add(id);
     }
 
     /**
@@ -124,7 +127,9 @@ public abstract class Connection
     public void onDispatchEvent (final Downstream.DispatchEvent msg) {
         final NexusObject target = _objects.get(msg.event.targetId);
         if (target == null) {
-            _log.warning("Missing target of event", "event", msg.event);
+            if (!_dying.contains(msg.event.targetId)) {
+                _log.warning("Missing target of event", "event", msg.event);
+            }
             return;
         }
         try {
@@ -156,9 +161,10 @@ public abstract class Connection
 
     // from interface Downstream.Handler
     public void onObjectCleared (Downstream.ObjectCleared msg) {
-        final NexusObject target = _objects.remove(msg.id);
+        boolean wasDying = _dying.remove(msg.id);
+        NexusObject target = _objects.remove(msg.id);
         if (target == null) {
-            _log.warning("Unknown object cleared", "id", msg.id);
+            if (!wasDying) _log.warning("Unknown object cleared", "id", msg.id);
             return;
         }
         target.onLost.emit(null);
@@ -240,4 +246,7 @@ public abstract class Connection
 
     /** Tracks currently subscribed objects. */
     protected final Map<Integer, NexusObject> _objects = new HashMap<Integer, NexusObject>();
+
+    /** Tracks objects that are in the process of being unsubscribed. */
+    protected final Set<Integer> _dying = new HashSet<Integer>();
 }
