@@ -21,10 +21,6 @@ import com.google.common.collect.Maps;
 
 import com.threerings.nexus.distrib.DService;
 import com.threerings.nexus.distrib.NexusService;
-import com.threerings.nexus.io.StreamException;
-import com.threerings.nexus.io.Streamable;
-import com.threerings.nexus.io.Streamer;
-import com.threerings.nexus.io.Streamers;
 
 /**
  * Provides {@link Streamable#Input} and {@link Streamable#Output} using reflection and I/O support
@@ -128,7 +124,8 @@ public class IOSIO
                     String rname = makeAuxName(readString(), "Factory");
                     try {
                         _services.put(code, (DService.Factory<?>)Class.forName(rname).newInstance());
-                    } catch (Exception e) {
+                    // IOS turns exceptions into errors, catch Throwables to catch them all.
+                    } catch (Throwable e) {
                         throw new StreamException(
                             "Error instantiating service factory " + rname, e);
                     }
@@ -372,7 +369,8 @@ public class IOSIO
         String sname = makeAuxName(cname, "Streamer");
         try {
             return (Streamer<?>)Class.forName(sname).newInstance();
-        } catch (Exception e) {
+        // IOS turns exceptions into errors, catch Throwables to catch them all.
+        } catch (Throwable e) {
             throw new StreamException("Error instantiating streamer " + sname, e);
         }
     }
