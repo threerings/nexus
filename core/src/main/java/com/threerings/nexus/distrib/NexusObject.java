@@ -52,6 +52,15 @@ public abstract class NexusObject
     }
 
     /**
+     * Returns the address of this object, casted to an address for the supplied leaf type.
+     */
+    public <T extends NexusObject> Address<T> getAddress (Class<T> leafType) {
+        @SuppressWarnings("unchecked")
+        Address<T> addr = (Address<T>)getAddress();
+        return addr;
+    }
+
+    /**
      * Reads the contents of this object from the supplied input.
      */
     public void readContents (Streamable.Input in) {
