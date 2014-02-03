@@ -37,7 +37,8 @@ public abstract class NexusObject
     }
 
     /**
-     * Returns the address of this object.
+     * Returns the address of this object. You almost certainly don't want to use this, because it
+     * cannot be properly typed. Instead use {@link Address#of}.
      */
     public Address<?> getAddress () {
         if (this instanceof Keyed) {
@@ -49,15 +50,6 @@ public abstract class NexusObject
         } else {
             return Address.create(_sink.getHost(), getId());
         }
-    }
-
-    /**
-     * Returns the address of this object, casted to an address for the supplied leaf type.
-     */
-    public <T extends NexusObject> Address<T> getAddress (Class<T> leafType) {
-        @SuppressWarnings("unchecked")
-        Address<T> addr = (Address<T>)getAddress();
-        return addr;
     }
 
     /**
