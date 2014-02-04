@@ -13,7 +13,7 @@ public interface DAttribute
 {
     /** A base class for all events associated with an attribute. */
     abstract class Event extends NexusEvent {
-        /** The index of the attribute targetted by this event. */
+        /** The index of the attribute targeted by this event. */
         public final short index;
 
         protected Event (int targetId, short index) {
