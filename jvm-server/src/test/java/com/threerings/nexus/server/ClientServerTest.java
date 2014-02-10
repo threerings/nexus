@@ -66,7 +66,7 @@ public class ClientServerTest
 
     @Before
     public void suppressLogging () {
-        log.setWarnOnly();
+        log.setWarnOnly(true);
     }
 
     @Test
@@ -130,11 +130,11 @@ public class ClientServerTest
         conmgr.start();
 
         // create a client connection to said server
-        NexusClient client = JVMClient.create(Executors.newSingleThreadExecutor(), 1234);
+        NexusClient client = new JVMClient(Executors.newSingleThreadExecutor(), 1234);
 
         // register a test object
         TestObject test = new TestObject(TestUtil.createTestServiceAttr());
-        server.registerSingleton(test);
+        server.register(TestObject.class, test);
 
         // initialize the action
         action.init(server, client, test);

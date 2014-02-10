@@ -14,58 +14,43 @@ import react.RMap;
  * The main source for Nexus services. See
  * <a href="https://github.com/threerings/nexus/wiki/ServerConcepts">this documentation</a> for a
  * detailed explanation of entities and execution contexts.
- *
- * <p><b>Note:</b> {@link Keyed} and {@link Singleton} entities are registered and referenced by
- * their concrete class. However, some special handling is performed to allow for more natural
- * handling of subclasses. Specifically, the class that actually <em>declares</em> that it
- * implements {@code Keyed} or {@code Singleton} is the class under which a keyed or singleton
- * entity will be registered, and that class token must be used to reference the entity. For
- * example:
- * <pre>{@code
- * class BaseKeyed implements Keyed {
- *   public final int id;
- *   public BasedKeyed (int id) {
- *     this.id = id;
- *   }
- *   public Comparable<?> getKey () {
- *     return id;
- *   }
- * }
- *
- * class SpecializedKeyed extends BaseKeyed {
- *   public SpecializedKeyed (int id) {
- *     super(id);
- *   }
- * }
- *
- * nexus.register(new SpecializedKeyed(15));
- * nexus.invoke(BaseKeyed.class, 15, new Action<BaseKeyed>() {
- *   public void invoke (BaseKeyed entity) {
- *     // entity will be the instance of SpecializedKeyed
- *   }
- * });
- *
- * // the same holds for singletons, though that is a rarer use case
- * }</pre>
  */
 public interface Nexus
 {
     /**
+     * Provides direct access to the execution context of an entity that resides on this node. One
+     * can use this to invoke actions and requests on an entity's context without having to look
+     * the entity up using its class token (and key in the case of keyed entities). A context is
+     * also used when registering an entity as a child of another entity, such that the child
+     * entity's actions and requests are processed in the parent entity's context.
+     */
+    interface Context<E> {
+        /** Invokes an action in this entity context. */
+        void invoke (Action<? super E> action);
+
+        /** Invokes a request in this entity context.
+         * @return a future which will eventually contain the result, or failure. */
+        <R> Future<R> requestF (Request<? super E,R> request);
+
+        /** Invokes a request in this entity context. */
+        <R> R request (Request<? super E,R> request);
+    }
+
+    /**
      * Registers an anonymous object with the Nexus in its own execution context.
+     *
+     * @return the exection context created for the registered object.
      */
-    void register (NexusObject object);
+    <N extends NexusObject> Context<N> register (N object);
 
     /**
-     * Registers an object as a child of the supplied singleton entity. The child and parent will
-     * share the same execution context.
+     * Registers an object as a child of the specified parent entity. The child will share the
+     * parent's execution context rather than having an execution context of its own.
+     *
+     * @param parent the context of the parent entity, obtained via {@link #resolve(Class)} or
+     * {@link #resolve(Class,Comparable)}.
      */
-    void register (NexusObject child, Singleton parent);
-
-    /**
-     * Registers an object as a child of the supplied keyed entity. The child and entity will share
-     * the same execution context.
-     */
-    void register (NexusObject child, Keyed parent);
+    void register (NexusObject child, Context<?> parent);
 
     /**
      * Registers a singleton (object or non-object) entity with the Nexus. This entity will only be
@@ -73,29 +58,56 @@ public interface Nexus
      * context via, for example, {@link #invoke(Class,Action)}. If the singleton is also a {@link
      * NexusObject}, clients can subscribe to the object using its class.
      *
+     * @param sclass the class token used to identify this singleton. This will usually be the
+     * singleton's class, but could be a superclass if the caller desires. This <em>same</em> class
+     * token must be used when calling {@link #invoke(Class,Action)}.
+     * @param entity the singleton entity to be registered.
+     *
+     * @return the execution context created for the registered singleton.
      * @throws NexusException if an entity is already mapped for this singleton type.
      */
-    void registerSingleton (Singleton entity);
+    <S extends Singleton> Context<S> register (Class<? super S> sclass, S entity);
 
     /**
-     * Registers a singleton as a child of the supplied parent singleton entity. The child and
-     * parent will share the same execution context.
+     * Registers a singleton as a child of the specified parent entity. The child will share the
+     * parent's execution context rather than having an execution context of its own.
+     *
+     * @param sclass the class token used to identify this singleton. This will usually be the
+     * singleton's class, but could be a superclass if the caller desires. This <em>same</em> class
+     * token must be used when calling {@link #invoke(Class,Action)}.
+     * @param child the singleton entity to be registered.
+     * @param parent the context of the parent entity, obtained via {@link #resolve(Class)} or
+     * {@link #resolve(Class,Comparable)}.
      */
-    void registerSingleton (Singleton child, Singleton parent);
+    <S extends Singleton> void register (Class<? super S> cclass, S child, Context<?> parent);
 
     /**
      * Registers a keyed (object or non-object) entity with the Nexus. This entity will be
      * accessible to all server nodes in the Nexus. Code may be executed in this entity's context
      * (server+thread) via, for example, {@link #invoke(Class,Comparable,Action)}. If the keyed is
      * also a {@link NexusObject}, clients can subscribe to the object using its class and key.
+     *
+     * @param kclass the class token used to identify this keyed entity. This will usually be the
+     * entity's class, but could be a superclass if the caller desires. This <em>same</em> class
+     * token must be used when calling {@link #invoke(Class,Comparable,Action)}.
+     * @param entity the keyed entity to be registered.
+     *
+     * @return the execution context created for the registered keyed entity.
      */
-    void registerKeyed (Keyed entity);
+    <K extends Keyed> Context<K> registerKeyed (Class<? super K> kclass, K entity);
 
     /**
-     * Registers a keyed entity as a child of the supplied parent keyed entity. The child and
-     * entity will share the same execution context.
+     * Registers a keyed entity as a child of the specified parent entity. The child will share the
+     * parent's execution context rather than having an execution context of its own.
+     *
+     * @param kclass the class token used to identify this keyed entity. This will usually be the
+     * entity's class, but could be a superclass if the caller desires. This <em>same</em> class
+     * token must be used when calling {@link #invoke(Class,Comparable,Action)}.
+     * @param child the keyed entity to be registered.
+     * @param parent the context of the parent entity, obtained via {@link #resolve(Class)} or
+     * {@link #resolve(Class,Comparable)}.
      */
-    void registerKeyed (Keyed child, Keyed parent);
+    <K extends Keyed> void registerKeyed (Class<? super K> kclass, K child, Context<?> parent);
 
     /**
      * Registers a factory which will be used to create keyed entities on demand. If an action or
@@ -103,7 +115,7 @@ public interface Nexus
      * created and registered with the Nexus, and then the action or request will be dispatched to
      * it as normal.
      */
-    <T extends Keyed> void registerKeyedFactory (Class<T> kclass, KeyedFactory<T> factory);
+    <K extends Keyed> void registerKeyedFactory (Class<? super K> kclass, KeyedFactory<K> factory);
 
     /**
      * Registers a global map, whose contents will be mirrored to all nodes in the Nexus. Maps are
@@ -142,21 +154,24 @@ public interface Nexus
     <K,V> RMap<K,V> registerMap (String id);
 
     /**
-     * Clears a registration created via any {@code register} variant (but not
-     * {@code registerKeyed} or {@code registerSingleton}).
+     * Clears a NexusObject registration. Note, this will <em>not</em> clear any associated
+     * singleton or keyed entity registration.
      */
     void clear (NexusObject object);
 
     /**
-     * Clears registration created via either {@code #registerSingleton} variant.
+     * Clears a singleton entity registration. This will <em>also</em> clear any NexusObject
+     * registration for the singleton.
      */
-    void clearSingleton (Singleton entity);
+    <S extends Singleton> void clear (Class<? super S> sclass, S entity);
 
     /**
-     * Clears a registration created via either {@code #registerKeyed} variant, or
-     * {@link #registerKeyedFactory}.
+     * Clears a keyed entity registration. This will <em>also</em> clear any NexusObject
+     * registration for the keyed entity. The entity may have been manually registered or
+     * automatically registered via a keyed entity factory. Note that in the latter case, the
+     * entity can be reregistered if it is resolved again.
      */
-    void clearKeyed (Keyed entity);
+    <K extends Keyed> void clearKeyed (Class<? super K> kclass, K entity);
 
     /**
      * Returns the keys of all instances of the supplied entity that are hosted on <em>this</em>

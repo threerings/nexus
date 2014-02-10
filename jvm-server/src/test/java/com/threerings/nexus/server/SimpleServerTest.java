@@ -24,7 +24,7 @@ public class SimpleServerTest
 {
     @Before
     public void suppressLogging () {
-        log.setWarnOnly();
+        log.setWarnOnly(true);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class SimpleServerTest
 
     protected void testEventDispatchAndShutdown (NexusServer server, final Runnable onComplete) {
         TestObject test = new TestObject(TestUtil.createTestServiceAttr());
-        server.registerSingleton(test);
+        server.register(TestObject.class, test);
 
         // ensure that we've been assigned an id
         assertTrue(test.getId() > 0);

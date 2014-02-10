@@ -57,43 +57,41 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public void register (NexusObject object) {
-        _omgr.register(object);
+    public <N extends NexusObject> Context<N> register (N object) {
+        return _omgr.register(object);
     }
 
     @Override // from interface Nexus
-    public void register (NexusObject child, Singleton parent) {
+    public void register (NexusObject child, Context<?> parent) {
         _omgr.register(child, parent);
     }
 
     @Override // from interface Nexus
-    public void register (NexusObject child, Keyed parent) {
-        _omgr.register(child, parent);
+    public <S extends Singleton> Context<S> register (Class<? super S> sclass, S entity) {
+        return _omgr.register(sclass, entity);
     }
 
     @Override // from interface Nexus
-    public void registerSingleton (Singleton entity) {
-        _omgr.registerSingleton(entity);
+    public <S extends Singleton> void register (Class<? super S> sclass, S child,
+                                                Context<?> parent) {
+        _omgr.register(sclass, child, parent);
     }
 
     @Override // from interface Nexus
-    public void registerSingleton (Singleton child, Singleton parent) {
-        _omgr.registerSingleton(child, parent);
+    public <K extends Keyed> Context<K> registerKeyed (Class<? super K> kclass, K entity) {
+        return _omgr.registerKeyed(kclass, entity);
     }
 
     @Override // from interface Nexus
-    public void registerKeyed (Keyed entity) {
-        _omgr.registerKeyed(entity);
+    public <K extends Keyed> void registerKeyed (Class<? super K> kclass, K child,
+                                                 Context<?> parent) {
+        _omgr.registerKeyed(kclass, child, parent);
     }
 
     @Override // from interface Nexus
-    public void registerKeyed (Keyed child, Keyed parent) {
-        _omgr.registerKeyed(child, parent);
-    }
-
-    @Override // from interface Nexus
-    public <T extends Keyed> void registerKeyedFactory (Class<T> kclass, KeyedFactory<T> factory) {
-        _omgr.registerKeyedFactory(kclass, factory);
+    public <K extends Keyed> void registerKeyedFactory (Class<? super K> kclass,
+                                                        KeyedFactory<K> kf) {
+        _omgr.registerKeyedFactory(kclass, kf);
     }
 
     @Override // from interface Nexus
@@ -107,38 +105,38 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public void clearSingleton (Singleton entity) {
-        _omgr.clearSingleton(entity);
+    public <S extends Singleton> void clear (Class<? super S> sclass, S entity) {
+        _omgr.clear(sclass, entity);
     }
 
     @Override // from interface Nexus
-    public void clearKeyed (Keyed entity) {
-        _omgr.clearKeyed(entity);
+    public <K extends Keyed> void clearKeyed (Class<? super K> kclass, K entity) {
+        _omgr.clearKeyed(kclass, entity);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> Set<Comparable<?>> hostedKeys (Class<T> kclass) {
+    public <K extends Keyed> Set<Comparable<?>> hostedKeys (Class<K> kclass) {
         return _omgr.hostedKeys(kclass);
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void assertContext (Class<T> sclass) {
+    public <S extends Singleton> void assertContext (Class<S> sclass) {
         _omgr.assertContext(sclass);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void assertContext (Class<T> kclass, Comparable<?> key) {
+    public <K extends Keyed> void assertContext (Class<K> kclass, Comparable<?> key) {
         _omgr.assertContext(kclass, key);
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void invoke (Class<T> sclass, Action<? super T> action) {
+    public <S extends Singleton> void invoke (Class<S> sclass, Action<? super S> action) {
         _omgr.invoke(sclass, action);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Comparable<?> key,
-                                          Action<? super T> action) {
+    public <K extends Keyed> void invoke (Class<K> kclass, Comparable<?> key,
+                                          Action<? super K> action) {
         // TODO: determine whether the entity is local or remote
         _omgr.invoke(kclass, key, action);
     }
@@ -155,38 +153,38 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> R request (Class<T> sclass, Request<? super T,R> request) {
+    public <S extends Singleton,R> R request (Class<S> sclass, Request<? super S,R> request) {
         return get(request, requestF(sclass, request));
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Future<R> requestF (Class<T> sclass,
-                                                       Request<? super T,R> request) {
+    public <S extends Singleton,R> Future<R> requestF (Class<S> sclass,
+                                                       Request<? super S,R> request) {
         return _omgr.invoke(sclass, request);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed,R> R request (Class<T> kclass, Comparable<?> key,
-                                         Request<? super T,R> request) {
+    public <K extends Keyed,R> R request (Class<K> kclass, Comparable<?> key,
+                                         Request<? super K,R> request) {
         // TODO: determine whether the entity is local or remote
         return get(request, requestF(kclass, key, request));
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed,R> Future<R> requestF (Class<T> kclass, Comparable<?> key,
-                                                   Request<? super T,R> request) {
+    public <K extends Keyed,R> Future<R> requestF (Class<K> kclass, Comparable<?> key,
+                                                   Request<? super K,R> request) {
         // TODO: determine whether the entity is local or remote
         return _omgr.invoke(kclass, key, request);
     }
 
     @Override
-    public <T extends Keyed> int nextId (Class<T> kclass) {
+    public <K extends Keyed> int nextId (Class<K> kclass) {
         // TODO: get our real server id from the peer manager
         return _omgr.nextId(0, MAX_SERVERS, kclass);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> Map<Integer,Integer> census (Class<T> kclass) {
+    public <K extends Keyed> Map<Integer,Integer> census (Class<K> kclass) {
         // TODO: proper distributed stuffs
         Map<Integer,Integer> results = Maps.newHashMap();
         results.put(0, _omgr.census(kclass));
@@ -194,16 +192,16 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed> void invoke (Class<T> kclass, Set<? extends Comparable<?>> keys,
-                                          Action<? super T> action) {
+    public <K extends Keyed> void invoke (Class<K> kclass, Set<? extends Comparable<?>> keys,
+                                          Action<? super K> action) {
         // TODO: partition keys based on the server that hosts the entities in question; then send
         // one message to each server with the action and the key subset to execute thereon
         for (Comparable<?> key : keys) _omgr.invoke(kclass, key, action);
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed,R> Map<Comparable<?>,R> gather (
-        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request) {
+    public <K extends Keyed,R> Map<Comparable<?>,R> gather (
+        Class<K> kclass, Set<? extends Comparable<?>> keys, Request<? super K,R> request) {
         Map<Comparable<?>,Future<R>> resultFs = gatherF(kclass, keys, request);
         Map<Comparable<?>,R> results = Maps.newHashMap();
         for (Map.Entry<Comparable<?>,Future<R>> entry : resultFs.entrySet()) {
@@ -217,8 +215,8 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
-        Class<T> kclass, Set<? extends Comparable<?>> keys, Request<? super T,R> request) {
+    public <K extends Keyed,R> Map<Comparable<?>,Future<R>> gatherF (
+        Class<K> kclass, Set<? extends Comparable<?>> keys, Request<? super K,R> request) {
         // TODO: partition keys based on the server that hosts the entities in question; then send
         // out batched requests to invoke our request on the entities hosted by each server
         Map<Comparable<?>,Future<R>> results = Maps.newHashMap();
@@ -231,38 +229,38 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton> void invokeOn (
-        Class<T> sclass, int serverId, Action<? super T> action) {
+    public <S extends Singleton> void invokeOn (
+        Class<S> sclass, int serverId, Action<? super S> action) {
         // TODO: proper distributed stuffs
         if (serverId != 0) throw new ServerNotFoundException(serverId);
         invoke(sclass, action);
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> R requestFrom (
-        Class<T> sclass, int serverId, Request<? super T,R> request) {
+    public <S extends Singleton,R> R requestFrom (
+        Class<S> sclass, int serverId, Request<? super S,R> request) {
         // TODO: proper distributed stuffs
         if (serverId != 0) throw new ServerNotFoundException(serverId);
         return request(sclass, request);
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Future<R> requestFromF (
-        Class<T> sclass, int serverId, Request<? super T,R> request) {
+    public <S extends Singleton,R> Future<R> requestFromF (
+        Class<S> sclass, int serverId, Request<? super S,R> request) {
         // TODO: proper distributed stuffs
         if (serverId != 0) throw new ServerNotFoundException(serverId);
         return requestF(sclass, request);
     }
 
     @Override
-    public <T extends Singleton> void broadcast (Class<T> sclass, Action<? super T> action) {
+    public <S extends Singleton> void broadcast (Class<S> sclass, Action<? super S> action) {
         // TODO: proper distributed stuffs
         invoke(sclass, action);
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Map<Integer,R> survey (
-        Class<T> sclass, Request<? super T,R> request) {
+    public <S extends Singleton,R> Map<Integer,R> survey (
+        Class<S> sclass, Request<? super S,R> request) {
         Map<Integer,Future<R>> resultFs = surveyF(sclass, request);
         Map<Integer,R> results = Maps.newHashMap();
         for (Map.Entry<Integer,Future<R>> entry : resultFs.entrySet()) {
@@ -276,8 +274,8 @@ public class NexusServer implements Nexus
     }
 
     @Override // from interface Nexus
-    public <T extends Singleton,R> Map<Integer,Future<R>> surveyF (
-        Class<T> sclass, Request<? super T,R> request) {
+    public <S extends Singleton,R> Map<Integer,Future<R>> surveyF (
+        Class<S> sclass, Request<? super S,R> request) {
         // TODO: proper distributed stuffs
         Map<Integer,Future<R>> results = Maps.newHashMap();
         results.put(0, requestF(sclass, request));

@@ -23,7 +23,7 @@ class DeferredActionTest
   @Before def createServer {
     _exec = Executors.newFixedThreadPool(3)
     _server = new NexusServer(createTestConfig, _exec)
-    _server.registerSingleton(new TestSingleton)
+    _server.register(classOf[TestSingleton], new TestSingleton)
     _timer = new NexusTimer(_server)
   }
 

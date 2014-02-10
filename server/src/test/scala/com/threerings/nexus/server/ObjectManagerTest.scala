@@ -55,7 +55,7 @@ class ObjectManagerTest
   @Test def testSingleton {
     val omgr = createObjectManager
     val test = new TestSingleton
-    omgr.registerSingleton(test)
+    omgr.register(classOf[TestSingleton], test)
 
     // ensure that actions are dispatched on our registered entity
     var invoked = false
@@ -73,7 +73,7 @@ class ObjectManagerTest
     assertEquals(1, result)
 
     // ensure that actions are not dispatched once the entity is cleared
-    omgr.clearSingleton(test)
+    omgr.clear(classOf[TestSingleton], test)
     try {
       omgr.invoke(classOf[TestSingleton], FAIL_SINGLE)
       fail()
@@ -95,7 +95,7 @@ class ObjectManagerTest
   @Test def testRegisterAndClearKeyed {
     val omgr = createObjectManager
     val test = new TestKeyed(5)
-    omgr.registerKeyed(test)
+    omgr.registerKeyed(classOf[TestKeyed], test)
 
     // ensure that we report that we currently host this entity
     assertTrue(omgr.hostsKeyed(classOf[TestKeyed], test.getKey))
@@ -116,7 +116,7 @@ class ObjectManagerTest
     assertEquals(-1, result)
 
     // ensure that actions are not dispatched once the entity is cleared
-    omgr.clearKeyed(test)
+    omgr.clearKeyed(classOf[TestKeyed], test)
     omgr.invoke(classOf[TestKeyed], test.getKey, MISSING_KEYED)
 
     // ensure that we no longer report that we currently host this entity
@@ -182,7 +182,7 @@ class ObjectManagerTest
     omgr.invoke(classOf[TestKeyed], 3, MISSING_KEYED)
 
     // now test just a key mismatch
-    omgr.registerKeyed(new TestKeyed(1))
+    omgr.registerKeyed(classOf[TestKeyed], new TestKeyed(1))
     omgr.invoke(classOf[TestKeyed], 3, MISSING_KEYED)
 
     // test invoking a request on an unregistered entity; should throw ENFE
@@ -199,7 +199,7 @@ class ObjectManagerTest
 
   @Test def testKeyedSubclass {
     val omgr = createObjectManager
-    omgr.registerKeyed(new ChildKeyed(1))
+    omgr.registerKeyed(classOf[TestKeyed], new ChildKeyed(1))
     var invoked = false
     omgr.invoke(classOf[TestKeyed], 1, new Action[TestKeyed] {
       def invoke (obj :TestKeyed) {
@@ -212,7 +212,7 @@ class ObjectManagerTest
 
   @Test def testSingletonSubclass {
     val omgr = createObjectManager
-    omgr.registerSingleton(new ChildSingleton)
+    omgr.register(classOf[TestSingleton], new ChildSingleton)
       var invoked = false
     omgr.invoke(classOf[TestSingleton], new Action[TestSingleton] {
       def invoke (obj :TestSingleton) {
@@ -253,8 +253,8 @@ class ObjectManagerTest
 
   @Test def testRequireContext {
     val omgr = createObjectManager
-    omgr.registerSingleton(new TestSingleton)
-    omgr.registerKeyed(new TestKeyed(5))
+    omgr.register(classOf[TestSingleton], new TestSingleton)
+    omgr.registerKeyed(classOf[TestKeyed], new TestKeyed(5))
     var checks = 0
 
     omgr.invoke(classOf[TestSingleton], new Action[TestSingleton] {

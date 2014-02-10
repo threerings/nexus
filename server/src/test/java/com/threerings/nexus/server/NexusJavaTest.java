@@ -68,8 +68,8 @@ public class NexusJavaTest
             }
         }
 
-        _server.registerSingleton(new EntityA());
-        _server.registerSingleton(new EntityB());
+        _server.register(EntityA.class, new EntityA());
+        _server.register(EntityB.class, new EntityB());
         _server.invoke(EntityB.class, new Action<EntityB>() {
             public void invoke (EntityB b) {
                 b.incrAndDoubleAndPrint(5);

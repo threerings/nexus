@@ -63,8 +63,8 @@ class NexusTest {
       }
     }
 
-    _server.registerSingleton(new EntityA)
-    _server.registerSingleton(new EntityB)
+    _server.register(classOf[EntityA], new EntityA)
+    _server.register(classOf[EntityB], new EntityB)
     _server.invoke(classOf[EntityB], new Action[EntityB] {
       def invoke (b :EntityB) {
         b.incrAndDoubleAndPrint(5)
@@ -85,7 +85,7 @@ class NexusTest {
 
     val signal = Signal.create[String]()
     val ea = new EntityA(_server, signal)
-    _server.registerSingleton(ea)
+    _server.register(classOf[EntityA], ea)
 
     // these should no longer NPE when outer this pointers are nulled out
     signal.emit("one")
@@ -127,10 +127,10 @@ class NexusTest {
       def getKey = id
     }
 
-    _server.registerKeyed(new Player(1, "Bob"))
-    _server.registerKeyed(new Player(2, "Jim"))
-    _server.registerKeyed(new Player(4, "Jerry"))
-    _server.registerKeyed(new Player(9, "Hank"))
+    _server.registerKeyed(classOf[Player], new Player(1, "Bob"))
+    _server.registerKeyed(classOf[Player], new Player(2, "Jim"))
+    _server.registerKeyed(classOf[Player], new Player(4, "Jerry"))
+    _server.registerKeyed(classOf[Player], new Player(9, "Hank"))
 
     val keys = Set[Comparable[_]](1, 2, 3, 4, 5, 6, 7, 8, 9)
     val map = _server.gather(classOf[Player], keys, new Request[Player,String] {
@@ -150,7 +150,7 @@ class NexusTest {
       def fail () :String = throw new NexusException("Fail!")
     }
 
-    _server.registerSingleton(new Failer)
+    _server.register(classOf[Failer], new Failer)
     try {
       _server.request(classOf[Failer], new Request[Failer,String] {
         def invoke (f :Failer) = f.fail()
