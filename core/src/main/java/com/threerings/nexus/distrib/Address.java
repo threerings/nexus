@@ -64,7 +64,7 @@ public abstract class Address<T extends NexusObject> implements Streamable
         }
 
         @Override public boolean equals (Object other) {
-            if (other.getClass() != getClass()) return false;
+            if (other == null || other.getClass() != getClass()) return false;
             OfAnonymous oaddr = (OfAnonymous)other;
             return (oaddr.id == id) && super.equals(oaddr);
         }
