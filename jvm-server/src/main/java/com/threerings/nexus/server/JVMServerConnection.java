@@ -45,10 +45,8 @@ public class JVMServerConnection
         try {
             ByteBuffer frame;
             while ((frame = _outq.peek()) != null) {
-                if (_chan == null) {
-                    // The reader must have closed us, stop trying to write...
-                    return;
-                }
+                // if we've been closed, stop trying to write
+                if (!_chan.isOpen()) return;
                 _chan.write(frame);
                 if (frame.remaining() > 0) {
                     // partial write, requeue ourselves and finish the job later
@@ -128,18 +126,17 @@ public class JVMServerConnection
     }
 
     protected void onClose (IOException cause) {
-        if (_chan == null) return; // no double closeage
+        if (!_chan.isOpen()) return; // if we're already closed, then ignore this
         try {
             _chan.close();
+            _cmgr.connectionClosed(_chan, cause);
         } catch (IOException ioe) {
             log.warning("Failed to close socket channel", "chan", _chan, "error", ioe);
         }
-        _cmgr.connectionClosed(_chan, cause);
-        _chan = null;
     }
 
     protected final JVMConnectionManager _cmgr;
-    protected SocketChannel _chan;
+    protected final SocketChannel _chan;
     protected SessionManager.Input _input;
 
     // these are used for message I/O
