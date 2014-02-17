@@ -29,6 +29,10 @@ public class Widget implements Streamable
         @Override public boolean equals (Object other) {
             return (other instanceof Wangle) && size == ((Wangle)other).size;
         }
+
+        @Override public int hashCode () {
+            return size;
+        }
     }
 
     public static enum Color { RED, GREEN, BLUE };
@@ -49,6 +53,10 @@ public class Widget implements Streamable
         }
         Widget ow = (Widget)other;
         return name.equals(ow.name) && _wangle.equals(ow._wangle);
+    }
+
+    @Override public int hashCode () {
+        return color.hashCode() ^ name.hashCode();
     }
 
     protected Wangle _wangle;
