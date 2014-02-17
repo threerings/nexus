@@ -12,8 +12,9 @@ object NexusBuild extends samskivert.MavenBuild {
     fork in Compile := true,
     publishArtifact in (Compile, packageDoc) := false, // no scaladocs; it fails
     libraryDependencies ++= Seq(
-      "com.novocode" % "junit-interface" % "0.8" % "test->default" // make junit work
-    )
+      "com.novocode" % "junit-interface" % "0.10" % "test->default" // make junit work
+    ),
+    testOptions += Tests.Argument(TestFrameworks.JUnit, "-a", "-v")
   )
 
   override def moduleSettings (name :String, pom :pomutil.POM) = name match {
