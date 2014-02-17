@@ -82,7 +82,7 @@ public class IOTester
     }
 
     public static final String VALUE_OUT_PAYLOAD =
-        "32|1|RED|1|foo|34|42|32|1|GREEN|1|bar|34|21|32|1|BLUE|1|baz|34|7|";
+        "41|1|RED|1|foo|43|42|41|1|GREEN|1|bar|43|21|41|1|BLUE|1|baz|43|7|";
     public static void writeValue (Streamable.Output out) {
         for (Widget w : Widget.WS) {
             out.writeValue(w);
@@ -90,7 +90,7 @@ public class IOTester
     }
 
     public static final String VALUE_IN_PAYLOAD =
-        "[32,\"RED\",\"foo\",34,42,32,\"GREEN\",\"bar\",34,21,32,\"BLUE\",\"baz\",34,7]";
+        "[41,\"RED\",\"foo\",43,42,41,\"GREEN\",\"bar\",43,21,41,\"BLUE\",\"baz\",43,7]";
     public static void checkValue (Streamable.Input in, Checker checker) {
         for (Widget w : Widget.WS) {
             checker.assertEquals(w, in.<Widget>readValue());
@@ -98,13 +98,13 @@ public class IOTester
     }
 
     public static final String VALUES_OUT_PAYLOAD =
-        "3|32|1|RED|1|foo|34|42|1|GREEN|1|bar|34|21|1|BLUE|1|baz|34|7|";
+        "3|41|1|RED|1|foo|43|42|1|GREEN|1|bar|43|21|1|BLUE|1|baz|43|7|";
     public static void writeValues (Streamable.Output out) {
         out.writeValues(Widget.WS.size(), Widget.WS.iterator());
     }
 
     public static final String VALUES_IN_PAYLOAD =
-        "[3,32,\"RED\",\"foo\",34,42,\"GREEN\",\"bar\",34,21,\"BLUE\",\"baz\",34,7]";
+        "[3,41,\"RED\",\"foo\",43,42,\"GREEN\",\"bar\",43,21,\"BLUE\",\"baz\",43,7]";
     public static void checkValues (Streamable.Input in, Checker checker) {
         List<Widget> into = new ArrayList<Widget>();
         in.<Widget>readValues(into);

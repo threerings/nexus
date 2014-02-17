@@ -30,7 +30,7 @@ public class GwtTestIO extends GWTTestCase
     public void testBasicTypesOutput () {
         StringBuffer buf = new StringBuffer();
         IOTester.writeBasicTypes(GWTIO.newOutput(new TestSerializer(), buf));
-        // System.out.println(buf); // for regeneration
+        // System.out.println("testBasicTypes: " + buf); // for regeneration
         assertEquals(IOTester.BT_OUT_PAYLOAD, buf.toString());
     }
 
@@ -44,7 +44,7 @@ public class GwtTestIO extends GWTTestCase
     public void testValueOutput () {
         StringBuffer buf = new StringBuffer();
         IOTester.writeValue(GWTIO.newOutput(new TestSerializer(), buf));
-        // System.out.println(buf);
+        // System.out.println("testValue: " + buf);
         assertEquals(IOTester.VALUE_OUT_PAYLOAD, buf.toString());
     }
 
@@ -58,7 +58,7 @@ public class GwtTestIO extends GWTTestCase
     public void testValuesOutput () {
         StringBuffer buf = new StringBuffer();
         IOTester.writeValues(GWTIO.newOutput(new TestSerializer(), buf));
-        // System.out.println(buf);
+        // System.out.println("testValues: " + buf);
         assertEquals(IOTester.VALUES_OUT_PAYLOAD, buf.toString());
     }
 
