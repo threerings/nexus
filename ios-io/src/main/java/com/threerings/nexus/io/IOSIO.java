@@ -395,11 +395,21 @@ public class IOSIO
         mapStreamer(7, new Streamers.Streamer_Float(), Float.class);
         mapStreamer(8, new Streamers.Streamer_Double(), Double.class);
         mapStreamer(9, new Streamers.Streamer_String(), String.class);
+        // map the steamers for arrays of basic types
+        mapStreamer(10, new Streamers.Streamer_Booleans(), Streamers.Streamer_Booleans.TYPE);
+        mapStreamer(11, new Streamers.Streamer_Bytes(), Streamers.Streamer_Bytes.TYPE);
+        mapStreamer(12, new Streamers.Streamer_Characters(), Streamers.Streamer_Characters.TYPE);
+        mapStreamer(13, new Streamers.Streamer_Shorts(), Streamers.Streamer_Shorts.TYPE);
+        mapStreamer(14, new Streamers.Streamer_Integers(), Streamers.Streamer_Integers.TYPE);
+        mapStreamer(15, new Streamers.Streamer_Longs(), Streamers.Streamer_Longs.TYPE);
+        mapStreamer(16, new Streamers.Streamer_Floats(), Streamers.Streamer_Floats.TYPE);
+        mapStreamer(17, new Streamers.Streamer_Doubles(), Streamers.Streamer_Doubles.TYPE);
+        mapStreamer(19, new Streamers.Streamer_Strings(), Streamers.Streamer_Strings.TYPE);
         // fast path for common implementations; a slow path will catch all other types with a
         // series of instanceof checks
-        mapStreamer(10, new Streamers.Streamer_List(), ArrayList.class);
-        mapStreamer(11, new Streamers.Streamer_Set(), HashSet.class);
-        mapStreamer(12, new Streamers.Streamer_Map(), HashMap.class);
+        mapStreamer(19, new Streamers.Streamer_List(), ArrayList.class);
+        mapStreamer(20, new Streamers.Streamer_Set(), HashSet.class);
+        mapStreamer(21, new Streamers.Streamer_Map(), HashMap.class);
     }
 
     protected static final Map<Short,Streamer<?>> STREAMERS = Maps.newHashMap();

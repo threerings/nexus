@@ -146,7 +146,7 @@ public class Streamers
         }
     }
 
-    // TODO: boxed streamers
+    // TODO: boxed streamers?
 
     /** A streamer for {@link String}. */
     public static class Streamer_String implements Streamer<String> {
@@ -158,6 +158,132 @@ public class Streamers
         }
         public String readObject (Streamable.Input in) {
             return in.readString();
+        }
+    }
+
+    /** A streamer for {@code boolean[]}. */
+    public static class Streamer_Booleans implements Streamer<boolean[]> {
+        public static final Class<?> TYPE = (new boolean[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, boolean[] value) {
+            out.writeBooleans(value);
+        }
+        public boolean[] readObject (Streamable.Input in) {
+            return in.readBooleans();
+        }
+    }
+
+    /** A streamer for {@code byte[]}. */
+    public static class Streamer_Bytes implements Streamer<byte[]> {
+        public static final Class<?> TYPE = (new byte[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, byte[] value) {
+            out.writeBytes(value);
+        }
+        public byte[] readObject (Streamable.Input in) {
+            return in.readBytes();
+        }
+    }
+
+    /** A streamer for {@code char[]}. */
+    public static class Streamer_Characters implements Streamer<char[]> {
+        public static final Class<?> TYPE = (new char[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, char[] value) {
+            out.writeChars(value);
+        }
+        public char[] readObject (Streamable.Input in) {
+            return in.readChars();
+        }
+    }
+
+    /** A streamer for {@code short[]}. */
+    public static class Streamer_Shorts implements Streamer<short[]> {
+        public static final Class<?> TYPE = (new short[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, short[] value) {
+            out.writeShorts(value);
+        }
+        public short[] readObject (Streamable.Input in) {
+            return in.readShorts();
+        }
+    }
+
+    /** A streamer for {@code int[]}. */
+    public static class Streamer_Integers implements Streamer<int[]> {
+        public static final Class<?> TYPE = (new int[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, int[] value) {
+            out.writeInts(value);
+        }
+        public int[] readObject (Streamable.Input in) {
+            return in.readInts();
+        }
+    }
+
+    /** A streamer for {@code long[]}. */
+    public static class Streamer_Longs implements Streamer<long[]> {
+        public static final Class<?> TYPE = (new long[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, long[] value) {
+            out.writeLongs(value);
+        }
+        public long[] readObject (Streamable.Input in) {
+            return in.readLongs();
+        }
+    }
+
+    /** A streamer for {@code float[]}. */
+    public static class Streamer_Floats implements Streamer<float[]> {
+        public static final Class<?> TYPE = (new float[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, float[] value) {
+            out.writeFloats(value);
+        }
+        public float[] readObject (Streamable.Input in) {
+            return in.readFloats();
+        }
+    }
+
+    /** A streamer for {@code double[]}. */
+    public static class Streamer_Doubles implements Streamer<double[]> {
+        public static final Class<?> TYPE = (new double[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, double[] value) {
+            out.writeDoubles(value);
+        }
+        public double[] readObject (Streamable.Input in) {
+            return in.readDoubles();
+        }
+    }
+
+    /** A streamer for {@code String[]}. */
+    public static class Streamer_Strings implements Streamer<String[]> {
+        public static final Class<?> TYPE = (new String[0]).getClass();
+        public Class<?> getObjectClass () {
+            return TYPE;
+        }
+        public void writeObject (Streamable.Output out, String[] value) {
+            out.writeStrings(value);
+        }
+        public String[] readObject (Streamable.Input in) {
+            return in.readStrings();
         }
     }
 

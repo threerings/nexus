@@ -112,6 +112,16 @@ public abstract class AbstractSerializer implements Serializer
         mapStreamer(new Streamers.Streamer_Float());
         mapStreamer(new Streamers.Streamer_Double());
         mapStreamer(new Streamers.Streamer_String());
+        // map the steamers for arrays of basic types
+        mapStreamer(new Streamers.Streamer_Booleans());
+        mapStreamer(new Streamers.Streamer_Bytes());
+        mapStreamer(new Streamers.Streamer_Characters());
+        mapStreamer(new Streamers.Streamer_Shorts());
+        mapStreamer(new Streamers.Streamer_Integers());
+        mapStreamer(new Streamers.Streamer_Longs());
+        mapStreamer(new Streamers.Streamer_Floats());
+        mapStreamer(new Streamers.Streamer_Doubles());
+        mapStreamer(new Streamers.Streamer_Strings());
         // fast path for common implementations; a slow path will catch all other types with a
         // series of instanceof checks
         mapStreamer(new Streamers.Streamer_List());
