@@ -4,8 +4,10 @@
 
 package com.threerings.nexus.client;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.channels.ByteChannel;
 import java.util.concurrent.Executor;
 
 import cli.MonoTouch.Foundation.NSAction;
@@ -15,7 +17,8 @@ import cli.System.Console;
 import react.RPromise;
 
 import com.threerings.nexus.net.Connection;
-import com.threerings.nexus.net.IOSConnection;
+import com.threerings.nexus.net.JVMConnection;
+import com.threerings.nexus.net.SocketByteChannel;
 import com.threerings.nexus.util.Log;
 
 /**
@@ -60,7 +63,11 @@ public class IOSClient extends NexusClient
     }
 
     @Override protected void connect (String host, RPromise<Connection> callback) {
-        new IOSConnection(host, _port, _exec, callback);
+        new JVMConnection(Log.log, host, _port, _exec, callback) {
+            @Override protected ByteChannel openChannel (String host, int port) throws IOException {
+                return SocketByteChannel.open(host, port);
+            }
+        };
     }
 
     protected Executor _exec;
