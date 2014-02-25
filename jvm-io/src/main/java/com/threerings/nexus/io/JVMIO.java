@@ -409,7 +409,7 @@ public class JVMIO
         mapStreamer(15, new Streamers.Streamer_Longs(), Streamers.Streamer_Longs.TYPE);
         mapStreamer(16, new Streamers.Streamer_Floats(), Streamers.Streamer_Floats.TYPE);
         mapStreamer(17, new Streamers.Streamer_Doubles(), Streamers.Streamer_Doubles.TYPE);
-        mapStreamer(19, new Streamers.Streamer_Strings(), Streamers.Streamer_Strings.TYPE);
+        mapStreamer(18, new Streamers.Streamer_Strings(), Streamers.Streamer_Strings.TYPE);
         // fast path for common implementations; a slow path will catch all other types with a
         // series of instanceof checks
         mapStreamer(19, new Streamers.Streamer_List(), ArrayList.class);
