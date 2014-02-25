@@ -126,11 +126,12 @@ public class JVMIO
                 if (code < 0) {
                     code = (short)-code;
                     String rname = makeAuxName(readString(), "Factory");
+                    // this is used on iOS where all exceptions get turned into throwables, so we
+                    // catch throwable instead of exception here
                     try {
                         _services.put(code, (DService.Factory<?>)Class.forName(rname).newInstance());
-                    } catch (Exception e) {
-                        throw new StreamException(
-                            "Error instantiating service factory " + rname, e);
+                    } catch (Throwable t) {
+                        throw new StreamException("Error instantiating service factory " + rname, t);
                     }
                 }
                 @SuppressWarnings("unchecked") DService.Factory<T> factory =
@@ -163,6 +164,8 @@ public class JVMIO
             protected final void resolveStreamer (short code) {
                 String cname = readString();
                 Class<?> clazz;
+                // this is used on iOS where all exceptions get turned into throwables, so we catch
+                // throwable instead of exception here
                 try {
                     _classes.put(code, clazz = Class.forName(cname));
                 } catch (Throwable t) {
@@ -372,8 +375,8 @@ public class JVMIO
         String sname = makeAuxName(cname, "Streamer");
         try {
             return (Streamer<?>)Class.forName(sname).newInstance();
-        } catch (Exception e) {
-            throw new StreamException("Error instantiating streamer " + sname, e);
+        } catch (Throwable t) {
+            throw new StreamException("Error instantiating streamer " + sname, t);
         }
     }
 

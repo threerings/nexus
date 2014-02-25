@@ -23,7 +23,7 @@
     <!-- exported (transitive) dependencies -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>nexus-core</artifactId>
+      <artifactId>nexus-jvm-io</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

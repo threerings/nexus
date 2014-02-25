@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
+import java.nio.channels.ByteChannel;
 import java.nio.channels.SocketChannel;
 
 import java.util.concurrent.BlockingQueue;
@@ -70,7 +71,7 @@ public class JVMConnection extends Connection
     /**
      * Called by the reader, once we have established our connection with the server.
      */
-    protected synchronized void connectionEstablished (SocketChannel channel) {
+    protected synchronized void connectionEstablished (ByteChannel channel) {
         // start up the writer thread now that we're connected
         _writer = new Writer(channel);
         _writer.start();
@@ -94,7 +95,18 @@ public class JVMConnection extends Connection
         onClose(cause);
     }
 
-    protected void closeChannel (SocketChannel channel) {
+    /**
+     * Opens a channel to the specified host on the specified port. This is factored out because
+     * {@code ios-io} reuses most of the {@code jvm-io} infrastructure.
+     */
+    protected ByteChannel openChannel (String host, int port) throws IOException {
+        InetAddress addr = InetAddress.getByName(host);
+        SocketChannel channel = SocketChannel.open(new InetSocketAddress(addr, port));
+        channel.configureBlocking(true);
+        return channel;
+    }
+
+    protected void closeChannel (ByteChannel channel) {
         try {
             channel.close();
         } catch (IOException ioe) {
@@ -118,9 +130,7 @@ public class JVMConnection extends Connection
         @Override public void run () {
             try {
                 // resolve the hostname of our target and establish a connection thereto
-                InetAddress addr = InetAddress.getByName(_host);
-                _channel = SocketChannel.open(new InetSocketAddress(addr, _port));
-                _channel.configureBlocking(true);
+                _channel = openChannel(_host, _port);
 
                 // if we're shutdown while trying to establish a connection, we need to abort here
                 // and close everything ourselves
@@ -132,7 +142,7 @@ public class JVMConnection extends Connection
                 connectionEstablished(_channel);
 
                 // let our callback know that we're ready to go
-                _log.info("Established server connection", "addr", addr, "port", _port);
+                _log.info("Established server connection", "host", _host, "port", _port);
                 _exec.execute(new Runnable() {
                     public void run () {
                         _callback.succeed(JVMConnection.this);
@@ -184,14 +194,14 @@ public class JVMConnection extends Connection
 
         protected volatile boolean _running = true;
 
-        protected SocketChannel _channel;
+        protected ByteChannel _channel;
         protected FrameReader _reader = new FrameReader();
         protected ByteBufferInputStream _bin = new ByteBufferInputStream();
         protected Streamable.Input _sin = JVMIO.newInput(_bin);
     }
 
     protected class Writer extends Thread {
-        public Writer (SocketChannel channel) {
+        public Writer (ByteChannel channel) {
             _channel = channel;
         }
 
@@ -234,7 +244,7 @@ public class JVMConnection extends Connection
             closeChannel(_channel);
         }
 
-        protected SocketChannel _channel;
+        protected ByteChannel _channel;
         protected FramingOutputStream _fout = new FramingOutputStream();
         protected Streamable.Output _sout = JVMIO.newOutput(_fout);
     }
