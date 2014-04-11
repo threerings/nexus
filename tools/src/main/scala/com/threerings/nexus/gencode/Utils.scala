@@ -167,8 +167,8 @@ object Utils
     case TypeKind.DOUBLE => "Double"
     case TypeKind.ARRAY => field.asInstanceOf[ArrayType].getComponentType match {
       case pt :PrimitiveType => fieldKind(pt) + "s"
-      case dt :DeclaredType if (isLang(field, "String")) => return fieldKind(dt) + "s"
-      case ct => throw new IllegalArgumentException("Arrays of " + ct + " not supported")
+      case dt :DeclaredType if (isLang(dt.asElement.asType, "String")) => return fieldKind(dt) + "s"
+      case ct => throw new IllegalArgumentException(s"Arrays of $ct not supported")
     }
     case TypeKind.DECLARED if (isLang(field, "String")) => "String"
     case TypeKind.DECLARED if (isLang(field, "Class")) => "Class"
