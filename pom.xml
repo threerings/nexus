@@ -45,7 +45,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <gwt.version>2.4.0</gwt.version>
     <guava.version>13.0</guava.version>
-    <scala.version>2.10.1</scala.version>
+    <scala.version>2.10.2</scala.version>
+    <maven-scala.version>2.10.1</maven-scala.version>
     <monotouch.version>5.1</monotouch.version>
   </properties>
 

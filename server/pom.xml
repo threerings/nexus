@@ -50,7 +50,7 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>${scala.version}</version>
+        <version>${maven-scala.version}</version>
         <executions>
           <execution>
             <id>test-compile</id>
