@@ -46,7 +46,7 @@
     <gwt.version>2.5.0</gwt.version>
     <guava.version>16.0.1</guava.version>
     <scala.version>2.10.2</scala.version>
-    <maven-scala.version>2.10.1</maven-scala.version>
+    <maven-scala.version>2.15.2</maven-scala.version>
     <monotouch.version>5.1</monotouch.version>
   </properties>
 
