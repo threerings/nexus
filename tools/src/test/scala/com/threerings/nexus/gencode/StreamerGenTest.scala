@@ -131,7 +131,7 @@ class StreamerGenTest
         }
       }
       """)
-    // System.err.println(source)
+    // System.out.println(source)
     // make sure we imported the service from the other package
     assertTrue(source.contains("import foo.bar.baz.TwoService"))
   }
@@ -458,7 +458,7 @@ class StreamerTestCompiler extends TestCompiler {
     protected var _tmetas = Seq[StreamableMetadata]()
   }
 
-  override protected def stockObjects = List(streamObj, nexobjObj)
+  override protected def stockObjects = List(streamObj, nexobjObj, nexusServiceObj, dServiceObj)
 
   private def streamObj = mkTestObject("Streamable.java", """
     package com.threerings.nexus.io;
@@ -473,6 +473,18 @@ class StreamerTestCompiler extends TestCompiler {
     public abstract class NexusObject implements Streamable {
       public void readContents (Streamable.Input in) {}
       public void writeContents (Streamable.Output out) {}
+    }
+  """)
+  private def nexusServiceObj = mkTestObject("NexusService.java", """
+    package com.threerings.nexus.distrib;
+    public interface NexusService {}
+  """)
+  private def dServiceObj = mkTestObject("DService.java", """
+    package com.threerings.nexus.distrib;
+    public abstract class DService<T extends NexusService> {
+      public interface Factory<T extends NexusService> {
+        DService<T> createService (NexusObject owner);
+      }
     }
   """)
 }
