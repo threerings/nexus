@@ -276,7 +276,6 @@ class StreamerGenTest
         }
       }
       """)
-    // TODO: omit Object when to-stringing union bounds with all interfaces
     assertEquals("<T extends Comparable<T> & Iterable<?>>", metas.head.typeBounds)
   }
 

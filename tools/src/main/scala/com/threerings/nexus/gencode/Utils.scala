@@ -10,7 +10,7 @@ import scala.collection.mutable.{Set => MSet}
 import javax.lang.model.element.{Element, ExecutableElement, PackageElement, TypeElement}
 import javax.lang.model.element.{Name, ElementKind}
 import javax.lang.model.`type`.{ArrayType, DeclaredType, NoType, PrimitiveType, WildcardType}
-import javax.lang.model.`type`.{IntersectionType, TypeKind, TypeMirror, TypeVariable}
+import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
 import javax.lang.model.util.{ElementScanner7, SimpleTypeVisitor7}
 
 import react.RFuture
@@ -246,25 +246,30 @@ object Utils
     override def visitDeclared (t :DeclaredType, buf :StringBuilder) {
       val te = t.asElement.asInstanceOf[TypeElement]
 
-      // if we have an enclosing element, prepend it (and any of its enclosing elements);
-      // we don't want the type parameters of the enclosers (because streamables can never be
-      // non-static inner classes), so we just climb the element hierarchy
-      val encl = te.getEnclosingElement
-      if (encl != null && encl.getKind != ElementKind.PACKAGE) {
-        buf.append(enclosedName(encl)).append(".");
-      }
-
+      // if the name is empty, this is an intersection type; handle it specially
       val cname = t.asElement.getSimpleName.toString
-      buf.append(cname)
-      val tas = t.getTypeArguments
-      if (!tas.isEmpty) {
-        buf.append("<")
-        visit(tas.get(0), buf)
-        tas.tail foreach { ta =>
-          buf.append(",")
-          visit(ta, buf)
+      if (cname.isEmpty) visitIntersection(t, buf)
+      else {
+        // if we have an enclosing element, prepend it (and any of its enclosing elements);
+        // we don't want the type parameters of the enclosers (because streamables can never be
+        // non-static inner classes), so we just climb the element hierarchy
+        val encl = te.getEnclosingElement
+        if (encl != null && encl.getKind != ElementKind.PACKAGE) {
+          buf.append(enclosedName(encl)).append(".");
         }
-        buf.append(">")
+
+        val cname = t.asElement.getSimpleName.toString
+        buf.append(cname)
+        val tas = t.getTypeArguments
+        if (!tas.isEmpty) {
+          buf.append("<")
+          visit(tas.get(0), buf)
+          tas.tail foreach { ta =>
+            buf.append(",")
+            visit(ta, buf)
+          }
+          buf.append(">")
+        }
       }
     }
 
@@ -287,14 +292,34 @@ object Utils
       }
     }
 
-    override def visitIntersection (t :IntersectionType, buf :StringBuilder) {
-      var ii = 0
-      for (at <- t.getBounds()) {
-        if (ii > 0) buf.append(" & ");
-        visit(at, buf);
+    // in Java 6 and Java 7, intersection types are represented hackily, we detect such hackery in
+    // visitDeclared and pass the buck to this faux visitIntersection type; when we move to Java 8
+    // (perhaps in the 2020s) we can remove said hackery and use the real visitIntersection()
+    def visitIntersection (t :DeclaredType, buf :StringBuilder) {
+      // note: no enclosing elem check because intersection type bounds have a spurious encloser
+      val te = t.asElement.asInstanceOf[TypeElement]
+      // the intersection type bounds are "encoded" in the supertype and interfaces
+      val ifcs = te.getInterfaces.toList
+      val sc = te.getSuperclass
+      // the superclass may be Object in which case we don't want to add it to the list of
+      // alternatives (one normally does not write <T extends Object & Peanut & Popcorn>)
+      val alts = if (isLang(sc, "Object")) ifcs else (sc :: ifcs)
+      var ii = 0 ; for (ie <- alts) {
+        if (ii > 0) buf.append(" & ")
+        visit(ie, buf)
         ii += 1
       }
     }
+
+    // not available until Java 8
+    // override def visitIntersection (t :IntersectionType, buf :StringBuilder) {
+    //   var ii = 0
+    //   for (at <- t.getBounds()) {
+    //     if (ii > 0) buf.append(" & ");
+    //     visit(at, buf);
+    //     ii += 1
+    //   }
+    // }
 
     override def visitArray (t :ArrayType, buf :StringBuilder) {
       visit(t.getComponentType, buf)
