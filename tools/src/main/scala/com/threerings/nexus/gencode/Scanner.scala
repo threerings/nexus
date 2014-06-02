@@ -12,13 +12,13 @@ import javax.tools.Diagnostic
 import javax.lang.model.element.{Element, ElementKind, ExecutableElement, Modifier}
 import javax.lang.model.element.{Name, TypeElement, TypeParameterElement, VariableElement}
 import javax.lang.model.`type`.{DeclaredType, TypeKind, TypeMirror, TypeVariable, NoType}
-import javax.lang.model.util.{ElementScanner6, Types}
+import javax.lang.model.util.{ElementScanner7, Types}
 
 /**
  * Does the actual AST walking and computes metadata that is used to generate {@code Streamer}
  * and related source files.
  */
-class Scanner (env :ProcessingEnvironment) extends ElementScanner6[Unit, Unit]
+class Scanner (env :ProcessingEnvironment) extends ElementScanner7[Unit, Unit]
 {
   /**
    * Scans the supplied compilation unit and returns metadata for all encountered classes, mapped

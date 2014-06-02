@@ -10,8 +10,8 @@ import scala.collection.mutable.{Set => MSet}
 import javax.lang.model.element.{Element, ExecutableElement, PackageElement, TypeElement}
 import javax.lang.model.element.{Name, ElementKind}
 import javax.lang.model.`type`.{ArrayType, DeclaredType, NoType, PrimitiveType, WildcardType}
-import javax.lang.model.`type`.{TypeKind, TypeMirror, TypeVariable}
-import javax.lang.model.util.{ElementScanner6, SimpleTypeVisitor6}
+import javax.lang.model.`type`.{IntersectionType, TypeKind, TypeMirror, TypeVariable}
+import javax.lang.model.util.{ElementScanner7, SimpleTypeVisitor7}
 
 import react.RFuture
 
@@ -176,6 +176,7 @@ object Utils
     case TypeKind.DECLARED if (isEnum(field)) => "Enum"
     case TypeKind.DECLARED => "Value"
     case TypeKind.TYPEVAR => "Value"
+    case TypeKind.ERROR => "Error"
     case _ => throw new IllegalArgumentException(
       "Encountered unknown type kind " + field.getClass.getName)
   }
@@ -203,7 +204,7 @@ object Utils
     case stype :DeclaredType => {
       var ctors :List[ExecutableElement] = Nil
       val se = stype.asElement
-      new ElementScanner6[Unit, Unit] {
+      new ElementScanner7[Unit, Unit] {
         override def visitType (ne :TypeElement, p :Unit) {
           // don't descend into nested types
           if (se == ne) super.visitType(ne, p)
@@ -241,41 +242,29 @@ object Utils
     ((pkgName == null && fqName.indexOf(".") == -1) || // top-level package is repped by null
      (fqName.substring(0, fqName.lastIndexOf(".")+1) == (pkgName + ".")))
 
-  private class ToString (boundVars :Boolean) extends SimpleTypeVisitor6[Unit,StringBuilder] {
+  private class ToString (boundVars :Boolean) extends SimpleTypeVisitor7[Unit,StringBuilder] {
     override def visitDeclared (t :DeclaredType, buf :StringBuilder) {
       val te = t.asElement.asInstanceOf[TypeElement]
 
-      // if the name is empty, this is a union type bound and the bounds in question are the
-      // supertype and interfaces implemented by this synthetic type hack-a-saurus!
+      // if we have an enclosing element, prepend it (and any of its enclosing elements);
+      // we don't want the type parameters of the enclosers (because streamables can never be
+      // non-static inner classes), so we just climb the element hierarchy
+      val encl = te.getEnclosingElement
+      if (encl != null && encl.getKind != ElementKind.PACKAGE) {
+        buf.append(enclosedName(encl)).append(".");
+      }
+
       val cname = t.asElement.getSimpleName.toString
-      if (cname.isEmpty) {
-        // we don't do the enclosing elem check because union type bounds have a spurious encloser
-        visit(te.getSuperclass, buf)
-        for (ie <- te.getInterfaces) {
-          buf.append(" & ")
-          visit(ie, buf)
+      buf.append(cname)
+      val tas = t.getTypeArguments
+      if (!tas.isEmpty) {
+        buf.append("<")
+        visit(tas.get(0), buf)
+        tas.tail foreach { ta =>
+          buf.append(",")
+          visit(ta, buf)
         }
-
-      } else {
-        // if we have an enclosing element, prepend it (and any of its enclosing elements);
-        // we don't want the type parameters of the enclosers (because streamables can never be
-        // non-static inner classes), so we just climb the element hierarchy
-        val encl = te.getEnclosingElement
-        if (encl != null && encl.getKind != ElementKind.PACKAGE) {
-          buf.append(enclosedName(encl)).append(".");
-        }
-
-        buf.append(cname)
-        val tas = t.getTypeArguments
-        if (!tas.isEmpty) {
-          buf.append("<")
-          visit(tas.get(0), buf)
-          tas.tail foreach { ta =>
-              buf.append(",")
-              visit(ta, buf)
-          }
-          buf.append(">")
-        }
+        buf.append(">")
       }
     }
 
@@ -295,6 +284,15 @@ object Utils
           buf.append(" super ")
           visit(t.getUpperBound, buf)
         } // else nada?
+      }
+    }
+
+    override def visitIntersection (t :IntersectionType, buf :StringBuilder) {
+      var ii = 0
+      for (at <- t.getBounds()) {
+        if (ii > 0) buf.append(" & ");
+        visit(at, buf);
+        ii += 1
       }
     }
 
@@ -326,7 +324,7 @@ object Utils
     private var _seenVars = Set[TypeVariable]()
   }
 
-  private class ImportCollector extends SimpleTypeVisitor6[Unit,MSet[String]] {
+  private class ImportCollector extends SimpleTypeVisitor7[Unit,MSet[String]] {
     override def visitDeclared (t :DeclaredType, imports :MSet[String]) {
       val te = t.asElement.asInstanceOf[TypeElement]
 

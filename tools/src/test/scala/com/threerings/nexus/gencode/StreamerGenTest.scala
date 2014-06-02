@@ -277,7 +277,7 @@ class StreamerGenTest
       }
       """)
     // TODO: omit Object when to-stringing union bounds with all interfaces
-    assertEquals("<T extends Object & Comparable<T> & Iterable<?>>", metas.head.typeBounds)
+    assertEquals("<T extends Comparable<T> & Iterable<?>>", metas.head.typeBounds)
   }
 
   @Test def testImplementsStreamerSubIface {
