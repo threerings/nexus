@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<project name="nexus-ios-io" default="compile" xmlns:artifact="urn:maven-artifact-ant">
-  <import file="../etc/build-support.xml"/>
-</project>
